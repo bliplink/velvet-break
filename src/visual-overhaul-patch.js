@@ -281,6 +281,7 @@
       if (!mesh?.material) return false;
       if (mesh.metadata?.raycastTarget === 'obstacle') return true;
       const name = String(mesh.name ?? '').toLowerCase();
+      if (name.startsWith('extract-') || name.startsWith('container-') || name.startsWith('switch-')) return false;
       return /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning)/.test(name);
     };
 
