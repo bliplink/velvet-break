@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>搜打撤</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="./styles/main.css?v=review25" />
+</head>
+<body>
+  <canvas id="gameCanvas" tabindex="0"></canvas>
+
+  <div class="ambient-gradient ambient-a" aria-hidden="true"></div>
+  <div class="ambient-gradient ambient-b" aria-hidden="true"></div>
+  <div id="damageOverlay" class="screen-overlay damage-overlay" aria-hidden="true"></div>
+  <div id="hitMarker" class="hit-marker" aria-hidden="true"></div>
+
+  <div class="language-switch" id="languageSwitch" role="group" aria-label="Language switch">
+    <button id="langZhButton" class="lang-toggle-button ghost-button small" type="button" data-language-option="zh">中文</button>
+    <button id="langEnButton" class="lang-toggle-button ghost-button small" type="button" data-language-option="en">EN</button>
+  </div>
+
+  <aside id="basePanel" class="base-panel">
+    <div class="base-header">
+      <div>
+        <p class="eyebrow" data-i18n="base.eyebrow">战术行动</p>
+        <h1 id="brandTitle" data-i18n="brand.name">搜打撤</h1>
+      </div>
+      <button id="deployButton" class="primary-button" type="button" data-i18n="base.deploy">进入封锁区</button>
+    </div>
+
+	    <section class="base-section compact">
+	      <div id="summaryStrip" class="summary-strip"></div>
+	    </section>
+
+	    <section class="base-section">
+	      <div class="section-head">
+	        <h2 id="lobbyTitle">大厅</h2>
+	        <span id="lobbyNote" class="section-note">确认行动模式与撤离规则。</span>
+	      </div>
+	      <div id="lobbyPanel" class="stack-list"></div>
+	    </section>
+
+	    <section class="base-section">
+	      <div class="section-head">
+	        <h2 id="hallBoardTitle">大厅简报</h2>
+	        <span id="hallBoardNote" class="section-note">出击前情报、装备与仓库概况。</span>
+	      </div>
+	      <div id="hallBoard" class="stack-list"></div>
+	    </section>
+
+	    <section class="base-section">
+      <div class="section-head">
+        <h2 data-i18n="base.prepTitle">出击准备</h2>
+        <button id="saveResetButton" class="ghost-button small" type="button" data-i18n="base.resetSave">重置存档</button>
+      </div>
+      <div id="loadoutPrep" class="stack-list"></div>
+      <div class="tips-row">
+        <span id="tipMove" data-i18n="tips.move">WASD / 方向键移动</span>
+        <span id="tipSprint">按住 Shift 冲刺</span>
+        <span id="tipLook" data-i18n="tips.look">鼠标转向，右键瞄准</span>
+        <span id="tipFire" data-i18n="tips.fire">F 开火，R 换弹</span>
+        <span id="tipAction" data-i18n="tips.action">Q 治疗，E 搜索 / 撤离，M 地图，C 技能</span>
+      </div>
+    </section>
+
+    <section class="base-section">
+      <div class="section-head">
+        <h2 id="operatorTitle">兵种</h2>
+        <span id="operatorNote" class="section-note">仅能在局外选择，不同兵种拥有独特技能、特效和专属道具</span>
+      </div>
+      <div id="operatorPanel" class="stack-list"></div>
+    </section>
+
+    <section class="base-section">
+      <div class="section-head">
+        <h2 data-i18n="base.armoryTitle">军械库</h2>
+        <span class="section-note" data-i18n="base.armoryNote">查看武器、子弹等级、枪械零件和当前配置</span>
+      </div>
+      <div id="armoryPanel" class="stack-list"></div>
+    </section>
+
+    <section class="base-section">
+      <div class="section-head">
+        <h2 data-i18n="base.shopTitle">商店</h2>
+        <span class="section-note" data-i18n="base.shopNote">药品、枪械、子弹和配件都能在这里补齐</span>
+      </div>
+      <div id="shopList" class="stack-list"></div>
+    </section>
+
+    <section class="base-section grow">
+      <div class="section-head">
+        <h2 data-i18n="base.stashTitle">仓库与战利品</h2>
+        <div class="inline-actions">
+          <button id="sellAllButton" class="ghost-button small" type="button" data-i18n="base.sellAll">全部出售</button>
+        </div>
+      </div>
+      <div id="stashList" class="loot-scroll"></div>
+    </section>
+  </aside>
+
+  <div id="hud" class="hud hidden">
+    <div class="hud-left">
+      <div class="hud-strip">
+        <div class="hud-stat">
+          <span data-i18n="hud.health">生命</span>
+          <strong id="healthValue">100 / 100</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.weapon">武器</span>
+          <strong id="weaponValue">Ranger Rifle</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.armor">护甲</span>
+          <strong id="armorValue">0 / 0</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.ammo">弹药</span>
+          <strong id="ammoValue">30 / 90</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.medkits">医疗包</span>
+          <strong id="medkitValue">1</strong>
+        </div>
+      </div>
+
+      <div class="hud-strip wide">
+        <div class="hud-stat">
+          <span data-i18n="hud.bag">背包</span>
+          <strong id="bagValue">0 / 0</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.weight">重量</span>
+          <strong id="weightValue">0.0kg / 0.0kg</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.haul">预估价值</span>
+          <strong id="haulValue">¥0</strong>
+        </div>
+        <div class="hud-stat">
+          <span data-i18n="hud.time">剩余时间</span>
+          <strong id="timeValue">00:00</strong>
+        </div>
+      </div>
+
+      <div class="hud-strip tactical-strip">
+        <div class="hud-stat objective-panel">
+          <span id="objectiveLabel">目标</span>
+          <strong id="objectiveValue">搜索 0/2 | 清敌 0/2</strong>
+          <small id="objectiveDetail">巡逻 0 | 搜索 0 | 交火 0</small>
+        </div>
+        <div class="hud-stat compact-stat">
+          <span id="threatLabel">威胁</span>
+          <strong id="threatValue">低</strong>
+        </div>
+        <div class="hud-stat compact-stat">
+          <span id="abilityLabel">技能</span>
+          <strong id="abilityValue">就绪</strong>
+          <small id="abilityDetail">20s 持续 / 10s 冷却</small>
+          <div class="mini-progress" aria-hidden="true">
+            <span id="abilityMeterFill"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside id="raidSidePanel" class="raid-side-panel">
+      <section class="base-section overlay-section">
+        <div class="section-head">
+          <h2 data-i18n="raid.loadoutTitle">局内装备</h2>
+          <button class="ghost-button small collapse-toggle" type="button" data-collapse-target="raidLoadoutList" aria-expanded="true">收起</button>
+        </div>
+        <div id="raidLoadoutList" class="stack-list collapsible-body"></div>
+      </section>
+      <section class="base-section overlay-section">
+        <div class="section-head">
+          <h2 data-i18n="raid.ammoTitle">子弹等级</h2>
+          <button class="ghost-button small collapse-toggle" type="button" data-collapse-target="raidAmmoRail" aria-expanded="true">收起</button>
+        </div>
+        <div id="raidAmmoRail" class="stack-list collapsible-body"></div>
+      </section>
+      <section class="base-section overlay-section">
+        <div class="section-head">
+          <h2 data-i18n="raid.bagTitle">局内背包</h2>
+          <button class="ghost-button small collapse-toggle" type="button" data-collapse-target="raidBagList" aria-expanded="true">收起</button>
+        </div>
+        <div id="raidBagList" class="loot-scroll collapsible-body"></div>
+      </section>
+    </aside>
+
+    <div class="hud-right">
+      <section class="map-card">
+        <div class="map-head">
+          <strong data-i18n="raid.mapTitle">战术地图</strong>
+          <span id="extractList" data-i18n="raid.extractLoading">撤离点载入中</span>
+        </div>
+        <canvas id="minimapCanvas" width="280" height="280"></canvas>
+      </section>
+    </div>
+
+    <div id="crosshair" class="crosshair" aria-hidden="true">
+      <span></span>
+      <span></span>
+    </div>
+
+    <div class="hud-bottom">
+      <div id="raidStatus" class="status-chip" data-i18n="raid.statusDefault">鼠标转向，按 F 射击</div>
+      <div id="interactionPrompt" class="status-chip muted" data-i18n="raid.interactionDefault">靠近物资箱或撤离点后按住 E</div>
+      <div id="supportPrompt" class="status-chip muted secondary">落地保护 / 撤离提示</div>
+    </div>
+
+    <div id="touchControls" class="touch-controls">
+      <div class="move-pad" aria-label="Movement controls">
+        <button class="control-button up" type="button" data-control-key="ArrowUp">▲</button>
+        <button class="control-button left" type="button" data-control-key="ArrowLeft">◀</button>
+        <button class="control-button down" type="button" data-control-key="ArrowDown">▼</button>
+        <button class="control-button right" type="button" data-control-key="ArrowRight">▶</button>
+      </div>
+
+      <div class="action-pad" aria-label="Action controls">
+        <button class="control-button action" type="button" data-control-action="interact">E</button>
+        <button class="control-button action" type="button" data-control-action="fire">F</button>
+        <button id="aimActionButton" class="control-button action" type="button" data-control-action="aim">瞄准</button>
+        <button class="control-button action" type="button" data-control-action="reload">R</button>
+        <button class="control-button action" type="button" data-control-action="heal">Q</button>
+        <button id="skillActionButton" class="control-button action" type="button" data-control-action="skill">技能</button>
+        <button class="control-button action" type="button" data-control-action="map">M</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="lootPanel" class="overlay hidden">
+    <div class="overlay-shell">
+      <div class="overlay-head">
+        <div>
+          <p class="eyebrow" data-i18n="loot.eyebrow">搜索</p>
+          <h2 id="lootTitle">物资箱</h2>
+        </div>
+        <button id="closeLootButton" class="ghost-button" type="button" data-i18n="common.close">关闭</button>
+      </div>
+      <div id="lootMeta" class="overlay-meta"></div>
+      <div id="lootItems" class="loot-grid"></div>
+      <div class="overlay-actions">
+        <button id="takeAllButton" class="primary-button" type="button" data-i18n="loot.takeAll">全部拿走</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="mapOverlay" class="overlay hidden">
+    <div class="overlay-shell wide-shell">
+      <div class="overlay-head">
+        <div>
+          <p class="eyebrow" data-i18n="map.eyebrow">战术总览</p>
+          <h2 data-i18n="map.title">封锁区地图</h2>
+        </div>
+        <button id="closeMapButton" class="ghost-button" type="button" data-i18n="common.close">关闭</button>
+      </div>
+      <div class="map-overlay-layout">
+        <canvas id="mapCanvas" width="960" height="960"></canvas>
+        <div class="map-sidebar">
+          <section class="base-section overlay-section">
+            <div class="section-head">
+              <h2 data-i18n="map.currentLoadout">当前装备</h2>
+            </div>
+            <div id="mapLoadoutList" class="stack-list"></div>
+          </section>
+          <section class="base-section overlay-section">
+            <div class="section-head">
+              <h2 data-i18n="map.ammoGrades">子弹分级</h2>
+            </div>
+            <div id="mapAmmoList" class="stack-list"></div>
+          </section>
+          <section class="base-section overlay-section">
+            <div class="section-head">
+              <h2 data-i18n="map.currentBag">当前背包</h2>
+            </div>
+            <div id="bagList" class="loot-scroll"></div>
+            <div id="bagGrid" class="bag-grid"></div>
+          </section>
+          <section class="base-section overlay-section">
+            <div class="section-head">
+              <h2 data-i18n="map.extractionPoints">撤离点</h2>
+            </div>
+            <div id="mapExtractList" class="stack-list"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="resultOverlay" class="overlay hidden">
+    <div class="overlay-shell result-shell">
+      <div class="overlay-head">
+        <div>
+          <p class="eyebrow" data-i18n="result.eyebrow">战局报告</p>
+          <h2 id="resultTitle">撤离成功</h2>
+        </div>
+      </div>
+      <div id="resultSummary" class="result-grid"></div>
+      <div class="overlay-actions">
+        <button id="returnBaseButton" class="primary-button" type="button" data-i18n="result.returnBase">返回基地</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="notificationHost" class="notification-host" aria-live="polite"></div>
+
+  <script src="./vendor/babylon.js"></script>
+  <script src="./src/combat-rules.js?v=review16" defer></script>
+  <script src="./src/main.js?v=20260704l" defer></script>
+  <script src="./src/hall-patch.js?v=review9" defer></script>
+  <script src="./src/environment-patch.js?v=review18" defer></script>
+  <script src="./src/structure-interaction-patch.js?v=review22" defer></script>
+  <script src="./src/operator-utility-patch.js?v=review9" defer></script>
+  <script src="./src/boss-patch.js?v=review10" defer></script>
+  <script src="./src/dynamic-events-patch.js?v=review2" defer></script>
+  <script src="./src/expansion-patch.js?v=review23" defer></script>
+  <script src="./src/engineer-patch.js?v=review25" defer></script>
+  <script src="./src/ai-combat-patch.js?v=review26" defer></script>
+  <script src="./src/gameplay-cleanup-patch.js?v=review16" defer></script>
+  <script src="./src/performance-patch.js?v=review24" defer></script>
+  <script src="./src/death-replay-patch.js?v=review2" defer></script>
+  <script src="./src/content-expansion-patch.js?v=review1" defer></script>
+  <script src="./src/raid-companion-patch.js?v=review6" defer></script>
+  <script src="./src/raid-economy-patch.js?v=review1" defer></script>
+  <script src="./src/ai-jump-patch.js?v=review1" defer></script>
+  <script src="./src/performance-tuning-patch.js?v=review1" defer></script>
+  <script src="./src/fun-loop-patch.js?v=review1" defer></script>
+  <script src="./src/player-speed-patch.js?v=review3" defer></script>
+</body>
+</html>
