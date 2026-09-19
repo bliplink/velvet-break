@@ -55,6 +55,8 @@ const { chromium } = require('playwright');
         industrialLampHeads: scene.meshes.filter(mesh => String(mesh.name).startsWith('industrial-lamp-head-')).length,
         industrialLampShafts: scene.meshes.filter(mesh => String(mesh.name).startsWith('industrial-lamp-shaft-')).length,
         legacyLampEnabled: legacyLampEnabled.length,
+        realtimeStreetlights: scene.lights.filter(light => String(light.name).startsWith('industrial-streetlight-glow-')).length,
+        actorTankMeshes: scene.meshes.filter(mesh => String(mesh.name).startsWith('actor-tank-')).length,
         transparentStructures: transparentStructures.length,
         transparentNames: transparentStructures.slice(0, 20).map(mesh => mesh.name),
       };
@@ -78,6 +80,9 @@ const { chromium } = require('playwright');
       result.industrialLampHeads >= 6 &&
       result.industrialLampShafts >= 6 &&
       result.legacyLampEnabled === 0 &&
+      result.realtimeStreetlights <= 2 &&
+      result.actorTankMeshes === 0 &&
+      result.debug?.originalCharacterModels &&
       result.transparentStructures === 0 &&
       errors.length === 0
     );
