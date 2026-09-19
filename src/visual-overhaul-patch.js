@@ -110,6 +110,7 @@
     };
 
     const forceOpaqueBuildings = () => {
+      window.__sdrVisualOverhaulDebug.opaquePasses = (window.__sdrVisualOverhaulDebug.opaquePasses ?? 0) + 1;
       let count = 0;
       for (const mesh of scene.meshes) {
         if (!isStructuralMesh(mesh)) continue;
@@ -240,6 +241,7 @@
       streetlightOverhaul: true,
       legacyCanisterModel: true,
       opaqueStructuralMeshes: 0,
+      opaquePasses: 0,
       streetlightCount: 0,
       realtimeStreetlightCount: 0,
       originalCharacterModels: true,
