@@ -390,6 +390,20 @@
       window.__sdrVisualOverhaulDebug.streetlightCount = streetlightRoots.length;
     };
 
+    const animateBeforeMaterialGuard = typeof animateRaidEntities === 'function' ? animateRaidEntities : null;
+    if (animateBeforeMaterialGuard) {
+      animateRaidEntities = function animateWithSafeEmissiveMeshes(...args) {
+        const raid = typeof state !== 'undefined' ? state.raid : null;
+        for (const enemy of raid?.enemies ?? []) {
+          const visual = enemy.visual;
+          if (!visual) continue;
+          visual.emissiveMeshes = (visual.emissiveMeshes ?? [visual.body])
+            .filter((mesh) => mesh?.material && !mesh.isDisposed?.());
+        }
+        return animateBeforeMaterialGuard.apply(this, args);
+      };
+    }
+
     window.__sdrVisualOverhaulDebug = {
       version: '2026-09-19-human-v1',
       humanActorOverhaul: true,
