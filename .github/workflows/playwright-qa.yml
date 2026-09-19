@@ -5,6 +5,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/playwright-qa.yml"
+      - "index.html"
+      - "src/**"
+      - "scripts/**"
   workflow_dispatch:
 
 permissions:
