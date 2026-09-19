@@ -66,9 +66,15 @@ async function main() {
       phase: document.getElementById('deathReplayPhase')?.textContent,
       progress: document.getElementById('deathReplayProgress')?.style.width,
       hudDimmed: document.getElementById('hud')?.classList.contains('replay-dim'),
+      tracerShown: window.__sdrReplayDebug?.tracerShown,
+      freezeShown: window.__sdrReplayDebug?.freezeShown,
+      killerViewShown: window.__sdrReplayDebug?.killerViewShown,
+      cameraCollisionChecks: window.__sdrReplayDebug?.cameraCollisionChecks,
+      perspective: document.getElementById('deathReplayPerspective')?.textContent,
+      impactText: document.getElementById('deathReplayImpactText')?.textContent,
     }));
 
-    await page.screenshot({ path: 'screenshots/death-replay-optimized.png' });
+    await page.screenshot({ path: 'screenshots/death-replay-killcam-v2.png' });
 
     if (impact.active) await page.keyboard.press('Escape');
 
@@ -87,10 +93,16 @@ async function main() {
       !active.visible ||
       !active.title.includes('第三人称') ||
       active.result ||
-      active.version !== '2026-09-19-optimized' ||
+      active.version !== '2026-09-19-killcam-v2' ||
       active.duration < 3.5 ||
       !impact.impactShown ||
-      !impact.phase ||
+      !impact.tracerShown ||
+      !impact.freezeShown ||
+      !impact.killerViewShown ||
+      !(impact.cameraCollisionChecks > 0) ||
+      !impact.phase?.includes('致命一击') ||
+      !impact.perspective ||
+      !impact.impactText ||
       !impact.progress ||
       skipped.mode !== 'result' ||
       skipped.replay ||
