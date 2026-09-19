@@ -58,8 +58,6 @@
 
         // Never cull the whole enemy. Keep the core silhouette visible at every
         // gameplay distance and only trim secondary detail meshes far away.
-        if (!visual.root.isEnabled()) visual.root.setEnabled(true);
-
         const dx = enemy.x - raid.player.x;
         const dz = enemy.z - raid.player.z;
         const distanceSq = dx * dx + dz * dz;
