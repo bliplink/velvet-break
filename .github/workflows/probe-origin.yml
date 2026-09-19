@@ -1,0 +1,18 @@
+name: Probe original Iron Extraction source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/probe-origin.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe original project remote
+        run: |
+          git ls-remote "https://git.chatgpt-team.site/0a7abdb8-73fd-453d-96a9-20ec095ed301/appgprj_6a9183ebee8c8191b52cf3f36a7a62ce.git" | head
