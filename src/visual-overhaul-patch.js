@@ -205,14 +205,17 @@
           7.02,
           z + Math.cos(towardCenter) * 1.72,
         );
-        const light = new BABYLON.PointLight(`industrial-streetlight-glow-${index}`, worldHead, scene);
-        light.diffuse = BABYLON.Color3.FromHexString('#ffd58d');
-        light.specular = BABYLON.Color3.FromHexString('#f6bd63');
-        light.intensity = 0.28;
-        light.range = 17;
+        if (index % 3 === 0) {
+          const light = new BABYLON.PointLight(`industrial-streetlight-glow-${index}`, worldHead, scene);
+          light.diffuse = BABYLON.Color3.FromHexString('#ffd58d');
+          light.specular = BABYLON.Color3.FromHexString('#f6bd63');
+          light.intensity = 0.22;
+          light.range = 14;
+        }
       });
 
       window.__sdrVisualOverhaulDebug.streetlightCount = streetlightRoots.length;
+      window.__sdrVisualOverhaulDebug.realtimeStreetlightCount = scene.lights.filter(light => String(light.name).startsWith('industrial-streetlight-glow-')).length;
     };
 
     const animateBeforeMaterialGuard = typeof animateRaidEntities === 'function' ? animateRaidEntities : null;
@@ -238,6 +241,8 @@
       legacyCanisterModel: true,
       opaqueStructuralMeshes: 0,
       streetlightCount: 0,
+      realtimeStreetlightCount: 0,
+      originalCharacterModels: true,
     };
 
     const tick = () => {
