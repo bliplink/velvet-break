@@ -46,6 +46,9 @@ jobs:
       - name: Verify optimized elimination replay
         run: node scripts/death-replay-smoke.cjs
 
+      - name: Verify visual overhaul
+        run: node scripts/visual-overhaul-smoke.cjs
+
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
 
