@@ -120,8 +120,10 @@ const { chromium } = require('playwright');
 
     const visuals = await page.evaluate(() => ({
       rollback: window.__sdrVisualOverhaulDebug ?? null,
+      fairVision: window.__sdrFairVisionCanisterDebug ?? null,
       humanV2Parts: scene.meshes.filter(mesh => String(mesh.name).startsWith('human-v2-')).length,
       humanDetailParts: state.raid.enemies[0]?.visual?.humanDetailMeshes?.length ?? 0,
+      actorTankMeshes: scene.meshes.filter(mesh => String(mesh.name).startsWith('actor-tank-')).length,
       baseBodyVisible: state.raid.enemies[0]?.visual?.body?.isVisible ?? false,
     }));
 
@@ -141,8 +143,10 @@ const { chromium } = require('playwright');
       lobby.performance?.maxScalingLevel === 1.65 &&
       lobby.performance?.tieredAI &&
       lobby.performance?.tieredAnimation &&
-      lobby.performanceV3?.version === '2026-09-19-fps-v3' &&
+      lobby.performanceV3?.version === '2026-09-19-fps-v4' &&
       lobby.performanceV3?.baseEffectLimit === 72 &&
+      lobby.performanceV3?.frozenStaticMeshes > 100 &&
+      lobby.performanceV3?.frozenStaticMaterials > 5 &&
       blitzRaid.modeId === 'blitz' &&
       blitzRaid.isBlitzRaid &&
       blitzRaid.timeLeft <= 300 &&
@@ -172,7 +176,9 @@ const { chromium } = require('playwright');
       effects.sceneFlags.up &&
       visuals.humanV2Parts === 0 &&
       visuals.humanDetailParts === 0 &&
+      visuals.actorTankMeshes === 0 &&
       visuals.baseBodyVisible &&
+      visuals.fairVision?.originalCharacterModels &&
       visuals.rollback?.legacyCanisterModel &&
       errors.length === 0
     );
