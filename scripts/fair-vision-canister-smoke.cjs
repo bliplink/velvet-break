@@ -66,6 +66,7 @@ process.on('exit', () => server?.kill());
       enemyCount: raid.enemies.length,
       tankMeshCount: tankMeshes.length,
       companionTankMeshCount: companionTankMeshes.length,
+      originalCharacterModels: window.__sdrFairVisionCanisterDebug?.originalCharacterModels ?? false,
       revealMeshCount: revealMeshes.length,
       enabledRevealMeshes,
       visibleOverlays,
@@ -81,10 +82,12 @@ process.on('exit', () => server?.kill());
   const ok = Boolean(
     result.debug?.wallRevealDisabled &&
     result.debug?.opaqueBuildings &&
-    result.debug?.actorTankRemodel &&
+    result.debug?.actorTankRemodel === false &&
+    result.debug?.playerUtilityTankRemodel === false &&
+    result.originalCharacterModels &&
     result.enemyCount > 0 &&
-    result.tankMeshCount > 0 &&
-    result.companionTankMeshCount > 0 &&
+    result.tankMeshCount === 0 &&
+    result.companionTankMeshCount === 0 &&
     result.revealMeshCount > 0 &&
     result.enabledRevealMeshes === 0 &&
     result.transparentStructureCount === 0 &&
