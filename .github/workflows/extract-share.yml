@@ -21,12 +21,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install share extractor
-        run: python -m pip install "searchts[mcp]"
+      - name: Install share extractor and browser
+        run: |
+          python -m pip install "searchts[mcp]" patchright
+          patchright install --with-deps chromium
 
       - name: Extract shared ChatGPT/Codex snapshot
+        env:
+          SEARCHTS_NO_JINA: "1"
         run: |
-          searchts read "https://chatgpt.com/s/cx_6aadded667ac8191851599c9fc8e5a05" > shared-chat.md
+          searchts read "https://chatgpt.com/s/cx_6aadded667ac8191851599c9fc8e5a05" --backend browser > shared-chat.md
           test -s shared-chat.md
 
       - name: Commit extracted snapshot
