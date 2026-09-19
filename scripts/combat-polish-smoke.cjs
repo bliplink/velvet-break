@@ -76,6 +76,29 @@ const { chromium } = require('playwright');
       };
     });
 
+    const rareLoot = await page.evaluate(() => {
+      const container = state.raid.containers.find(c => !c.id.startsWith('drop-'));
+      container.opened = false;
+      container.items = [{
+        uid: 'qa-legendary',
+        id: 'qa-legendary',
+        name: 'QA Legendary Core',
+        category: 'Tech',
+        rarity: 'legendary',
+        value: 25000,
+        weight: 0.5,
+      }];
+      const before = window.__sdrCombatPolishDebug.rareFindCount;
+      openLootPanel(container);
+      return {
+        delta: window.__sdrCombatPolishDebug.rareFindCount - before,
+        last: window.__sdrCombatPolishDebug.lastRareFind,
+        bannerActive: document.getElementById('combatLootBanner')?.classList.contains('is-active') ?? false,
+        bannerText: document.getElementById('combatLootBanner')?.textContent ?? '',
+        version: window.__sdrCombatPolishDebug.version,
+      };
+    });
+
     const poi = await page.evaluate(() => {
       const def = obstacleDefs.find(entry => entry.id === 'center-depot');
       const resolved = window.__sdrRaidDesignConfig?.resolvePoi(def.x, def.z);
@@ -96,7 +119,7 @@ const { chromium } = require('playwright');
       debugPoi: window.__sdrCombatPolishDebug?.currentPoi ?? null,
     }));
 
-    console.log(JSON.stringify({ shot, hit, kill, poi, poiHud, errors }, null, 2));
+    console.log(JSON.stringify({ shot, hit, kill, rareLoot, poi, poiHud, errors }, null, 2));
 
     const ok = Boolean(
       shot.ammoAfter === shot.ammoBefore - 1 &&
@@ -114,6 +137,11 @@ const { chromium } = require('playwright');
       kill.lastKill?.distance >= 20 &&
       kill.lastKill?.weapon &&
       kill.bannerActive &&
+      rareLoot.delta === 1 &&
+      rareLoot.last?.rarity === 'legendary' &&
+      rareLoot.bannerActive &&
+      /QA Legendary Core/.test(rareLoot.bannerText) &&
+      rareLoot.version === '2026-09-19-combat-polish-v2' &&
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
