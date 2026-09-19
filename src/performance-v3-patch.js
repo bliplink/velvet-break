@@ -27,7 +27,7 @@
     scene.skipPointerUpPicking = true;
 
     const debug = {
-      version: '2026-09-19-fps-v3',
+      version: '2026-09-19-fps-v4',
       baseEffectLimit: 72,
       effectLimit: 72,
       trimmedEffects: 0,
@@ -36,8 +36,42 @@
       simplifiedImpacts: 0,
       pointerPickingDisabled: true,
       currentFps: 0,
+      frozenStaticMeshes: 0,
+      frozenStaticMaterials: 0,
     };
     window.__sdrPerformanceV3Debug = debug;
+
+    const freezeStaticWorld = () => {
+      const frozenMaterials = new Set();
+      let frozenMeshes = 0;
+      const staticName = /^(?:obstacle-|boundary-|roof-|window-|tower-|fence-|industrial-lamp-(?:base|shaft|collar|arm|brace|head|lens)-)/i;
+
+      for (const mesh of scene.meshes ?? []) {
+        if (!mesh || mesh.isDisposed?.()) continue;
+        const name = String(mesh.name ?? '');
+        const eligible = mesh.metadata?.raycastTarget === 'obstacle' || staticName.test(name);
+        if (!eligible) continue;
+
+        try {
+          mesh.freezeWorldMatrix?.();
+          frozenMeshes += 1;
+        } catch {}
+
+        const mat = mesh.material;
+        if (mat && !frozenMaterials.has(mat)) {
+          try {
+            mat.freeze?.();
+            frozenMaterials.add(mat);
+          } catch {}
+        }
+      }
+
+      debug.frozenStaticMeshes = frozenMeshes;
+      debug.frozenStaticMaterials = frozenMaterials.size;
+    };
+
+    window.setTimeout(freezeStaticWorld, 700);
+    window.setTimeout(freezeStaticWorld, 2200);
 
     let lastBudgetSample = 0;
     const updateBudget = () => {
