@@ -13,65 +13,128 @@
       window.setTimeout(boot, 60);
       return;
     }
+
     window.__sdrPerformanceTuningWaiting = false;
     if (window.__sdrPerformanceTuningApplied) return;
     window.__sdrPerformanceTuningApplied = true;
 
-    // Keep the native canvas resolution. Performance comes from distance
-    // culling and AI budgeting, so the scene stays sharp on desktop screens.
     engine.adaptToDeviceRatio = false;
     engine.setHardwareScalingLevel(1);
     engine.resize();
 
+    let scalingLevel = 1;
+    let lowFpsSamples = 0;
+    let highFpsSamples = 0;
+    let lastScaleCheck = performance.now();
+
+    const tuneResolution = () => {
+      const now = performance.now();
+      if (now - lastScaleCheck < 1800) return;
+      lastScaleCheck = now;
+
+      const fps = engine.getFps?.() ?? 60;
+      if (fps < 46) {
+        lowFpsSamples += 1;
+        highFpsSamples = 0;
+      } else if (fps > 57) {
+        highFpsSamples += 1;
+        lowFpsSamples = 0;
+      } else {
+        lowFpsSamples = Math.max(0, lowFpsSamples - 1);
+        highFpsSamples = Math.max(0, highFpsSamples - 1);
+      }
+
+      if (lowFpsSamples >= 2 && scalingLevel < 1.35) {
+        scalingLevel = Math.min(1.35, Math.round((scalingLevel + 0.1) * 100) / 100);
+        engine.setHardwareScalingLevel(scalingLevel);
+        engine.resize();
+        lowFpsSamples = 0;
+      } else if (highFpsSamples >= 3 && scalingLevel > 1) {
+        scalingLevel = Math.max(1, Math.round((scalingLevel - 0.1) * 100) / 100);
+        engine.setHardwareScalingLevel(scalingLevel);
+        engine.resize();
+        highFpsSamples = 0;
+      }
+
+      window.__sdrPerformanceDebug.scalingLevel = scalingLevel;
+      window.__sdrPerformanceDebug.fps = Math.round(fps * 10) / 10;
+    };
+
     const originalUpdateEnemies = updateEnemies;
-    updateEnemies = function updateEnemiesWithDistanceBudget(dt) {
+    updateEnemies = function updateEnemiesWithTieredBudget(dt) {
       const raid = state.raid;
       const player = raid?.player;
-      if (!raid || !player || raid.enemies.length <= 24) return originalUpdateEnemies(dt);
+      if (!raid || !player || raid.enemies.length <= 18) {
+        tuneResolution();
+        return originalUpdateEnemies(dt);
+      }
+
       raid.aiBudgetFrame = (raid.aiBudgetFrame ?? 0) + 1;
       const allEnemies = raid.enemies;
       const activeEnemies = allEnemies.filter((enemy, index) => {
         if (enemy.isNamelessBoss || enemy.mobilityAction || enemy.dead) return true;
+        if ((enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0 || (enemy.companionAlertTimer ?? 0) > 0) return true;
+
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 72 || (enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0) return true;
-        return (raid.aiBudgetFrame + index) % 8 === 0;
+        if (distance <= 68) return true;
+        if (distance <= 112) return (raid.aiBudgetFrame + index) % 2 === 0;
+        return (raid.aiBudgetFrame + index) % 4 === 0;
       });
+
       raid.enemies = activeEnemies;
       try {
         return originalUpdateEnemies(dt);
       } finally {
         raid.enemies = allEnemies;
+        tuneResolution();
       }
     };
 
     const originalAnimateRaidEntities = animateRaidEntities;
-    animateRaidEntities = function animateRaidEntitiesWithDistanceBudget(dt, ...args) {
+    animateRaidEntities = function animateRaidEntitiesWithTieredBudget(dt, ...args) {
       const raid = state.raid;
       const player = raid?.player;
-      if (!raid || !player || raid.enemies.length <= 24) return originalAnimateRaidEntities(dt, ...args);
+      if (!raid || !player || raid.enemies.length <= 18) return originalAnimateRaidEntities(dt, ...args);
+
       raid.renderBudgetFrame = (raid.renderBudgetFrame ?? 0) + 1;
       const allEnemies = raid.enemies;
-      const visibleEnemies = allEnemies.filter((enemy, index) => {
+      const animatedEnemies = allEnemies.filter((enemy, index) => {
         if (enemy.isNamelessBoss || enemy.mobilityAction || enemy.dead) return true;
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 96) return true;
-        return (raid.renderBudgetFrame + index) % 8 === 0;
+        if (distance <= 78) return true;
+        if (distance <= 128) return (raid.renderBudgetFrame + index) % 2 === 0;
+        return (raid.renderBudgetFrame + index) % 3 === 0;
       });
-      raid.enemies = visibleEnemies;
+
+      raid.enemies = animatedEnemies;
       try {
         return originalAnimateRaidEntities(dt, ...args);
       } finally {
         raid.enemies = allEnemies;
 
-        // The previous animation pass only sees the active subset. Explicitly
-        // disable every omitted root; otherwise distant models remain enabled
-        // forever and the distance budget increases the render cost.
-        const activeRoots = new Set(visibleEnemies.map((enemy) => enemy.visual?.root).filter(Boolean));
+        // Omitted enemies remain visible. Only sync cheap root transforms on
+        // budgeted frames; do not disable or pop the whole model.
+        const animatedSet = new Set(animatedEnemies);
         for (const enemy of allEnemies) {
+          if (animatedSet.has(enemy) || enemy.despawned) continue;
           const root = enemy.visual?.root;
-          if (root && !activeRoots.has(root)) root.setEnabled(false);
+          if (!root) continue;
+          root.setEnabled(true);
+          root.position.x = enemy.x;
+          root.position.z = enemy.z;
+          root.rotation.y = enemy.heading ?? root.rotation.y;
         }
       }
+    };
+
+    window.__sdrPerformanceDebug = {
+      version: '2026-09-19-tiered-v2',
+      noHardEnemyCull: true,
+      tieredAI: true,
+      tieredAnimation: true,
+      adaptiveResolution: true,
+      scalingLevel,
+      fps: 0,
     };
   };
 
