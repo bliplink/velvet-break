@@ -49,7 +49,11 @@
       for (const mesh of scene.meshes ?? []) {
         if (!mesh || mesh.isDisposed?.()) continue;
         const name = String(mesh.name ?? '');
-        const eligible = mesh.metadata?.raycastTarget === 'obstacle' || staticName.test(name);
+        const movableName = /(?:door|gate|shutter|container|extract|switch|enemy|companion|player|weapon|utility|replay)/i.test(name);
+        const eligible = !movableName && (
+          staticName.test(name) ||
+          (mesh.metadata?.raycastTarget === 'obstacle' && /^(?:obstacle-|boundary-|roof-|window-|tower-|fence-)/i.test(name))
+        );
         if (!eligible) continue;
 
         try {
