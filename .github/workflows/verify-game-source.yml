@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - ".bootstrap/static-sha256.txt"
       - ".github/workflows/verify-game-source.yml"
 
 permissions:
@@ -13,23 +14,19 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - name: Compare core deployed files with uploaded local source
+      - name: Checkout manifest
+        uses: actions/checkout@v4
+
+      - name: Compare deployed game files with uploaded local source
         shell: bash
         run: |
           set -euo pipefail
           base="https://sou-da-che-fps-20260913.k-de-shuai.chatgpt.site"
-          curl -fLsS "$base/index.html" -o /tmp/index.html
-          curl -fLsS "$base/src/main.js" -o /tmp/main.js
-          curl -fLsS "$base/styles/main.css" -o /tmp/main.css
-          curl -fLsS "$base/assets/raid-combat.wav" -o /tmp/raid-combat.wav
-          curl -fLsS "$base/vendor/babylon.js" -o /tmp/babylon.js
-          echo "index  $(sha256sum /tmp/index.html | cut -d' ' -f1)"
-          echo "main   $(sha256sum /tmp/main.js | cut -d' ' -f1)"
-          echo "css    $(sha256sum /tmp/main.css | cut -d' ' -f1)"
-          echo "music  $(sha256sum /tmp/raid-combat.wav | cut -d' ' -f1)"
-          echo "vendor $(sha256sum /tmp/babylon.js | cut -d' ' -f1)"
-          test "$(sha256sum /tmp/index.html | cut -d' ' -f1)" = "283bb231c8342b72d84d8a7f2c07c82e1568c6d18692ea900baaa5bdf72042a6"
-          test "$(sha256sum /tmp/main.js | cut -d' ' -f1)" = "19929d3134bd8dfd4361b6853f0f6336ca344145ea667013c0fb5534db015079"
-          test "$(sha256sum /tmp/main.css | cut -d' ' -f1)" = "52d8a7449efdf1433b34465223aa19235d2a33dbf46a4c623b8885939926831c"
-          test "$(sha256sum /tmp/raid-combat.wav | cut -d' ' -f1)" = "c4d5b08d840aa80c695b8be1779e99b449c903ecc3d5f9feb72221a9c56ad8bb"
-          test "$(sha256sum /tmp/babylon.js | cut -d' ' -f1)" = "1c8f2c518a94db5aef738150ddd8b8028c581052f050e131e9ef122bcb181298"
+          rm -rf /tmp/site
+          mkdir -p /tmp/site
+          while read -r sha path; do
+            mkdir -p "/tmp/site/$(dirname "$path")"
+            curl -fLsS "$base/$path" -o "/tmp/site/$path"
+          done < .bootstrap/static-sha256.txt
+          cd /tmp/site
+          sha256sum -c "$GITHUB_WORKSPACE/.bootstrap/static-sha256.txt"
