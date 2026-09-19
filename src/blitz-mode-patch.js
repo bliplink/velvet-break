@@ -165,6 +165,10 @@
       };
       return result;
     };
+
+    if (state.mode === 'base' && typeof renderBasePanel === 'function') {
+      renderBasePanel();
+    }
   };
 
   boot();
