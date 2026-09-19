@@ -20,7 +20,7 @@
     window.__sdrCombatPolishApplied = true;
 
     const debug = {
-      version: '2026-09-19-combat-polish-v2',
+      version: '2026-09-19-combat-polish-v3',
       shotCount: 0,
       hitCount: 0,
       killCount: 0,
@@ -54,6 +54,8 @@
       @keyframes combat-kill{0%{opacity:0;transform:translate(-50%,-18px)}12%{opacity:1;transform:translate(-50%,0)}76%{opacity:1}100%{opacity:0;transform:translate(-50%,8px)}}
       #combatPoiLabel{position:absolute;left:50%;top:68px;transform:translateX(-50%);padding:5px 11px;border-radius:3px;background:rgba(4,9,12,.48);backdrop-filter:blur(6px);color:rgba(224,238,238,.78);font-size:.68rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;opacity:0;transition:opacity .18s ease}
       #combatPoiLabel.is-visible{opacity:1}
+      #combatExtractLabel{position:absolute;right:24px;bottom:78px;padding:6px 10px;border-right:3px solid rgba(113,214,199,.82);background:linear-gradient(270deg,rgba(5,12,14,.78),rgba(5,12,14,.16));backdrop-filter:blur(7px);color:#dff8f3;font-size:.66rem;font-weight:800;letter-spacing:.08em;opacity:0;transition:opacity .18s ease}
+      #combatExtractLabel.is-visible{opacity:1}
       #combatShotBloom{position:absolute;left:50%;top:50%;width:16px;height:16px;border:1px solid rgba(220,242,242,.32);border-radius:50%;transform:translate(-50%,-50%);opacity:0}
       #combatShotBloom.is-active{animation:combat-bloom .13s ease-out}
       @keyframes combat-bloom{0%{opacity:.8;transform:translate(-50%,-50%) scale(.65)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
@@ -72,6 +74,7 @@
       <div id="combatDamageNumber"></div>
       <div id="combatKillBanner"><strong></strong><span></span></div>
       <div id="combatPoiLabel"></div>
+      <div id="combatExtractLabel"></div>
       <div id="combatShotBloom"></div>
       <div id="combatLootBanner"><strong></strong><span></span></div>
     `;
@@ -83,6 +86,7 @@
     const killTitle = killBanner.querySelector('strong');
     const killDetail = killBanner.querySelector('span');
     const poiLabel = hud.querySelector('#combatPoiLabel');
+    const extractLabel = hud.querySelector('#combatExtractLabel');
     const shotBloom = hud.querySelector('#combatShotBloom');
     const lootBanner = hud.querySelector('#combatLootBanner');
     const lootTitle = lootBanner.querySelector('strong');
@@ -301,10 +305,34 @@
         return;
       }
       if (poi.id !== lastPoiId) {
-        poiLabel.textContent = L(poi.zh, poi.en);
+        const riskLabel = poi.risk === 'high' ? L('高风险', 'HIGH RISK') : L('中风险', 'MEDIUM RISK');
+        poiLabel.textContent = `${L(poi.zh, poi.en)} · ${riskLabel}`;
         lastPoiId = poi.id;
       }
       poiLabel.classList.add('is-visible');
+
+      const zones = (state.raid?.extractions ?? []).filter(zone => zone.active !== false);
+      let nearestZone = null;
+      let nearestDistance = Infinity;
+      for (const zone of zones) {
+        const distance = Math.hypot(player.x - zone.x, player.z - zone.z);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestZone = zone;
+        }
+      }
+      if (nearestZone && nearestDistance <= 28) {
+        const typeLabel = nearestZone.kind === 'switch'
+          ? L('拉闸撤离', 'LEVER EXIT')
+          : nearestZone.kind === 'task'
+            ? L('任务撤离', 'TASK EXIT')
+            : L('普通撤离', 'STANDARD EXIT');
+        const zoneName = L(nearestZone.nameZh ?? nearestZone.name ?? nearestZone.id, nearestZone.nameEn ?? nearestZone.name ?? nearestZone.id);
+        extractLabel.textContent = `${zoneName} · ${typeLabel} · ${Math.round(nearestDistance)}m`;
+        extractLabel.classList.add('is-visible');
+      } else {
+        extractLabel.classList.remove('is-visible');
+      }
     }, 220);
   };
 
