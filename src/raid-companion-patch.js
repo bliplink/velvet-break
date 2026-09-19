@@ -29,8 +29,8 @@
     window.__sdrRaidCompanionApplied = true;
 
     const RAID_ID = 'raid';
-    const REVIVE_TIME = 10;
-    const RESCUE_RANGE = 2.5;
+    const REVIVE_TIME = 6;
+    const RESCUE_RANGE = 3.25;
     const DOWNED_TIME = 20;
     const rules = window.SDRCombat;
     const isInteractHeld = () => Boolean(
@@ -237,7 +237,7 @@
         companion.health = 1;
         companion.downed = true;
         companion.reviveProgress = 0;
-        companion.downedEliminationTimer = companion.reviveUsed ? 1.15 : 0;
+        companion.downedEliminationTimer = 0;
         if (typeof notify === 'function') notify(L('克隆已倒地，靠近后按住 E 救援。', 'Clone is down. Hold E nearby to revive.'), 'danger');
       }
     };
@@ -442,21 +442,8 @@
       }
 
       if (companion.downed) {
-        if (companion.reviveUsed) {
-          companion.downedEliminationTimer = Math.max(0, (companion.downedEliminationTimer ?? 1.15) - dt);
-          if (companion.downedEliminationTimer <= 0) {
-            companion.dead = true;
-            companion.despawned = true;
-            companion.health = 0;
-            companion.visual?.root?.setEnabled(false);
-            if (typeof notify === 'function') notify(L('克隆已被淘汰。', 'Clone was eliminated.'), 'danger');
-            return;
-          }
-        }
         const rescueDistance = distance2D(companion.x, companion.z, player.x, player.z);
-        if (companion.reviveUsed) {
-          raid.interactionText = L('克隆已无法再次救援。', 'Clone cannot be revived again.');
-        } else if (rescueDistance <= RESCUE_RANGE) {
+        if (rescueDistance <= RESCUE_RANGE) {
           if (isInteractHeld()) {
             companion.reviveProgress = (companion.reviveProgress ?? 0) + dt;
             raid.interactionText = L(
@@ -466,17 +453,19 @@
             if (companion.reviveProgress >= REVIVE_TIME) {
               companion.downed = false;
               companion.reviveUsed = true;
-              companion.health = Math.max(1, Math.round(companion.maxHealth * 0.4));
+              companion.reviveCount = (companion.reviveCount ?? 0) + 1;
+              companion.health = Math.max(1, Math.round(companion.maxHealth * 0.45));
               companion.reviveProgress = 0;
+              companion.downedEliminationTimer = 0;
               if (typeof notify === 'function') notify(L('你已将克隆救起。', 'You revived Clone.'), 'success');
             }
           } else {
-            companion.reviveProgress = 0;
-            raid.interactionText = L('克隆在 2.5 米救援范围内，按住 E 开始救援。', 'Clone is within the 2.5 m rescue range. Hold E to revive.');
+            companion.reviveProgress = Math.max(0, (companion.reviveProgress ?? 0) - dt * 0.35);
+            raid.interactionText = L('克隆在 3.25 米救援范围内，按住 E 开始救援。', 'Clone is within the 3.25 m rescue range. Hold E to revive.');
           }
         } else {
-          companion.reviveProgress = 0;
-          raid.interactionText = L(`克隆倒地，需在 2.5 米内救援（当前 ${rescueDistance.toFixed(1)} 米）。`, `Clone is down. Move within 2.5 m to revive (currently ${rescueDistance.toFixed(1)} m).`);
+          companion.reviveProgress = Math.max(0, (companion.reviveProgress ?? 0) - dt * 0.6);
+          raid.interactionText = L(`克隆倒地，需在 3.25 米内救援（当前 ${rescueDistance.toFixed(1)} 米）。`, `Clone is down. Move within 3.25 m to revive (currently ${rescueDistance.toFixed(1)} m).`);
         }
         updateCompanionVisual(companion, dt);
         return;
