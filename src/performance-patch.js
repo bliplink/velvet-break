@@ -21,7 +21,7 @@
     engine.resize();
     window.__sdrEngine = engine;
     window.__sdrScene = scene;
-    if (typeof camera !== 'undefined') camera.maxZ = Math.min(camera.maxZ, 185);
+    if (typeof camera !== 'undefined') { camera.minZ = Math.max(0.06, camera.minZ ?? 0.06); camera.maxZ = Math.max(camera.maxZ ?? 0, 260); }
     for (const layer of scene.effectLayers ?? []) {
       if (layer instanceof BABYLON.GlowLayer) layer.isEnabled = false;
     }
@@ -47,22 +47,41 @@
     };
 
     const animateBeforeLod = animateRaidEntities;
-    animateRaidEntities = function animateWithEnemyLod(...args) {
+    animateRaidEntities = function animateWithEnemyDetailLod(...args) {
       const result = animateBeforeLod.apply(this, args);
       const raid = state.raid;
       if (!raid?.player) return result;
+
       for (const enemy of raid.enemies) {
         const visual = enemy.visual;
         if (!visual?.root || enemy.despawned) continue;
-        const visible = !enemy.dead || enemy.corpseTimer > 0;
+
+        // Never cull the whole enemy. Keep the core silhouette visible at every
+        // gameplay distance and only trim secondary detail meshes far away.
+        if (!visual.root.isEnabled()) visual.root.setEnabled(true);
+
         const dx = enemy.x - raid.player.x;
         const dz = enemy.z - raid.player.z;
-        const distant = visible && dx * dx + dz * dz > 95 * 95;
-        if (visual.lodHidden === distant) continue;
-        visual.lodHidden = distant;
-        for (const mesh of visual.root.getChildMeshes()) {
-          if (mesh !== visual.hitbox) mesh.setEnabled(!distant);
+        const distanceSq = dx * dx + dz * dz;
+        const farDetail = distanceSq > 105 * 105;
+        const veryFarDetail = distanceSq > 145 * 145;
+
+        if (visual.__detailLodFar !== farDetail) {
+          visual.__detailLodFar = farDetail;
+          for (const mesh of visual.humanDetailMeshes ?? []) {
+            if (mesh && mesh !== visual.hitbox) mesh.setEnabled(!farDetail);
+          }
+          for (const tankRoot of visual.tankMeshes ?? []) {
+            tankRoot?.setEnabled?.(!veryFarDetail);
+          }
         }
+
+        if (visual.classLabel) {
+          visual.classLabel.setEnabled(!farDetail && !enemy.dead);
+        }
+
+        // Keep hitboxes active for gameplay even when cosmetic detail is reduced.
+        visual.hitbox?.setEnabled?.(!enemy.dead && !enemy.despawned);
       }
       return result;
     };
