@@ -96,8 +96,11 @@ const { chromium } = require('playwright');
       const transparentStructures = scene.meshes.filter(mesh => {
         const mat = mesh?.material;
         if (!mat) return false;
-        const structural = mesh.metadata?.raycastTarget === 'obstacle' ||
-          /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning)/i.test(mesh.name ?? '');
+        const name = String(mesh.name ?? '');
+        const structural = !/^(?:extract|container|switch)-/i.test(name) && (
+          mesh.metadata?.raycastTarget === 'obstacle' ||
+          /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning)/i.test(name)
+        );
         return structural && typeof mat.alpha === 'number' && mat.alpha < 0.999;
       });
       return {
