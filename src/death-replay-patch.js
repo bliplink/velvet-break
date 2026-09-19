@@ -416,9 +416,9 @@
     const playerForward = new BABYLON.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw));
     const playerRight = new BABYLON.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
     const playerCamera = new BABYLON.Vector3(
-      player.x - playerForward.x * 5.3 + playerRight.x * 1.45,
+      player.x - playerForward.x * 4.35 + playerRight.x * 1.18,
       player.y + 3.0,
-      player.z - playerForward.z * 5.3 + playerRight.z * 1.45,
+      player.z - playerForward.z * 4.35 + playerRight.z * 1.18,
     );
 
     const playerChest = new BABYLON.Vector3(player.x, player.y + 1.22, player.z);
@@ -440,19 +440,19 @@
       const attackerHead = new BABYLON.Vector3(attackerFrame.x, attackerFrame.y + 1.76, attackerFrame.z);
 
       const shoulderCamera = attackerHead
-        .subtract(attackerForward.scale(1.45))
-        .add(attackerRight.scale(0.58))
+        .subtract(attackerForward.scale(1.02))
+        .add(attackerRight.scale(0.44))
         .add(new BABYLON.Vector3(0, 0.12, 0));
       const eyeCamera = attackerHead
-        .subtract(attackerForward.scale(0.42))
-        .add(attackerRight.scale(0.18));
+        .subtract(attackerForward.scale(0.26))
+        .add(attackerRight.scale(0.11));
 
       const shoulderBlend = smoothstep((replayProgress - 0.48) / 0.22);
       const eyeBlend = smoothstep((replayProgress - 0.72) / 0.12);
       desiredCamera = BABYLON.Vector3.Lerp(playerCamera, shoulderCamera, shoulderBlend);
       desiredCamera = BABYLON.Vector3.Lerp(desiredCamera, eyeCamera, eyeBlend * 0.78);
       cameraTarget = BABYLON.Vector3.Lerp(playerChest, playerChest.add(new BABYLON.Vector3(0, -0.16, 0)), eyeBlend);
-      targetFov = interpolate(0.88, 0.70, Math.max(shoulderBlend * 0.65, eyeBlend));
+      targetFov = interpolate(0.84, 0.60, Math.max(shoulderBlend * 0.72, eyeBlend));
 
       if (shoulderBlend > 0.25) {
         replay.killerViewShown = true;
@@ -603,7 +603,7 @@
   };
 
   window.__sdrReplayDebug = {
-    version: '2026-09-19-killcam-v2',
+    version: '2026-09-19-killcam-v3',
     get active() { return Boolean(replay); },
     get frames() { return history.length; },
     get elapsed() { return replay?.elapsed ?? 0; },
