@@ -17,7 +17,7 @@
 
     const createNativeTrack = (file, volume, loop = true) => {
       const track = document.createElement('audio');
-      track.src = `./assets/${file}?v=20260919remaster`;
+      track.src = `./assets/${file}?v=${file === 'raid-combat.wav' ? '20260912chamber' : '20260909a'}`;
       track.loop = loop;
       track.preload = 'auto';
       track.volume = volume;
