@@ -33,10 +33,10 @@
       lastScaleCheck = now;
 
       const fps = engine.getFps?.() ?? 60;
-      if (fps < 46) {
+      if (fps < 50) {
         lowFpsSamples += 1;
         highFpsSamples = 0;
-      } else if (fps > 57) {
+      } else if (fps > 59) {
         highFpsSamples += 1;
         lowFpsSamples = 0;
       } else {
@@ -44,8 +44,8 @@
         highFpsSamples = Math.max(0, highFpsSamples - 1);
       }
 
-      if (lowFpsSamples >= 2 && scalingLevel < 1.35) {
-        scalingLevel = Math.min(1.35, Math.round((scalingLevel + 0.1) * 100) / 100);
+      if (lowFpsSamples >= 2 && scalingLevel < 1.65) {
+        scalingLevel = Math.min(1.65, Math.round((scalingLevel + 0.12) * 100) / 100);
         engine.setHardwareScalingLevel(scalingLevel);
         engine.resize();
         lowFpsSamples = 0;
@@ -76,9 +76,9 @@
         if ((enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0 || (enemy.companionAlertTimer ?? 0) > 0) return true;
 
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 68) return true;
-        if (distance <= 112) return (raid.aiBudgetFrame + index) % 2 === 0;
-        return (raid.aiBudgetFrame + index) % 4 === 0;
+        if (distance <= 60) return true;
+        if (distance <= 100) return (raid.aiBudgetFrame + index) % 2 === 0;
+        return (raid.aiBudgetFrame + index) % 5 === 0;
       });
 
       raid.enemies = activeEnemies;
@@ -101,9 +101,9 @@
       const animatedEnemies = allEnemies.filter((enemy, index) => {
         if (enemy.isNamelessBoss || enemy.mobilityAction || enemy.dead) return true;
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 78) return true;
-        if (distance <= 128) return (raid.renderBudgetFrame + index) % 2 === 0;
-        return (raid.renderBudgetFrame + index) % 3 === 0;
+        if (distance <= 70) return true;
+        if (distance <= 118) return (raid.renderBudgetFrame + index) % 2 === 0;
+        return (raid.renderBudgetFrame + index) % 4 === 0;
       });
 
       raid.enemies = animatedEnemies;
@@ -127,11 +127,14 @@
     };
 
     window.__sdrPerformanceDebug = {
-      version: '2026-09-19-tiered-v2',
+      version: '2026-09-19-tiered-v3',
       noHardEnemyCull: true,
       tieredAI: true,
       tieredAnimation: true,
       adaptiveResolution: true,
+      maxScalingLevel: 1.65,
+      aiNearDistance: 60,
+      animationNearDistance: 70,
       scalingLevel,
       fps: 0,
     };
