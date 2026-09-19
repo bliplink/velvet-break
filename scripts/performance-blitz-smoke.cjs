@@ -114,7 +114,11 @@ const { chromium } = require('playwright');
           move: scene.skipPointerMovePicking,
           down: scene.skipPointerDownPicking,
           up: scene.skipPointerUpPicking,
+          underPointer: scene.constantlyUpdateMeshUnderPointer,
         },
+        lightGovernorMode: debug?.lightGovernorMode ?? null,
+        activeRealtimeStreetlights: debug?.activeRealtimeStreetlights ?? null,
+        lightGovernorChanges: debug?.lightGovernorChanges ?? 0,
       };
     });
 
@@ -143,7 +147,7 @@ const { chromium } = require('playwright');
       lobby.performance?.maxScalingLevel === 1.65 &&
       lobby.performance?.tieredAI &&
       lobby.performance?.tieredAnimation &&
-      lobby.performanceV3?.version === '2026-09-19-fps-v4' &&
+      lobby.performanceV3?.version === '2026-09-19-fps-v5' &&
       lobby.performanceV3?.baseEffectLimit === 72 &&
       lobby.performanceV3?.frozenStaticMeshes > 100 &&
       lobby.performanceV3?.frozenStaticMaterials > 5 &&
@@ -174,12 +178,16 @@ const { chromium } = require('playwright');
       effects.sceneFlags.move &&
       effects.sceneFlags.down &&
       effects.sceneFlags.up &&
+      effects.sceneFlags.underPointer === false &&
+      ['full','reduced','off'].includes(effects.lightGovernorMode) &&
+      effects.activeRealtimeStreetlights <= 2 &&
       visuals.humanV2Parts === 0 &&
       visuals.humanDetailParts === 0 &&
       visuals.actorTankMeshes === 0 &&
       visuals.baseBodyVisible &&
       visuals.fairVision?.originalCharacterModels &&
       visuals.rollback?.legacyCanisterModel &&
+      visuals.rollback?.opaquePasses <= 2 &&
       errors.length === 0
     );
 
