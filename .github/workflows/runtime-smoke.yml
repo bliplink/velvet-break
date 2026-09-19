@@ -21,6 +21,11 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
+      - name: Static syntax check
+        run: |
+          node --check src/main.js
+          for f in src/*.js; do node --check "$f"; done
+
       - name: Start local game
         run: |
           node server.js > /tmp/game.log 2>&1 &
