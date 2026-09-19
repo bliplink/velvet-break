@@ -99,12 +99,14 @@ const { chromium } = require('playwright');
           labelEnabled: enemy.visual?.classLabel?.isEnabled?.() ?? false,
           labelAlpha: enemy.visual?.classLabelMaterial?.alpha ?? 0,
         },
-        human: {
-          debug: window.__sdrHumanModelV2Debug ?? null,
-          partCount: enemy.visual?.humanV2Meshes?.length ?? 0,
-          oldBodyVisible: enemy.visual?.body?.isVisible ?? true,
-          oldChestVisible: enemy.visual?.chestRig?.isVisible ?? true,
+        canister: {
+          humanDebug: window.__sdrHumanModelV2Debug ?? null,
+          humanPartCount: enemy.visual?.humanV2Meshes?.length ?? 0,
+          oldBodyVisible: enemy.visual?.body?.isVisible ?? false,
+          oldChestVisible: enemy.visual?.chestRig?.isVisible ?? false,
           roundedParts: scene.meshes.filter(m => String(m.name).startsWith('human-v2-')).length,
+          humanDetailParts: enemy.visual?.humanDetailMeshes?.length ?? 0,
+          rollbackDebug: window.__sdrVisualOverhaulDebug ?? null,
         },
       };
     });
@@ -123,11 +125,13 @@ const { chromium } = require('playwright');
       visual.xray.revealEnabled === 0 &&
       visual.xray.overlayEnabled === 0 &&
       (!visual.xray.labelEnabled || visual.xray.labelAlpha === 0) &&
-      visual.human.debug?.roundedHumanModel &&
-      visual.human.partCount >= 15 &&
-      visual.human.oldBodyVisible === false &&
-      visual.human.oldChestVisible === false &&
-      visual.human.roundedParts >= 20 &&
+      visual.canister.humanDebug == null &&
+      visual.canister.humanPartCount === 0 &&
+      visual.canister.oldBodyVisible &&
+      visual.canister.oldChestVisible &&
+      visual.canister.roundedParts === 0 &&
+      visual.canister.humanDetailParts === 0 &&
+      visual.canister.rollbackDebug?.legacyCanisterModel &&
       errors.length === 0
     );
 
