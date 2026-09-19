@@ -47,10 +47,10 @@
           const sameInterior = player.insideBuildingId && player.insideBuildingId === enemy.insideBuildingId;
           const sameRoof = player.onRoofBuildingId && player.onRoofBuildingId === enemy.onRoofBuildingId;
           const blocked = !sameInterior && !sameRoof && lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z);
-          if (blocked) {
-            root.__sdrHiddenBehindCover = true;
-            root.setEnabled(false);
-          } else if (root.__sdrHiddenBehindCover) {
+          // Buildings are now fully opaque, so let normal depth occlusion hide
+          // enemies instead of disabling the whole actor and causing pop-out.
+          root.__sdrOccludedByCover = blocked;
+          if (root.__sdrHiddenBehindCover) {
             root.__sdrHiddenBehindCover = false;
             root.setEnabled(true);
           }
