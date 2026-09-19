@@ -137,10 +137,12 @@
 
     const applyRiskToRaid = (raid = state.raid) => {
       if (!raid) return;
-      debug.highRiskContainers = 0;
-      debug.mediumRiskContainers = 0;
       for (const container of raid.containers ?? []) applyContainerRisk(container);
       for (const enemy of raid.enemies ?? []) applyEnemyRisk(enemy);
+      debug.highRiskContainers = (raid.containers ?? []).filter(container => container.raidRiskTier === 'high').length;
+      debug.mediumRiskContainers = (raid.containers ?? []).filter(container => container.raidRiskTier === 'medium').length;
+      debug.tunedEnemies = (raid.enemies ?? []).filter(enemy => enemy.raidRiskTier === 'high' || enemy.raidRiskTier === 'medium').length;
+      debug.highRiskEnemies = (raid.enemies ?? []).filter(enemy => enemy.raidRiskTier === 'high').length;
     };
 
     debug.applyContainerRisk = applyContainerRisk;
