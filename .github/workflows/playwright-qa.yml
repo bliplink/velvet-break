@@ -1,0 +1,40 @@
+name: Playwright QA
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/playwright-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run syntax checks
+        run: |
+          node --check src/main.js
+          for f in src/*.js; do node --check "$f"; done
+
+      - name: Run full Playwright game smoke test
+        run: npm run test:browser
+
+      - name: Upload QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-qa-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
