@@ -91,7 +91,7 @@ async function main() {
       active.mode !== 'replay' ||
       !active.replay ||
       !active.visible ||
-      !active.title.includes('第三人称') ||
+      !active.title.includes('淘汰回放') ||
       active.result ||
       active.version !== '2026-09-19-killcam-v2' ||
       active.duration < 3.5 ||
