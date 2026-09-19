@@ -119,7 +119,20 @@ const { chromium } = require('playwright');
       debugPoi: window.__sdrCombatPolishDebug?.currentPoi ?? null,
     }));
 
-    console.log(JSON.stringify({ shot, hit, kill, rareLoot, poi, poiHud, errors }, null, 2));
+    const extractionHud = await page.evaluate(() => {
+      const raid = state.raid;
+      const zone = raid.extractions.find(z => z.active !== false) ?? raid.extractions[0];
+      raid.player.x = zone.x + Math.min(8, Math.max(2, zone.radius + 1));
+      raid.player.z = zone.z;
+      return { zoneKind: zone.kind, zoneId: zone.id };
+    });
+    await page.waitForTimeout(300);
+    const extractionHudAfter = await page.evaluate(() => ({
+      text: document.getElementById('combatExtractLabel')?.textContent ?? '',
+      visible: document.getElementById('combatExtractLabel')?.classList.contains('is-visible') ?? false,
+    }));
+
+    console.log(JSON.stringify({ shot, hit, kill, rareLoot, poi, poiHud, extractionHud, extractionHudAfter, errors }, null, 2));
 
     const ok = Boolean(
       shot.ammoAfter === shot.ammoBefore - 1 &&
@@ -141,12 +154,16 @@ const { chromium } = require('playwright');
       rareLoot.last?.rarity === 'legendary' &&
       rareLoot.bannerActive &&
       /QA Legendary Core/.test(rareLoot.bannerText) &&
-      rareLoot.version === '2026-09-19-combat-polish-v2' &&
+      rareLoot.version === '2026-09-19-combat-polish-v3' &&
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
       poiHud.visible &&
       poiHud.debugPoi === 'center-depot' &&
+      /风险|RISK/.test(poiHud.text) &&
+      extractionHudAfter.visible &&
+      extractionHudAfter.text.length > 0 &&
+      /撤离|EXIT/.test(extractionHudAfter.text) &&
       errors.length === 0
     );
 
