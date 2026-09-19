@@ -108,7 +108,9 @@ const { chromium } = require('playwright');
         transparentStructures: transparentStructures.length,
         industrialLampHeads: scene.meshes.filter(mesh => String(mesh.name).startsWith('industrial-lamp-head-')).length,
         humanEnemyMeshes: state.raid.enemies[0]?.visual?.humanDetailMeshes?.length ?? 0,
+        humanV2Parts: scene.meshes.filter(mesh => String(mesh.name).startsWith('human-v2-')).length,
         playerArms: scene.meshes.filter(mesh => String(mesh.name).startsWith('player-human-')).length,
+        baseBodyVisible: state.raid.enemies[0]?.visual?.body?.isVisible ?? false,
       };
     });
 
@@ -127,13 +129,16 @@ const { chromium } = require('playwright');
       !repeatRescue.second.downed &&
       !repeatRescue.second.dead &&
       repeatRescue.second.reviveCount >= 2 &&
-      visuals.overhaul?.humanActorOverhaul &&
+      visuals.overhaul?.legacyCanisterModel &&
+      visuals.overhaul?.humanActorOverhaul === false &&
       visuals.overhaul?.opaqueBuildings &&
       visuals.overhaul?.streetlightOverhaul &&
       visuals.transparentStructures === 0 &&
       visuals.industrialLampHeads >= 6 &&
-      visuals.humanEnemyMeshes >= 10 &&
-      visuals.playerArms >= 4 &&
+      visuals.humanEnemyMeshes === 0 &&
+      visuals.humanV2Parts === 0 &&
+      visuals.playerArms === 0 &&
+      visuals.baseBodyVisible &&
       errors.length === 0
     );
 
