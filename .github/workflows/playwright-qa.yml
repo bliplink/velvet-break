@@ -8,6 +8,7 @@ on:
       - "index.html"
       - "src/**"
       - "scripts/**"
+      - "styles/**"
   workflow_dispatch:
 
 permissions:
@@ -31,8 +32,19 @@ jobs:
           node --check src/main.js
           for f in src/*.js; do node --check "$f"; done
 
+      - name: Start local game server
+        run: |
+          node server.js > /tmp/game.log 2>&1 &
+          for i in {1..50}; do
+            curl -fsS http://127.0.0.1:5531/ >/dev/null && break
+            sleep 0.2
+          done
+
       - name: Run full Playwright game smoke test
         run: npm run test:browser
+
+      - name: Verify optimized elimination replay
+        run: node scripts/death-replay-smoke.cjs
 
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
