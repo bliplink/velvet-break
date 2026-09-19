@@ -47,7 +47,11 @@ const { chromium } = require('playwright');
         debug: window.__sdrVisualOverhaulDebug ?? null,
         enemyHumanDetail: enemy?.visual?.humanDetailMeshes?.length ?? 0,
         companionHumanDetail: companion?.visual?.humanDetailMeshes?.length ?? 0,
+        humanV2Parts: scene.meshes.filter(mesh => String(mesh.name).startsWith('human-v2-')).length,
         playerHumanArms: scene.meshes.filter(mesh => String(mesh.name).startsWith('player-human-')).length,
+        enemyBodyVisible: enemy?.visual?.body?.isVisible ?? false,
+        enemyChestVisible: enemy?.visual?.chestRig?.isVisible ?? false,
+        companionBodyVisible: companion?.visual?.body?.isVisible ?? false,
         industrialLampHeads: scene.meshes.filter(mesh => String(mesh.name).startsWith('industrial-lamp-head-')).length,
         industrialLampShafts: scene.meshes.filter(mesh => String(mesh.name).startsWith('industrial-lamp-shaft-')).length,
         legacyLampEnabled: legacyLampEnabled.length,
@@ -59,13 +63,18 @@ const { chromium } = require('playwright');
     console.log(JSON.stringify({ result, errors }, null, 2));
 
     const ok = Boolean(
-      result.debug?.humanActorOverhaul &&
-      result.debug?.playerArmsOverhaul &&
+      result.debug?.legacyCanisterModel &&
+      result.debug?.humanActorOverhaul === false &&
+      result.debug?.playerArmsOverhaul === false &&
       result.debug?.opaqueBuildings &&
       result.debug?.streetlightOverhaul &&
-      result.enemyHumanDetail >= 10 &&
-      result.companionHumanDetail >= 10 &&
-      result.playerHumanArms >= 4 &&
+      result.enemyHumanDetail === 0 &&
+      result.companionHumanDetail === 0 &&
+      result.humanV2Parts === 0 &&
+      result.playerHumanArms === 0 &&
+      result.enemyBodyVisible &&
+      result.enemyChestVisible &&
+      result.companionBodyVisible &&
       result.industrialLampHeads >= 6 &&
       result.industrialLampShafts >= 6 &&
       result.legacyLampEnabled === 0 &&
