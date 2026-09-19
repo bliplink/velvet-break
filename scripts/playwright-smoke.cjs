@@ -179,7 +179,7 @@ async function main() {
   if (extractionSetup) {
     await page.keyboard.down('e');
     extraction = await page.evaluate(() => {
-      for (let index = 0; index < 36; index++) updateRaid(0.1);
+      for (let index = 0; index < 50; index++) updateRaid(0.1);
       const sequenceStarted = Boolean(state.raid?.extractionSequence);
       for (let index = 0; index < 20 && state.mode === 'raid'; index++) updateRaid(0.1);
       return { sequenceStarted, mode: state.mode, resultVisible: !refs.resultOverlay.classList.contains('hidden'), survived: state.raid?.result?.survived ?? false };
