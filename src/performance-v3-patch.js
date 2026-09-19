@@ -44,7 +44,7 @@
     const freezeStaticWorld = () => {
       const frozenMaterials = new Set();
       let frozenMeshes = 0;
-      const staticName = /^(?:obstacle-|boundary-|roof-|window-|tower-|fence-|industrial-lamp-(?:base|shaft|collar|arm|brace|head|lens)-)/i;
+      const staticName = /^(?:obstacle-|boundary-|roof-|tower-|fence-|industrial-lamp-(?:base|shaft|collar|arm|brace|head|lens)-)/i;
 
       for (const mesh of scene.meshes ?? []) {
         if (!mesh || mesh.isDisposed?.()) continue;
@@ -52,7 +52,7 @@
         const movableName = /(?:door|gate|shutter|container|extract|switch|enemy|companion|player|weapon|utility|replay)/i.test(name);
         const eligible = !movableName && (
           staticName.test(name) ||
-          (mesh.metadata?.raycastTarget === 'obstacle' && /^(?:obstacle-|boundary-|roof-|window-|tower-|fence-)/i.test(name))
+          (mesh.metadata?.raycastTarget === 'obstacle' && /^(?:obstacle-|boundary-|roof-|tower-|fence-)/i.test(name))
         );
         if (!eligible) continue;
 
