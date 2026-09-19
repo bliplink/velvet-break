@@ -58,6 +58,9 @@ jobs:
       - name: Verify rescue Benjamin xray and human model v2
         run: node scripts/polish-v2-smoke.cjs
 
+      - name: Verify combat polish
+        run: node scripts/combat-polish-smoke.cjs
+
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
