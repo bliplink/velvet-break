@@ -154,7 +154,7 @@ const { chromium } = require('playwright');
       rareLoot.last?.rarity === 'legendary' &&
       rareLoot.bannerActive &&
       /QA Legendary Core/.test(rareLoot.bannerText) &&
-      rareLoot.version === '2026-09-19-combat-polish-v3' &&
+      rareLoot.version === '2026-09-19-combat-polish-v4' &&
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
