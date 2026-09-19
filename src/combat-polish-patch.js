@@ -232,12 +232,13 @@
         if (!root || enemy.dead) continue;
         const timer = Math.max(0, enemy.hitReactTimer ?? 0);
         if (timer > 0) {
-          const progress = 1 - timer / 0.18;
+          const nextTimer = Math.max(0, timer - dt);
+          const progress = 1 - nextTimer / 0.18;
           const wave = Math.sin(Math.PI * progress);
           const strength = enemy.hitReactStrength ?? 0.7;
           root.rotation.z = (enemy.hitReactSide ?? 1) * wave * 0.11 * strength;
           root.rotation.x = -wave * 0.045 * strength;
-          enemy.hitReactTimer = Math.max(0, timer - dt);
+          enemy.hitReactTimer = nextTimer;
         } else {
           root.rotation.z *= Math.max(0, 1 - dt * 18);
           root.rotation.x *= Math.max(0, 1 - dt * 16);
