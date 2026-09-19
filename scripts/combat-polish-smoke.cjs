@@ -1,0 +1,132 @@
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'],
+  });
+
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+
+    await page.goto('http://127.0.0.1:5531/?v=combat-polish-smoke', { waitUntil: 'networkidle' });
+    await page.waitForTimeout(900);
+
+    await page.evaluate(() => {
+      state.save.selectedOperatorId = 'assault';
+      startRaid();
+      state.raid.player.dropTimer = 0;
+      state.raid.spawnSafeTimer = 0;
+    });
+    await page.waitForTimeout(600);
+
+    const shot = await page.evaluate(() => {
+      const player = state.raid.player;
+      player.fireCooldown = 0;
+      player.reloadTimer = 0;
+      player.healTimer = 0;
+      player.ammoInMag = Math.max(3, player.ammoInMag);
+      const before = player.ammoInMag;
+      const debugBefore = window.__sdrCombatPolishDebug.shotCount;
+      attemptShoot();
+      return {
+        ammoBefore: before,
+        ammoAfter: player.ammoInMag,
+        shotCountDelta: window.__sdrCombatPolishDebug.shotCount - debugBefore,
+        recoilKick: player.recoilKick ?? 0,
+        bloomActive: document.getElementById('combatShotBloom')?.classList.contains('is-active') ?? false,
+      };
+    });
+
+    const hit = await page.evaluate(() => {
+      const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
+      enemy.health = Math.max(500, enemy.health);
+      const healthBefore = enemy.health;
+      const hitsBefore = window.__sdrCombatPolishDebug.hitCount;
+      damageEnemy(enemy, 35, { ignoreSmoke: true });
+      const timerBeforeAnimate = enemy.hitReactTimer ?? 0;
+      animateRaidEntities(0.04);
+      return {
+        damage: healthBefore - enemy.health,
+        hitCountDelta: window.__sdrCombatPolishDebug.hitCount - hitsBefore,
+        timerBeforeAnimate,
+        reactRotation: Math.abs(enemy.visual?.root?.rotation?.z ?? 0),
+        damageText: document.getElementById('combatDamageNumber')?.textContent ?? '',
+        hitClass: document.getElementById('combatHitMarker')?.classList.contains('is-hit') ?? false,
+      };
+    });
+
+    const kill = await page.evaluate(() => {
+      const player = state.raid.player;
+      const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
+      enemy.x = player.x;
+      enemy.z = player.z + 22;
+      enemy.health = 20;
+      const killsBefore = window.__sdrCombatPolishDebug.killCount;
+      damageEnemy(enemy, 1000, { ignoreSmoke: true });
+      return {
+        dead: enemy.dead,
+        killCountDelta: window.__sdrCombatPolishDebug.killCount - killsBefore,
+        lastKill: window.__sdrCombatPolishDebug.lastKill,
+        bannerActive: document.getElementById('combatKillBanner')?.classList.contains('is-active') ?? false,
+        bannerText: document.getElementById('combatKillBanner')?.textContent ?? '',
+      };
+    });
+
+    const poi = await page.evaluate(() => {
+      const def = obstacleDefs.find(entry => entry.id === 'center-depot');
+      const resolved = window.__sdrRaidDesignConfig?.resolvePoi(def.x, def.z);
+      state.raid.player.x = def.x;
+      state.raid.player.z = def.z;
+      return {
+        resolvedId: resolved?.id ?? null,
+        nameZh: resolved?.zh ?? null,
+        configPoiCount: window.__sdrRaidDesignConfig?.poiDefs?.length ?? 0,
+        hasRareTargets: (window.__sdrRaidDesignConfig?.rarityTargets?.highRisk?.length ?? 0) >= 2,
+      };
+    });
+
+    await page.waitForTimeout(300);
+    const poiHud = await page.evaluate(() => ({
+      text: document.getElementById('combatPoiLabel')?.textContent ?? '',
+      visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
+      debugPoi: window.__sdrCombatPolishDebug?.currentPoi ?? null,
+    }));
+
+    console.log(JSON.stringify({ shot, hit, kill, poi, poiHud, errors }, null, 2));
+
+    const ok = Boolean(
+      shot.ammoAfter === shot.ammoBefore - 1 &&
+      shot.shotCountDelta === 1 &&
+      shot.recoilKick > 0 &&
+      shot.bloomActive &&
+      hit.damage > 0 &&
+      hit.hitCountDelta === 1 &&
+      hit.timerBeforeAnimate > 0 &&
+      hit.reactRotation > 0 &&
+      /^-\d+/.test(hit.damageText) &&
+      hit.hitClass &&
+      kill.dead &&
+      kill.killCountDelta === 1 &&
+      kill.lastKill?.distance >= 20 &&
+      kill.lastKill?.weapon &&
+      kill.bannerActive &&
+      poi.resolvedId === 'center-depot' &&
+      poi.configPoiCount >= 6 &&
+      poi.hasRareTargets &&
+      poiHud.visible &&
+      poiHud.debugPoi === 'center-depot' &&
+      errors.length === 0
+    );
+
+    if (!ok) process.exitCode = 1;
+  } finally {
+    await browser.close();
+  }
+})().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});
