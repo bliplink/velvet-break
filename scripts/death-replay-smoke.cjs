@@ -72,6 +72,7 @@ async function main() {
       cameraCollisionChecks: window.__sdrReplayDebug?.cameraCollisionChecks,
       perspective: document.getElementById('deathReplayPerspective')?.textContent,
       impactText: document.getElementById('deathReplayImpactText')?.textContent,
+      cameraFov: camera.fov,
     }));
 
     await page.screenshot({ path: 'screenshots/death-replay-killcam-v2.png' });
@@ -93,7 +94,7 @@ async function main() {
       !active.visible ||
       !active.title.includes('淘汰回放') ||
       active.result ||
-      active.version !== '2026-09-19-killcam-v2' ||
+      active.version !== '2026-09-19-killcam-v3' ||
       active.duration < 3.5 ||
       !impact.impactShown ||
       !impact.tracerShown ||
@@ -103,6 +104,7 @@ async function main() {
       !impact.phase?.includes('致命一击') ||
       !impact.perspective ||
       !impact.impactText ||
+      !(impact.cameraFov <= 0.64) ||
       !impact.progress ||
       skipped.mode !== 'result' ||
       skipped.replay ||
