@@ -30,7 +30,7 @@ jobs:
         env:
           SEARCHTS_NO_JINA: "1"
         run: |
-          searchts read "https://chatgpt.com/s/cx_6aadded667ac8191851599c9fc8e5a05" --backend browser > shared-chat.md
+          searchts read "https://chatgpt.com/s/cx_6aadded667ac8191851599c9fc8e5a05" > shared-chat.md
           test -s shared-chat.md
 
       - name: Commit extracted snapshot
