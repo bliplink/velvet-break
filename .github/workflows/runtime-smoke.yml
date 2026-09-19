@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/runtime-smoke.yml"
+      - "src/main.js"
+      - "src/remaster-patch.js"
 
 permissions:
   contents: read
@@ -16,15 +18,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install browser test dependencies
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-
       - name: Static syntax check
         run: |
           node --check src/main.js
           for f in src/*.js; do node --check "$f"; done
+
+      - name: Install browser test dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
 
       - name: Start local game
         run: |
