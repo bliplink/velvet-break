@@ -1,0 +1,240 @@
+const { chromium } = require('playwright');
+const { spawn } = require('node:child_process');
+const path = require('node:path');
+
+const gameUrl = 'http://127.0.0.1:5531/';
+let testServer = null;
+async function ensureServer() {
+  try {
+    if ((await fetch(gameUrl)).ok) return;
+  } catch {}
+  testServer = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), stdio: 'ignore' });
+  for (let attempt = 0; attempt < 40; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    try {
+      if ((await fetch(gameUrl)).ok) return;
+    } catch {}
+  }
+  throw new Error('Local game server did not start on port 5531');
+}
+process.on('exit', () => testServer?.kill());
+
+async function main() {
+  await ensureServer();
+  const browser = await chromium.launch({ headless: true, ...(process.platform === 'win32' ? { channel: 'msedge' } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-webgl'] });
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+  const errors = [];
+  const missingResources = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  page.on('response', response => { if (response.status() >= 400) missingResources.push(`${response.status()} ${response.url()}`); });
+  await page.goto(`${gameUrl}?v=playwright-smoke`, { waitUntil: 'networkidle' });
+  await page.waitForTimeout(1200);
+  const lobby = await page.evaluate(() => ({
+    fps: Math.round(window.__sdrEngine?.getFps?.() ?? 0),
+    meshes: window.__sdrScene?.meshes?.length ?? 0,
+    ready: Boolean(window.__sdrScene && state),
+    scaling: window.__sdrEngine?.getHardwareScalingLevel?.(),
+  }));
+  await page.locator('#deployButton').click();
+  await page.waitForTimeout(2000);
+  const before = await page.evaluate(() => ({
+    mode: state.mode,
+    fps: Math.round(window.__sdrEngine?.getFps?.() ?? 0),
+    meshes: window.__sdrScene?.meshes?.length ?? 0,
+    enemies: state.raid?.enemies?.length ?? 0,
+    activeMeshes: window.__sdrScene?.getActiveMeshes().length ?? 0,
+    activeCategories: window.__sdrScene?.getActiveMeshes().data.slice(0, window.__sdrScene.getActiveMeshes().length).reduce((counts, mesh) => {
+      const category = mesh?.name?.startsWith('enemy-') ? 'enemy' : mesh?.name?.startsWith('stair-') ? 'stair' :
+        mesh?.name?.startsWith('window-') ? 'window' : mesh?.name?.startsWith('roof-') ? 'roof' : 'other';
+      counts[category] = (counts[category] ?? 0) + 1;
+      return counts;
+    }, {}),
+    enemyDistances: state.raid.enemies.filter(enemy => !enemy.dead).map(enemy => Math.round(Math.hypot(enemy.x - state.raid.player.x, enemy.z - state.raid.player.z))),
+    loadoutCollapsed: Boolean(state.ui.raidPanelCollapsed.raidLoadoutList),
+    x: state.raid?.player?.x,
+    z: state.raid?.player?.z,
+  }));
+  await page.screenshot({ path: 'screenshots/playwright-raid.png' });
+  await page.evaluate(() => {
+    window.__perfSample = { updateMs: 0, renderMs: 0, frames: 0 };
+    const beforeUpdate = update;
+    update = function measuredUpdate(dt) {
+      const start = performance.now();
+      try { return beforeUpdate(dt); } finally { window.__perfSample.updateMs += performance.now() - start; }
+    };
+    const renderScene = window.__sdrScene;
+    const beforeRender = renderScene.render.bind(renderScene);
+    renderScene.render = function measuredRender(...args) {
+      const start = performance.now();
+      try { return beforeRender(...args); } finally {
+        window.__perfSample.renderMs += performance.now() - start;
+        window.__perfSample.frames++;
+      }
+    };
+  });
+  await page.waitForTimeout(3500);
+  const profile = await page.evaluate(() => ({
+    updateMs: Math.round(window.__perfSample.updateMs / Math.max(1, window.__perfSample.frames)),
+    renderMs: Math.round(window.__perfSample.renderMs / Math.max(1, window.__perfSample.frames)),
+    frames: window.__perfSample.frames,
+  }));
+  await page.evaluate(() => {
+    const player = state.raid.player;
+    const candidates = [[0, 0], [60, 60], [-60, 60], [60, -60], [-60, -60], [0, 90]];
+    const clear = ([x, z]) => !obstacleDefs.some((obstacle) =>
+      Math.abs(x - obstacle.x) < obstacle.w / 2 + 2 && Math.abs(z - obstacle.z) < obstacle.d / 2 + 2);
+    const [x, z] = candidates.find(clear) ?? [0, 0];
+    player.x = x;
+    player.z = z;
+    player.onRoofBuildingId = null;
+    player.insideBuildingId = null;
+    player.dropTimer = 0;
+  });
+  await page.keyboard.down('KeyW');
+  await page.waitForTimeout(900);
+  await page.keyboard.up('KeyW');
+  const after = await page.evaluate(() => ({
+    fps: Math.round(window.__sdrEngine?.getFps?.() ?? 0),
+    x: state.raid?.player?.x,
+    z: state.raid?.player?.z,
+    health: state.raid?.player?.health,
+    walkSpeed: getPlayerMoveSpeed(state.raid.player, false),
+    sprintSpeed: getPlayerMoveSpeed(state.raid.player, true),
+  }));
+  const ammoBeforeShot = await page.evaluate(() => {
+    state.raid.player.dropTimer = 0;
+    state.raid.player.fireCooldown = 0;
+    return state.raid.player.ammoInMag;
+  });
+  await page.keyboard.press('f');
+  const ammoAfterShot = await page.evaluate(() => state.raid.player.ammoInMag);
+  const stairSetup = await page.evaluate(() => {
+    window.__enemyStart = new Map(state.raid.enemies.map(enemy => [enemy.id, { x: enemy.x, z: enemy.z }]));
+    const stair = window.__sdrStructureRegistry?.stairs?.find(entry => obstacleDefs.some(obstacle => obstacle.id === entry.obstacleId));
+    if (!stair) return null;
+    const player = state.raid.player;
+    player.x = stair.x;
+    player.z = stair.z;
+    player.dropTimer = 0;
+    player.onRoofBuildingId = null;
+    player.insideBuildingId = null;
+    player.structureAction = null;
+    state.input.keys.clear();
+    return { id: stair.obstacleId, height: obstacleDefs.find(obstacle => obstacle.id === stair.obstacleId).h };
+  });
+  let stairs = null;
+  if (stairSetup) {
+    await page.keyboard.press('e');
+    const upStarted = await page.evaluate(() => state.raid.player.structureAction?.type === 'stairs');
+    const upResult = await page.evaluate(() => {
+      for (let index = 0; index < 45; index++) updateRaid(0.1);
+      const player = state.raid.player;
+      return { roof: player.onRoofBuildingId, x: player.x, z: player.z, eyeY: camera.position.y };
+    });
+    await page.keyboard.press('e');
+    const downStarted = await page.evaluate(() => state.raid.player.structureAction?.type === 'stairs');
+    const downResult = await page.evaluate(() => {
+      for (let index = 0; index < 45; index++) updateRaid(0.1);
+      const player = state.raid.player;
+      return { roof: player.onRoofBuildingId, x: player.x, z: player.z, eyeY: camera.position.y };
+    });
+    stairs = { upStarted, upResult, downStarted, downResult };
+  }
+  const enemyMovement = await page.evaluate(() => {
+    const enemies = state.raid.enemies.filter(enemy => !enemy.dead && !enemy.isRangeTarget);
+    const moved = enemies.filter(enemy => {
+      const start = window.__enemyStart.get(enemy.id);
+      return start && Math.hypot(enemy.x - start.x, enemy.z - start.z) > 0.25;
+    });
+    return { active: enemies.length, moved: moved.length, stationary: enemies.length - moved.length };
+  });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'screenshots/playwright-raid-mobile.png' });
+  const mobile = await page.evaluate(() => {
+    const box = (selector) => {
+      const rect = document.querySelector(selector)?.getBoundingClientRect();
+      return rect ? { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) } : null;
+    };
+    return { hud: box('#hud'), map: box('.hud-right'), controls: box('#touchControls'),
+      movePad: box('.move-pad'), actionPad: box('.action-pad'), language: box('#languageSwitch'),
+      notices: document.querySelectorAll('.notification').length };
+  });
+  const extractionSetup = await page.evaluate(() => {
+    const zone = state.raid.extractions.find(entry => entry.kind !== 'switch' && !entry.requiresObjectives && entry.active);
+    if (!zone) return null;
+    const player = state.raid.player;
+    player.x = zone.x;
+    player.z = zone.z;
+    player.health = player.maxHealth;
+    player.damageImmunityTimer = 10;
+    player.dropTimer = 0;
+    player.onRoofBuildingId = null;
+    player.insideBuildingId = null;
+    state.input.keys.clear();
+    return { id: zone.id, x: zone.x, z: zone.z };
+  });
+  let extraction = null;
+  if (extractionSetup) {
+    await page.keyboard.down('e');
+    extraction = await page.evaluate(() => {
+      for (let index = 0; index < 36; index++) updateRaid(0.1);
+      const sequenceStarted = Boolean(state.raid?.extractionSequence);
+      for (let index = 0; index < 20 && state.mode === 'raid'; index++) updateRaid(0.1);
+      return { sequenceStarted, mode: state.mode, resultVisible: !refs.resultOverlay.classList.contains('hidden'), survived: state.raid?.result?.survived ?? false };
+    });
+    await page.keyboard.up('e');
+  }
+  await page.locator('#returnBaseButton').click();
+  await page.locator('#practiceSection [data-expansion-range-motion="moving"]').click();
+  const movingSelected = await page.locator('#practiceSection [data-expansion-range-motion="moving"]').getAttribute('aria-pressed');
+  await page.locator('#practiceSection [data-expansion-action="start-range"]').click();
+  const rangeBefore = await page.evaluate(() => {
+    const raid = state.raid;
+    window.__rangeStart = raid.enemies.map(enemy => ({ id: enemy.id, x: enemy.x, z: enemy.z }));
+    return {
+      mode: state.mode,
+      training: raid.isTrainingRange,
+      motion: raid.rangeMotion,
+      health: raid.player.health,
+      maxHealth: raid.player.maxHealth,
+      targetHealth: raid.enemies.map(enemy => enemy.maxHealth),
+      attackers: raid.enemies.filter(enemy => !enemy.isRangeTarget || enemy.damage > 0).length,
+      kaiKillHeal: getPlayerOperatorDef(raid.player).killHeal,
+    };
+  });
+  const rangeAfter = await page.evaluate(() => {
+    const raid = state.raid;
+    applyDamageToPlayer(999);
+    const healthAfterHit = raid.player.health;
+    for (let index = 0; index < 30; index++) updateRaid(0.1);
+    const moved = raid.enemies.filter(enemy => {
+      const start = window.__rangeStart.find(entry => entry.id === enemy.id);
+      return start && Math.hypot(enemy.x - start.x, enemy.z - start.z) > 0.3;
+    }).length;
+    raid.player.health = 1100;
+    raid.player.dropTimer = 0;
+    useMedkit();
+    const startedHealing = raid.player.useAction?.flavor === 'medkit';
+    for (let index = 0; index < 40; index++) updateRaid(0.1);
+    return { moved, healthAfterHit, startedHealing, healthAfterMedkit: raid.player.health,
+      targetCount: raid.enemies.length, bossCount: raid.enemies.filter(enemy => enemy.isNamelessBoss).length };
+  });
+  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, movingSelected, rangeBefore, rangeAfter, errors, missingResources }, null, 2));
+  await Promise.race([browser.close(), new Promise(resolve => setTimeout(resolve, 2000))]);
+  process.exit(errors.length || missingResources.length || before.mode !== 'raid' || !before.loadoutCollapsed ||
+    Math.hypot(after.x - before.x, after.z - before.z) < 0.1 || ammoAfterShot >= ammoBeforeShot || !stairs?.upStarted ||
+    stairs.upResult.roof !== stairSetup.id || !stairs.downStarted || stairs.downResult.roof ||
+    mobile.map.x + mobile.map.width > 390 || mobile.language.x + mobile.language.width > 390 ||
+    mobile.actionPad.x + mobile.actionPad.width > 390 || mobile.notices > 3 ||
+    !extraction?.sequenceStarted || !extraction.resultVisible || !extraction.survived ||
+    movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
+    rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
+    rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
+    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 60 || rangeAfter.moved < 5 ||
+    rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
+    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ? 1 : 0);
+}
+
+main().catch(error => { console.error(error); process.exit(1); });
