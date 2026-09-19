@@ -78,7 +78,25 @@ const { chromium } = require('playwright');
       return await page.evaluate(({ kind, secondsBeforeCheck, totalSeconds }) => {
         const raid = state.raid;
         const player = raid.player;
-        const zone = raid.extractions.find(entry => entry.kind === kind);
+        let zone = raid.extractions.find(entry => entry.kind === kind);
+        let restoreZone = null;
+
+        // Some raid seeds do not include a task extraction. For QA, temporarily
+        // convert one standard exit so task timing/reward behavior is still
+        // exercised without changing production raid generation.
+        if (!zone && kind === 'task') {
+          zone = raid.extractions.find(entry => entry.kind === 'standard') ?? raid.extractions[0];
+          if (zone) {
+            restoreZone = {
+              kind: zone.kind,
+              requiresObjectives: zone.requiresObjectives,
+              active: zone.active,
+              tacticalTaskBonusAwarded: zone.tacticalTaskBonusAwarded,
+            };
+            zone.kind = 'task';
+            zone.requiresObjectives = true;
+          }
+        }
         if (!zone) return { missing: true, kind };
 
         zone.active = true;
@@ -138,7 +156,15 @@ const { chromium } = require('playwright');
         player.tacticalExtractionProgress = 0;
         player.extractionZoneId = null;
         player.tacticalExtractionZoneId = null;
-        return { kind, before, after };
+
+        const usedSyntheticTask = Boolean(restoreZone);
+        if (restoreZone) {
+          zone.kind = restoreZone.kind;
+          zone.requiresObjectives = restoreZone.requiresObjectives;
+          zone.active = restoreZone.active;
+          zone.tacticalTaskBonusAwarded = restoreZone.tacticalTaskBonusAwarded;
+        }
+        return { kind, before, after, usedSyntheticTask };
       }, { kind, secondsBeforeCheck, totalSeconds });
     }
 
@@ -212,10 +238,11 @@ const { chromium } = require('playwright');
       standard.before.sequence === false &&
       standard.after.sequence === true &&
       /4\.5s/.test(standard.after.status) &&
-      task.before.sequence === false &&
-      task.after.sequence === true &&
-      task.after.bonusReward >= 800 &&
-      /3\.4s/.test(task.after.status) &&
+      !task.missing &&
+      task.before?.sequence === false &&
+      task.after?.sequence === true &&
+      task.after?.bonusReward >= 800 &&
+      /3\.4s/.test(task.after?.status ?? '') &&
       switchExit.before.sequence === false &&
       switchExit.after.sequence === true &&
       /2\.2s/.test(switchExit.after.status) &&
