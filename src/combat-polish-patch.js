@@ -20,7 +20,7 @@
     window.__sdrCombatPolishApplied = true;
 
     const debug = {
-      version: '2026-09-19-combat-polish-v3',
+      version: '2026-09-19-combat-polish-v4',
       shotCount: 0,
       hitCount: 0,
       killCount: 0,
@@ -294,6 +294,7 @@
       const player = state.raid?.player;
       if (!player || state.mode !== 'raid') {
         poiLabel.classList.remove('is-visible');
+        extractLabel.classList.remove('is-visible');
         lastPoiId = null;
         return;
       }
@@ -302,14 +303,14 @@
       if (!poi) {
         poiLabel.classList.remove('is-visible');
         lastPoiId = null;
-        return;
+      } else {
+        if (poi.id !== lastPoiId) {
+          const riskLabel = poi.risk === 'high' ? L('高风险', 'HIGH RISK') : L('中风险', 'MEDIUM RISK');
+          poiLabel.textContent = `${L(poi.zh, poi.en)} · ${riskLabel}`;
+          lastPoiId = poi.id;
+        }
+        poiLabel.classList.add('is-visible');
       }
-      if (poi.id !== lastPoiId) {
-        const riskLabel = poi.risk === 'high' ? L('高风险', 'HIGH RISK') : L('中风险', 'MEDIUM RISK');
-        poiLabel.textContent = `${L(poi.zh, poi.en)} · ${riskLabel}`;
-        lastPoiId = poi.id;
-      }
-      poiLabel.classList.add('is-visible');
 
       const zones = (state.raid?.extractions ?? []).filter(zone => zone.active !== false);
       let nearestZone = null;
