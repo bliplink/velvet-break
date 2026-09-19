@@ -49,7 +49,15 @@ async function main() {
     }));
 
     await page.evaluate(() => {
-      for (let i = 0; i < 34 && window.__sdrReplayDebug?.active; i++) update(0.1);
+      let guard = 0;
+      while (
+        window.__sdrReplayDebug?.active &&
+        window.__sdrReplayDebug.elapsed < window.__sdrReplayDebug.duration * 0.86 &&
+        guard < 120
+      ) {
+        update(0.1);
+        guard++;
+      }
     });
 
     const impact = await page.evaluate(() => ({
