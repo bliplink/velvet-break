@@ -20,13 +20,15 @@
     window.__sdrCombatPolishApplied = true;
 
     const debug = {
-      version: '2026-09-19-combat-polish-v1',
+      version: '2026-09-19-combat-polish-v2',
       shotCount: 0,
       hitCount: 0,
       killCount: 0,
       lastDamage: 0,
       lastKill: null,
       currentPoi: null,
+      rareFindCount: 0,
+      lastRareFind: null,
     };
     window.__sdrCombatPolishDebug = debug;
 
@@ -55,6 +57,11 @@
       #combatShotBloom{position:absolute;left:50%;top:50%;width:16px;height:16px;border:1px solid rgba(220,242,242,.32);border-radius:50%;transform:translate(-50%,-50%);opacity:0}
       #combatShotBloom.is-active{animation:combat-bloom .13s ease-out}
       @keyframes combat-bloom{0%{opacity:.8;transform:translate(-50%,-50%) scale(.65)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.4)}}
+      #combatLootBanner{position:absolute;left:50%;top:31%;min-width:250px;transform:translate(-50%,-10px);padding:9px 15px;border:1px solid rgba(255,211,119,.34);border-left:3px solid #ffd16f;background:linear-gradient(90deg,rgba(25,17,7,.88),rgba(17,12,6,.25));backdrop-filter:blur(8px);opacity:0;color:#fff3d0}
+      #combatLootBanner strong{display:block;font-size:.76rem;letter-spacing:.12em}
+      #combatLootBanner span{display:block;margin-top:3px;font-size:.68rem;color:#ead7a9}
+      #combatLootBanner.is-active{animation:combat-loot 2.15s ease both}
+      @keyframes combat-loot{0%{opacity:0;transform:translate(-50%,-16px) scale(.95)}10%{opacity:1;transform:translate(-50%,0) scale(1.02)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,10px) scale(1)}}
     `;
     document.head.appendChild(style);
 
@@ -66,6 +73,7 @@
       <div id="combatKillBanner"><strong></strong><span></span></div>
       <div id="combatPoiLabel"></div>
       <div id="combatShotBloom"></div>
+      <div id="combatLootBanner"><strong></strong><span></span></div>
     `;
     document.body.appendChild(hud);
 
@@ -76,6 +84,9 @@
     const killDetail = killBanner.querySelector('span');
     const poiLabel = hud.querySelector('#combatPoiLabel');
     const shotBloom = hud.querySelector('#combatShotBloom');
+    const lootBanner = hud.querySelector('#combatLootBanner');
+    const lootTitle = lootBanner.querySelector('strong');
+    const lootDetail = lootBanner.querySelector('span');
 
     const retrigger = (el, ...classes) => {
       el.classList.remove(...classes);
@@ -172,6 +183,46 @@
       retrigger(killBanner, 'is-active');
       return result;
     };
+
+    const rarityRank = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, red: 5 };
+    const rareLootBeforePolish = typeof openLootPanel === 'function' ? openLootPanel : null;
+    if (rareLootBeforePolish) {
+      openLootPanel = function polishedRareLootOpen(container, ...args) {
+        const firstOpen = Boolean(container && !container.opened);
+        const result = rareLootBeforePolish(container, ...args);
+        if (!firstOpen || !container?.items?.length) return result;
+
+        const best = container.items
+          .slice()
+          .sort((a, b) => (rarityRank[b?.rarity] ?? 0) - (rarityRank[a?.rarity] ?? 0))[0];
+        const rank = rarityRank[best?.rarity] ?? 0;
+        if (rank < 3) return result;
+
+        debug.rareFindCount += 1;
+        debug.lastRareFind = {
+          itemId: best.id,
+          rarity: best.rarity,
+          value: best.value,
+          containerId: container.id,
+        };
+
+        const tierName = best.rarity === 'red'
+          ? L('红色战利品', 'RED-TIER LOOT')
+          : best.rarity === 'legendary'
+            ? L('传奇战利品', 'LEGENDARY LOOT')
+            : L('史诗战利品', 'EPIC LOOT');
+        lootTitle.textContent = tierName;
+        const valueText = typeof formatMoney === 'function' ? formatMoney(best.value ?? 0) : String(best.value ?? '');
+        const itemName = typeof getItemLabel === 'function' ? getItemLabel(best) : best.name;
+        lootDetail.textContent = [itemName, valueText].filter(Boolean).join(' · ');
+        retrigger(lootBanner, 'is-active');
+
+        if (typeof spawnPulse === 'function' && typeof BABYLON !== 'undefined') {
+          spawnPulse(new BABYLON.Vector3(container.x, 1.1, container.z), best.rarity === 'red' ? '#ff6659' : '#ffd16f', 0.18, 0.34);
+        }
+        return result;
+      };
+    }
 
     const animateBeforePolish = animateRaidEntities;
     animateRaidEntities = function polishedEnemyReaction(dt, ...args) {
