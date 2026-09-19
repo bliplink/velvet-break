@@ -119,7 +119,6 @@
           if (animatedSet.has(enemy) || enemy.despawned) continue;
           const root = enemy.visual?.root;
           if (!root) continue;
-          root.setEnabled(true);
           root.position.x = enemy.x;
           root.position.z = enemy.z;
           root.rotation.y = enemy.heading ?? root.rotation.y;
