@@ -112,7 +112,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(450);
     const poiHud = await page.evaluate(() => ({
       text: document.getElementById('combatPoiLabel')?.textContent ?? '',
       visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
@@ -126,7 +126,7 @@ const { chromium } = require('playwright');
       raid.player.z = zone.z;
       return { zoneKind: zone.kind, zoneId: zone.id };
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(450);
     const extractionHudAfter = await page.evaluate(() => ({
       text: document.getElementById('combatExtractLabel')?.textContent ?? '',
       visible: document.getElementById('combatExtractLabel')?.classList.contains('is-visible') ?? false,
