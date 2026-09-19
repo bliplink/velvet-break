@@ -61,6 +61,9 @@ jobs:
       - name: Verify combat polish
         run: node scripts/combat-polish-smoke.cjs
 
+      - name: Verify risk reward raid loop v2
+        run: node scripts/raid-loop-v2-smoke.cjs
+
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
