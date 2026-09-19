@@ -25,9 +25,10 @@
     scene.skipPointerMovePicking = true;
     scene.skipPointerDownPicking = true;
     scene.skipPointerUpPicking = true;
+    if ('constantlyUpdateMeshUnderPointer' in scene) scene.constantlyUpdateMeshUnderPointer = false;
 
     const debug = {
-      version: '2026-09-19-fps-v4',
+      version: '2026-09-19-fps-v5',
       baseEffectLimit: 72,
       effectLimit: 72,
       trimmedEffects: 0,
@@ -38,6 +39,9 @@
       currentFps: 0,
       frozenStaticMeshes: 0,
       frozenStaticMaterials: 0,
+      lightGovernorMode: 'full',
+      activeRealtimeStreetlights: 0,
+      lightGovernorChanges: 0,
     };
     window.__sdrPerformanceV3Debug = debug;
 
@@ -84,7 +88,24 @@
       lastBudgetSample = now;
       const fps = engine.getFps?.() ?? 60;
       debug.currentFps = Math.round(fps * 10) / 10;
-      debug.effectLimit = fps < 30 ? 34 : fps < 42 ? 48 : fps < 52 ? 60 : 72;
+      debug.effectLimit = fps < 30 ? 30 : fps < 42 ? 42 : fps < 52 ? 56 : 72;
+
+      const lights = (scene.lights ?? [])
+        .filter(light => String(light.name ?? '').startsWith('industrial-streetlight-glow-'));
+      const desiredMode = fps < 40 ? 'off' : fps < 50 ? 'reduced' : 'full';
+      if (desiredMode !== debug.lightGovernorMode) {
+        debug.lightGovernorMode = desiredMode;
+        debug.lightGovernorChanges += 1;
+      }
+      lights.forEach((light, index) => {
+        const enabled = desiredMode === 'full'
+          ? true
+          : desiredMode === 'reduced'
+            ? index === 0
+            : false;
+        light.setEnabled?.(enabled);
+      });
+      debug.activeRealtimeStreetlights = lights.filter(light => light.isEnabled?.() !== false).length;
     };
 
     const distanceFromPlayer = (position) => {
