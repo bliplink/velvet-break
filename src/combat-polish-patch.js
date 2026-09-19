@@ -290,12 +290,14 @@
     };
 
     let lastPoiId = null;
+    let lastExtractKey = null;
     window.setInterval(() => {
       const player = state.raid?.player;
       if (!player || state.mode !== 'raid') {
         poiLabel.classList.remove('is-visible');
         extractLabel.classList.remove('is-visible');
         lastPoiId = null;
+        lastExtractKey = null;
         return;
       }
       const poi = resolvePoi(player.x, player.z);
@@ -329,12 +331,18 @@
             ? L('任务撤离', 'TASK EXIT')
             : L('普通撤离', 'STANDARD EXIT');
         const zoneName = L(nearestZone.nameZh ?? nearestZone.name ?? nearestZone.id, nearestZone.nameEn ?? nearestZone.name ?? nearestZone.id);
-        extractLabel.textContent = `${zoneName} · ${typeLabel} · ${Math.round(nearestDistance)}m`;
+        const roundedDistance = Math.round(nearestDistance / 2) * 2;
+        const nextExtractKey = `${nearestZone.id}|${typeLabel}|${roundedDistance}`;
+        if (nextExtractKey !== lastExtractKey) {
+          extractLabel.textContent = `${zoneName} · ${typeLabel} · ${roundedDistance}m`;
+          lastExtractKey = nextExtractKey;
+        }
         extractLabel.classList.add('is-visible');
       } else {
         extractLabel.classList.remove('is-visible');
+        lastExtractKey = null;
       }
-    }, 220);
+    }, 360);
   };
 
   boot();
