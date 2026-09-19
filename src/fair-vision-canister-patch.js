@@ -218,25 +218,13 @@
           if (mesh?.setEnabled) mesh.setEnabled(false);
         }
 
-        const scanned = typeof isEnemyActivelyReconRevealed === 'function'
-          ? isEnemyActivelyReconRevealed(enemy, raid)
-          : (enemy.revealedTimer ?? 0) > 0.01;
-
-        let clearSight = false;
-        if (scanned && !enemy.dead && typeof lineOfSightBlocked === 'function') {
-          clearSight = !lineOfSightBlocked(
-            raid.player.x,
-            raid.player.z,
-            enemy.x,
-            enemy.z,
-          );
-        }
+        visual.classLabel?.setEnabled?.(false);
+        if (visual.classLabelMaterial) visual.classLabelMaterial.alpha = 0;
 
         for (const mesh of visual.overlayMeshes ?? []) {
           if (!mesh) continue;
-          mesh.renderOverlay = clearSight;
-          mesh.overlayColor = BABYLON.Color3.FromHexString('#7ad7df');
-          mesh.overlayAlpha = clearSight ? 0.12 : 0;
+          mesh.renderOverlay = false;
+          mesh.overlayAlpha = 0;
         }
       }
     };
@@ -298,7 +286,7 @@
     tick();
 
     window.__sdrFairVisionCanisterDebug = {
-      version: '2026-09-19b',
+      version: '2026-09-19c',
       wallRevealDisabled: true,
       opaqueBuildings: true,
       actorTankRemodel: true,
