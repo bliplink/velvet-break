@@ -49,6 +49,9 @@ jobs:
       - name: Verify visual overhaul
         run: node scripts/visual-overhaul-smoke.cjs
 
+      - name: Verify performance visibility and repeat rescue
+        run: node scripts/performance-rescue-smoke.cjs
+
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
 
