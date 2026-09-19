@@ -29,13 +29,34 @@
     window.__sdrRaidCompanionApplied = true;
 
     const RAID_ID = 'raid';
-    const REVIVE_TIME = 6;
-    const RESCUE_RANGE = 3.25;
+    const REVIVE_TIME = 5;
+    const RESCUE_RANGE = 3.6;
     const DOWNED_TIME = 20;
     const rules = window.SDRCombat;
     const isInteractHeld = () => Boolean(
       state.input?.interactHeld || state.input?.keys?.has('KeyE') || state.input?.keys?.has('e'),
     );
+
+    const interactBeforeCompanionRescue = triggerRaidInteract;
+    triggerRaidInteract = function triggerCompanionRescueFirst(...args) {
+      const raid = state.raid;
+      const companion = raid?.companion;
+      const player = raid?.player;
+      if (
+        state.mode === 'raid' &&
+        !state.overlay &&
+        companion?.downed &&
+        !companion.dead &&
+        player &&
+        distance2D(companion.x, companion.z, player.x, player.z) <= RESCUE_RANGE
+      ) {
+        state.input.interactHeld = true;
+        companion.reviveProgress = Math.max(0, companion.reviveProgress ?? 0);
+        raid.interactionText = L('正在救援克隆…继续按住 E。', 'Reviving Clone… keep holding E.');
+        return true;
+      }
+      return interactBeforeCompanionRescue.apply(this, args);
+    };
 
     const createCompanion = (raid) => {
       if (!raid || raid.modeId !== RAID_ID || raid.training || raid.companion) return;
@@ -461,11 +482,11 @@
             }
           } else {
             companion.reviveProgress = Math.max(0, (companion.reviveProgress ?? 0) - dt * 0.35);
-            raid.interactionText = L('克隆在 3.25 米救援范围内，按住 E 开始救援。', 'Clone is within the 3.25 m rescue range. Hold E to revive.');
+            raid.interactionText = L('克隆在 3.6 米救援范围内，按住 E 开始救援。', 'Clone is within the 3.6 m rescue range. Hold E to revive.');
           }
         } else {
           companion.reviveProgress = Math.max(0, (companion.reviveProgress ?? 0) - dt * 0.6);
-          raid.interactionText = L(`克隆倒地，需在 3.25 米内救援（当前 ${rescueDistance.toFixed(1)} 米）。`, `Clone is down. Move within 3.25 m to revive (currently ${rescueDistance.toFixed(1)} m).`);
+          raid.interactionText = L(`克隆倒地，需在 3.6 米内救援（当前 ${rescueDistance.toFixed(1)} 米）。`, `Clone is down. Move within 3.6 m to revive (currently ${rescueDistance.toFixed(1)} m).`);
         }
         updateCompanionVisual(companion, dt);
         return;
