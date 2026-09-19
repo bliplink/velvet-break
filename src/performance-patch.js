@@ -61,8 +61,8 @@
         const dx = enemy.x - raid.player.x;
         const dz = enemy.z - raid.player.z;
         const distanceSq = dx * dx + dz * dz;
-        const farDetail = distanceSq > 105 * 105;
-        const veryFarDetail = distanceSq > 145 * 145;
+        const farDetail = distanceSq > 88 * 88;
+        const veryFarDetail = distanceSq > 112 * 112;
 
         if (visual.__detailLodFar !== farDetail) {
           visual.__detailLodFar = farDetail;
