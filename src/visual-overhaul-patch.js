@@ -245,20 +245,15 @@
       originalCharacterModels: true,
     };
 
-    const tick = () => {
+    const initialPass = () => {
       decorateExistingActors();
       overhaulPlayerViewModel();
       forceOpaqueBuildings();
       remodelStreetlights();
     };
 
-    tick();
-    window.setTimeout(tick, 350);
-    window.setInterval(() => {
-      decorateExistingActors();
-      overhaulPlayerViewModel();
-      forceOpaqueBuildings();
-    }, 1400);
+    initialPass();
+    window.setTimeout(initialPass, 450);
   };
 
   boot();
