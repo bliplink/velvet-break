@@ -224,6 +224,7 @@
 
       visual.humanDetailMeshes = added;
       visual.overlayMeshes = [...(visual.overlayMeshes ?? []), ...added];
+      visual.emissiveMeshes = (visual.emissiveMeshes ?? [visual.body]).filter((mesh) => mesh?.material);
       return visual;
     };
 
