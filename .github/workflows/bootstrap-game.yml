@@ -1,0 +1,86 @@
+name: Bootstrap latest Iron Extraction source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/bootstrap-game.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout bootstrap repository
+        uses: actions/checkout@v4
+
+      - name: Reconstruct latest game from verified sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://git.chatgpt-team.site/0a7abdb8-73fd-453d-96a9-20ec095ed301/appgprj_6a9183ebee8c8191b52cf3f36a7a62ce.git"
+          site="https://sou-da-che-fps-20260913.k-de-shuai.chatgpt.site"
+          rm -rf /tmp/game
+          git clone --depth 1 --branch main "$origin" /tmp/game
+
+          while read -r sha path; do
+            mkdir -p "/tmp/game/$(dirname "$path")"
+            curl -fLsS "$site/$path" -o "/tmp/game/$path"
+          done < "$GITHUB_WORKSPACE/.bootstrap/static-sha256.txt"
+
+          (
+            cd /tmp/game
+            sha256sum -c "$GITHUB_WORKSPACE/.bootstrap/static-sha256.txt"
+          )
+
+          cp "$GITHUB_WORKSPACE/.bootstrap/index.html" /tmp/game/index.html
+          echo "283bb231c8342b72d84d8a7f2c07c82e1568c6d18692ea900baaa5bdf72042a6  /tmp/game/index.html" | sha256sum -c -
+
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('/tmp/game/server.js')
+          s = p.read_text(encoding='utf-8')
+          needle = "  '.ico': 'image/x-icon',\n"
+          if "'.wav': 'audio/wav'" not in s:
+              s = s.replace(needle, needle + "  '.wav': 'audio/wav',\n")
+          p.write_text(s, encoding='utf-8')
+          PY
+
+          rm -rf /tmp/game/.openai /tmp/game/node_modules /tmp/game/dist /tmp/game/screenshots
+          cat > /tmp/game/.gitignore <<'EOF'
+          node_modules/
+          dist/
+          screenshots/
+          .codex-artifacts/
+          .codex-*.png
+          server.err.log
+          server.out.log
+          .openai/
+          EOF
+
+      - name: Validate reconstructed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd /tmp/game
+          npm run build
+          test -f dist/client/index.html
+          test -f dist/client/src/main.js
+          test -f dist/client/styles/main.css
+          test -f dist/client/vendor/babylon.js
+          test -f dist/client/assets/raid-combat.wav
+
+      - name: Replace repository with game source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          tar -C /tmp/game --exclude=.git --exclude=dist -cf - . | tar -C "$GITHUB_WORKSPACE" -xf -
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Import latest Iron Extraction game source"
+          git push origin main
