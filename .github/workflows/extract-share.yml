@@ -1,4 +1,4 @@
-name: Extract shared Codex chat
+name: Probe Codex shared snapshot API
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  extract:
+  probe:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -21,22 +21,53 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install share extractor and browser
-        run: |
-          python -m pip install "searchts[mcp]" patchright
-          patchright install --with-deps chromium
+      - name: Install HTTP client
+        run: python -m pip install curl-cffi
 
-      - name: Extract shared ChatGPT/Codex snapshot
-        env:
-          SEARCHTS_NO_JINA: "1"
+      - name: Probe public snapshot endpoints
         run: |
-          searchts read "https://chatgpt.com/s/cx_6aadded667ac8191851599c9fc8e5a05" > shared-chat.md
-          test -s shared-chat.md
+          python - <<'PY'
+          from curl_cffi import requests
+          import json
 
-      - name: Commit extracted snapshot
+          sid = "cx_6aadded667ac8191851599c9fc8e5a05"
+          bare = sid.removeprefix("cx_")
+          urls = [
+              f"https://chatgpt.com/backend-api/share/{sid}",
+              f"https://chatgpt.com/backend-api/share/{bare}",
+              f"https://chatgpt.com/backend-api/codex/share/{sid}",
+              f"https://chatgpt.com/backend-api/codex/shared-thread/{sid}",
+              f"https://chatgpt.com/backend-api/shared-thread/{sid}",
+          ]
+          results = []
+          for url in urls:
+              try:
+                  r = requests.get(
+                      url,
+                      impersonate="chrome",
+                      headers={"Accept":"application/json,text/plain,*/*"},
+                      timeout=20,
+                  )
+                  body = r.text
+                  item = {
+                      "url": url,
+                      "status": r.status_code,
+                      "content_type": r.headers.get("content-type"),
+                      "length": len(body),
+                      "body": body[:50000] if r.status_code == 200 else body[:2000],
+                  }
+              except Exception as e:
+                  item = {"url": url, "error": repr(e)}
+              results.append(item)
+          open("probe-results.json","w",encoding="utf-8").write(
+              json.dumps(results, ensure_ascii=False, indent=2)
+          )
+          PY
+
+      - name: Commit probe results
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add shared-chat.md
-          git commit -m "Extract 搜打撤 shared chat source" || exit 0
+          git add probe-results.json
+          git commit -m "Probe Codex public snapshot API" || exit 0
           git push
