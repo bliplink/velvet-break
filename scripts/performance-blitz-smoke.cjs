@@ -131,7 +131,21 @@ const { chromium } = require('playwright');
       baseBodyVisible: state.raid.enemies[0]?.visual?.body?.isVisible ?? false,
     }));
 
-    const result = { lobby, blitzRaid, objectiveCompletion, effects, visuals, errors };
+    const stability = await page.evaluate(async () => {
+      const enemy = state.raid.enemies.find(entry => !entry.dead && !entry.despawned && entry.visual?.root);
+      const root = enemy?.visual?.root ?? null;
+      root?.setEnabled?.(false);
+      await new Promise(resolve => setTimeout(resolve, 560));
+      const hud = document.getElementById('blitzStatusHud');
+      return {
+        debug: window.__sdrStabilityV4Debug ?? null,
+        enemyVisible: root?.isEnabled?.() ?? false,
+        hudVisible: Boolean(hud && !hud.classList.contains('hidden')),
+        hudText: hud?.textContent ?? '',
+      };
+    });
+
+    const result = { lobby, blitzRaid, objectiveCompletion, effects, visuals, stability, errors };
     console.log(JSON.stringify(result, null, 2));
 
     const searchObjective = blitzRaid.objectives.find(entry => entry.id === 'search');
@@ -188,6 +202,13 @@ const { chromium } = require('playwright');
       visuals.fairVision?.originalCharacterModels &&
       visuals.rollback?.legacyCanisterModel &&
       visuals.rollback?.opaquePasses <= 2 &&
+      stability.debug?.version === '2026-09-20-stability-v4' &&
+      stability.debug?.lastVisibleEnemyCount > 0 &&
+      stability.enemyVisible &&
+      stability.hudVisible &&
+      stability.hudText.includes('极速突袭') &&
+      stability.hudText.includes('搜索') &&
+      stability.hudText.includes('清敌') &&
       errors.length === 0
     );
 
