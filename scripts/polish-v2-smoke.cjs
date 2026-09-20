@@ -63,7 +63,7 @@ const { chromium } = require('playwright');
       enemy.maxHealth = 10000;
       enemy.health = 10000;
       player.__supportShot = true;
-      player.supportFirepowerTimer = 10;
+      player.supportFirepowerTimer = 8;
       const enemyBefore = enemy.health;
       damageEnemy(enemy, 100, { ignoreSmoke: true });
       player.__supportShot = false;
@@ -73,7 +73,7 @@ const { chromium } = require('playwright');
         postTimer,
         boostedDamage: enemyBefore - enemy.health,
         name: getOperatorDefs().medic.nameEn,
-        description: getOperatorDefs().medic.skillTextEn,
+        description: getOperatorDefs().medic.skillTextEn,\n        stability: window.__sdrStabilityV4Debug ?? null,
       };
     });
 
@@ -118,10 +118,10 @@ const { chromium } = require('playwright');
       firstRescue.health > 1 &&
       firstRescue.reviveCount >= 1 &&
       balance.name === 'Benjamin' &&
-      balance.healed > 250 && balance.healed <= 320 &&
-      balance.immunity <= 2.5 &&
-      balance.postTimer <= 10.1 && balance.postTimer > 9 &&
-      balance.boostedDamage >= 130 && balance.boostedDamage <= 140 &&
+      balance.healed >= 259 && balance.healed <= 261 &&
+      balance.immunity >= 1.79 && balance.immunity <= 1.81 &&
+      balance.postTimer <= 8.1 && balance.postTimer > 7.5 &&
+      balance.boostedDamage >= 124 && balance.boostedDamage <= 126 &&\n      balance.description.includes('+25% bullet damage') &&\n      balance.stability?.version === '2026-09-20-stability-v4' &&\n      balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
       visual.xray.overlayEnabled === 0 &&
       (!visual.xray.labelEnabled || visual.xray.labelAlpha === 0) &&
