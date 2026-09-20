@@ -8,7 +8,8 @@
       typeof state === 'undefined' ||
       typeof scene === 'undefined' ||
       typeof syncHud === 'undefined' ||
-      typeof distance2D === 'undefined'
+      typeof distance2D === 'undefined' ||
+      typeof refs === 'undefined'
     ) {
       window.__sdrStabilityV4Waiting = true;
       window.setTimeout(boot, 80);
