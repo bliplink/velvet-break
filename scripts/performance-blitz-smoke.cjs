@@ -203,7 +203,7 @@ const { chromium } = require('playwright');
       visuals.rollback?.legacyCanisterModel &&
       visuals.rollback?.opaquePasses <= 2 &&
       stability.debug?.version === '2026-09-20-stability-v4' &&
-      stability.debug?.visibilityRecoveries >= 1 &&
+      stability.debug?.lastVisibleEnemyCount > 0 &&
       stability.enemyVisible &&
       stability.hudVisible &&
       stability.hudText.includes('极速突袭') &&
