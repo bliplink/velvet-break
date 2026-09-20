@@ -2,7 +2,7 @@ name: Playwright QA
 
 on:
   push:
-    branches: [main, stability-v4-20260920]
+    branches: [main]
     paths:
       - ".github/workflows/playwright-qa.yml"
       - "index.html"
@@ -55,7 +55,7 @@ jobs:
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
 
-      - name: Verify rescue Benjamin xray and human model v2
+      - name: Verify rescue Benjamin balance xray and original model
         run: node scripts/polish-v2-smoke.cjs
 
       - name: Verify combat polish
