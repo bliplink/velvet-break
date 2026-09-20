@@ -99,10 +99,10 @@
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        skillTextZh: '手动触发：恢复 320 生命、免伤 2.5 秒；随后 10 秒获得 25% 减伤且子弹伤害提升 35%。增益烟雾持续 7 秒。',
-        skillTextEn: 'Manual: restore 320 HP and gain 2.5s immunity, then gain 25% damage reduction and +35% bullet damage for 10s. Recovery Smoke lasts 7s.',
+        skillTextZh: '手动触发：恢复 260 生命、免伤 1.8 秒；随后 8 秒获得 25% 减伤且子弹伤害提升 25%。增益烟雾持续 7 秒。',
+        skillTextEn: 'Manual: restore 260 HP and gain 1.8s immunity, then gain 25% damage reduction and +25% bullet damage for 8s. Recovery Smoke lasts 7s.',
         spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
-        abilityDuration: 12.5, abilityColor: '#74e0a0',
+        abilityDuration: 9.8, abilityColor: '#74e0a0',
       });
       defs[ENGINEER_ID] = { ...engineerDef };
       return defs;
@@ -363,10 +363,10 @@
         if ((player.abilityActiveTimer ?? 0) > 0 || (player.skillUses ?? 0) <= 0) return abilityBeforeEngineer();
         player.skillUses -= 1;
         player.abilityCharges = player.skillUses;
-        player.abilityActiveTimer = 12.5;
-        player.operatorEffectTimer = 12.5;
-        player.health = Math.min(player.maxHealth, player.health + 320);
-        player.damageImmunityTimer = 2.5;
+        player.abilityActiveTimer = 9.8;
+        player.operatorEffectTimer = 9.8;
+        player.health = Math.min(player.maxHealth, player.health + 260);
+        player.damageImmunityTimer = 1.8;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.supportFirepowerTimer = 0;
@@ -374,7 +374,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：恢复 320 生命、免伤 2.5 秒；随后 10 秒获得 25% 减伤与 35% 子弹增伤。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +320 HP, 2.5s immunity, then 10s of 25% damage reduction and +35% bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：恢复 260 生命、免伤 1.8 秒；随后 8 秒获得 25% 减伤与 25% 子弹增伤。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +260 HP, 1.8s immunity, then 8s of 25% damage reduction and +25% bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
@@ -559,11 +559,11 @@
 
       if (current.operatorId === 'medic' && current.benjaminPostPhasePending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.benjaminPostPhasePending = false;
-        current.damageReductionTimer = 10;
+        current.damageReductionTimer = 8;
         current.damageReductionMult = 0.75;
-        current.supportFirepowerTimer = 10;
+        current.supportFirepowerTimer = 8;
         spawnPulse(new BABYLON.Vector3(current.x, 1, current.z), '#d6ff98', 0.14, 0.16);
-        notify(L('免伤结束：接下来 10 秒获得 25% 减伤，子弹伤害提升 35%。', 'Immunity ended: 10 seconds of 25% damage reduction and +35% bullet damage.'), 'success');
+        notify(L('免伤结束：接下来 8 秒获得 25% 减伤，子弹伤害提升 25%。', 'Immunity ended: 8 seconds of 25% damage reduction and +25% bullet damage.'), 'success');
       }
 
       const execution = currentRaid.engineerExecution;
