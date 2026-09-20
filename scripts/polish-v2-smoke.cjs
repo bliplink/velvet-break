@@ -73,7 +73,8 @@ const { chromium } = require('playwright');
         postTimer,
         boostedDamage: enemyBefore - enemy.health,
         name: getOperatorDefs().medic.nameEn,
-        description: getOperatorDefs().medic.skillTextEn,\n        stability: window.__sdrStabilityV4Debug ?? null,
+        description: getOperatorDefs().medic.skillTextEn,
+        stability: window.__sdrStabilityV4Debug ?? null,
       };
     });
 
@@ -121,7 +122,10 @@ const { chromium } = require('playwright');
       balance.healed >= 259 && balance.healed <= 261 &&
       balance.immunity >= 1.79 && balance.immunity <= 1.81 &&
       balance.postTimer <= 8.1 && balance.postTimer > 7.5 &&
-      balance.boostedDamage >= 124 && balance.boostedDamage <= 126 &&\n      balance.description.includes('+25% bullet damage') &&\n      balance.stability?.version === '2026-09-20-stability-v4' &&\n      balance.stability?.rescueInputRecoveries >= 1 &&
+      balance.boostedDamage >= 124 && balance.boostedDamage <= 126 &&
+      balance.description.includes('+25% bullet damage') &&
+      balance.stability?.version === '2026-09-20-stability-v4' &&
+      balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
       visual.xray.overlayEnabled === 0 &&
       (!visual.xray.labelEnabled || visual.xray.labelAlpha === 0) &&
