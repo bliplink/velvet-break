@@ -625,7 +625,7 @@
           ? L('玩家与克隆均已倒地，行动失败。', 'Both the player and Clone are down. Operation failed.')
           : raid.interactionText || L(`倒地：克隆将先清敌再救援 · ${remaining}s`, `Downed: Clone clears nearby threats before reviving · ${remaining}s`);
       } else if (raid.companion?.downed && refs.interactionPrompt) {
-        refs.interactionPrompt.textContent = raid.interactionText || L('克隆倒地：进入 2.5 米内后按住 E 救援（10 秒）', 'Clone down: enter the 2.5 m range and hold E to revive (10s)');
+        refs.interactionPrompt.textContent = raid.interactionText || L('克隆倒地：进入 3.6 米内后按住 E 救援（5 秒）', 'Clone down: enter the 3.6 m range and hold E to revive (5s)');
       }
       return result;
     };
