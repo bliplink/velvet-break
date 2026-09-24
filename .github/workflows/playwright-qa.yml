@@ -2,7 +2,7 @@ name: Playwright QA
 
 on:
   push:
-    branches: [main]
+    branches: [main, benjamin-original-kai-buff-20260924]
     paths:
       - ".github/workflows/playwright-qa.yml"
       - "index.html"
@@ -57,6 +57,9 @@ jobs:
 
       - name: Verify rescue Benjamin balance xray and original model
         run: node scripts/polish-v2-smoke.cjs
+
+      - name: Verify operator balance regression
+        run: node scripts/operator-regression.cjs
 
       - name: Verify combat polish
         run: node scripts/combat-polish-smoke.cjs
