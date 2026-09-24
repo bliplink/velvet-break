@@ -128,14 +128,14 @@ assert.equal(r.engineerExecution, undefined);
 context.killEnemy(target);
 assert.equal(r.player.benjaminKillCount, 1);
 for (let i = 0; i < 4; i++) context.killEnemy({ health: 100 });
-assert.equal(r.player.benjaminKillShieldTimer, 5);
+assert.equal(r.player.benjaminKillShieldTimer, 2.5);
 context.applyDamageToPlayer(999);
 assert.equal(r.player.health, 1000);
 context.updateRaid(5);
 context.applyDamageToPlayer(100);
 assert.equal(r.player.health, 900);
 for (let i = 0; i < 5; i++) context.killEnemy({ health: 100 });
-assert.equal(r.player.benjaminKillShieldTimer, 5);
+assert.equal(r.player.benjaminKillShieldTimer, 2.5);
 
 r = raid();
 r.mouseWorldPointer = { clientX: 400, clientY: 600 };
