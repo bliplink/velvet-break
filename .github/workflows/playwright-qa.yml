@@ -58,6 +58,9 @@ jobs:
       - name: Verify rescue Benjamin balance xray and original model
         run: node scripts/polish-v2-smoke.cjs
 
+      - name: Verify operator balance regression
+        run: node scripts/operator-regression.cjs
+
       - name: Verify combat polish
         run: node scripts/combat-polish-smoke.cjs
 

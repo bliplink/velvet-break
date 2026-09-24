@@ -58,8 +58,13 @@ function raid(operatorId = 'engineer') {
 function key(code) { for (const callback of listeners) callback({ code, preventDefault: noop, stopImmediatePropagation: noop }); }
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 let r = raid();
-assert.equal(context.getOperatorDefs().assault.abilityDuration, 30);
-assert.equal(context.getOperatorDefs().assault.killHeal, 60);
+assert.equal(context.getOperatorDefs().assault.abilityDuration, 35);
+assert.equal(context.getOperatorDefs().assault.killHeal, 90);
+assert.equal(context.getOperatorDefs().assault.killExtendSeconds, 1.5);
+close(context.getOperatorDefs().assault.spreadMult, 0.70);
+close(context.getOperatorDefs().assault.recoilMult, 0.72);
+close(context.getOperatorDefs().assault.reloadMult, 0.72);
+assert.equal(context.getOperatorDefs().assault.startArmorBonus, 18);
 context.useOperatorUtility();
 assert.equal(r.engineerBarriers.length, 1);
 assert.ok(r.engineerBarriers[0].visual.root.getChildMeshes().length >= 12);
@@ -123,14 +128,14 @@ assert.equal(r.engineerExecution, undefined);
 context.killEnemy(target);
 assert.equal(r.player.benjaminKillCount, 1);
 for (let i = 0; i < 4; i++) context.killEnemy({ health: 100 });
-assert.equal(r.player.benjaminKillShieldTimer, 5);
+assert.equal(r.player.benjaminKillShieldTimer, 2.5);
 context.applyDamageToPlayer(999);
 assert.equal(r.player.health, 1000);
 context.updateRaid(5);
 context.applyDamageToPlayer(100);
 assert.equal(r.player.health, 900);
 for (let i = 0; i < 5; i++) context.killEnemy({ health: 100 });
-assert.equal(r.player.benjaminKillShieldTimer, 5);
+assert.equal(r.player.benjaminKillShieldTimer, 2.5);
 
 r = raid();
 r.mouseWorldPointer = { clientX: 400, clientY: 600 };
