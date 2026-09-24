@@ -372,13 +372,21 @@
       Object.assign(defs.assault, {
         nameZh: '凯',
         nameEn: 'Kai',
-        passiveZh: '男 · 前线突击手，重甲推进时体力消耗更低。',
-        passiveEn: 'Male · Frontline breacher with reduced stamina drain during Overdrive.',
-        skillTextZh: '手动启动：20 秒内移速 x2、伤害翻倍并降低体力消耗；击败敌人延长时间并回复生命。',
-        skillTextEn: 'Manual: 20s of x2 speed, double damage, and reduced stamina drain. Kills extend it and restore health.',
+        passiveZh: '男 · 前线突击手，控枪更稳、换弹更快，过载击杀可持续续航。',
+        passiveEn: 'Male · Frontline breacher with steadier gun control, faster reloads, and stronger Overdrive kill sustain.',
+        skillTextZh: '手动启动：35 秒内移速 x2、伤害翻倍；期间每击败一人延长 1.5 秒并恢复 90 生命。',
+        skillTextEn: 'Manual: 35s of x2 speed and double damage. Each kill adds 1.5s and restores 90 HP.',
         itemNameZh: '高级手雷',
         itemNameEn: 'Advanced Grenade',
-        killExtendSeconds: 0.5,
+        abilityDuration: 35,
+        speedBoostMult: 2,
+        damageBoostMult: 2,
+        killExtendSeconds: 1.5,
+        killHeal: 90,
+        spreadMult: 0.70,
+        recoilMult: 0.72,
+        reloadMult: 0.72,
+        startArmorBonus: 18,
       });
       Object.assign(defs.medic, {
         nameZh: '本杰明',
@@ -387,8 +395,8 @@
         passiveEn: 'Male · Tactical support specialist with extra medical supplies and sustained fire.',
         skillNameZh: '火力增益',
         skillNameEn: 'Firepower Boost',
-        skillTextZh: '手动启动：立即恢复 260 生命并免伤 1.8 秒，随后 8 秒获得轻度减伤且子弹伤害提升 25%。技能不会自动触发。',
-        skillTextEn: 'Manual: restore 260 HP and gain 1.8s immunity, then gain light damage reduction and +25% bullet damage for 8s. Never auto-triggers.',
+        skillTextZh: '手动启动：立即恢复 500 生命并免伤 5 秒，随后 15 秒伤害减半且子弹伤害翻倍。技能不会自动触发。',
+        skillTextEn: 'Manual: restore 500 HP and gain 5s immunity, then take half damage and deal double bullet damage for 15s. Never auto-triggers.',
         itemNameZh: '增益烟雾',
         itemNameEn: 'Recovery Smoke',
       });
@@ -449,14 +457,14 @@
         notify(L(`扫描区域已揭示 ${revealed} 名敌人和兵种，已清除正在交火的最近 ${targets.length} 名敌人。`, `Scan revealed ${revealed} enemies and classes; eliminated ${targets.length} nearest enemies currently engaging you.`), 'success');
       } else {
         spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), operator.abilityColor ?? '#74e0a0', 0.14, 0.22);
-        player.health = Math.min(player.maxHealth, player.health + 260);
-        player.damageImmunityTimer = 1.8;
+        player.health = Math.min(player.maxHealth, player.health + 500);
+        player.damageImmunityTimer = 5;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.medicPostShieldPending = true;
         player.supportFirepowerTimer = 0;
         player.supportFirepowerPending = true;
-        notify(L(`战术增益已启动：恢复 260 生命，1.8 秒免伤；随后 8 秒轻度减伤与 25% 子弹增伤。剩余技能 ${player.skillUses}/4。`, `Combat boost active: +260 HP, 1.8s immunity, then 8s light mitigation and +25% bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益已启动：恢复 500 生命，5 秒免伤；随后 15 秒伤害减半与双倍子弹伤害。剩余技能 ${player.skillUses}/4。`, `Combat boost active: +500 HP, 5s immunity, then 15s half damage and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
       }
       syncUtilityUi();
       syncHud();
@@ -692,7 +700,7 @@
         return;
       }
       const boostedDamage = player?.__supportShot && player.operatorId === 'medic' && (player.supportFirepowerTimer ?? 0) > 0
-        ? damage * 1.25
+        ? damage * 2
         : damage;
       return originalDamageEnemy(enemy, boostedDamage, options);
     };
@@ -815,8 +823,8 @@
       }
       if (current?.supportFirepowerPending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.supportFirepowerPending = false;
-        current.supportFirepowerTimer = 8;
-        notify(L('免伤结束：接下来 8 秒获得轻度减伤，子弹伤害提升 25%。', 'Immunity ended: 8 seconds of light damage reduction and +25% bullet damage.'), 'success');
+        current.supportFirepowerTimer = 15;
+        notify(L('免伤结束：接下来 15 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 15 seconds of half damage taken and double bullet damage.'), 'success');
       }
       if (current) {
         // Old layers refill abilityCharges. The raid-wide four-use cap is authoritative.
