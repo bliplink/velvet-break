@@ -58,8 +58,13 @@ function raid(operatorId = 'engineer') {
 function key(code) { for (const callback of listeners) callback({ code, preventDefault: noop, stopImmediatePropagation: noop }); }
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 let r = raid();
-assert.equal(context.getOperatorDefs().assault.abilityDuration, 30);
-assert.equal(context.getOperatorDefs().assault.killHeal, 60);
+assert.equal(context.getOperatorDefs().assault.abilityDuration, 35);
+assert.equal(context.getOperatorDefs().assault.killHeal, 90);
+assert.equal(context.getOperatorDefs().assault.killExtendSeconds, 1.5);
+close(context.getOperatorDefs().assault.spreadMult, 0.70);
+close(context.getOperatorDefs().assault.recoilMult, 0.72);
+close(context.getOperatorDefs().assault.reloadMult, 0.72);
+assert.equal(context.getOperatorDefs().assault.startArmorBonus, 18);
 context.useOperatorUtility();
 assert.equal(r.engineerBarriers.length, 1);
 assert.ok(r.engineerBarriers[0].visual.root.getChildMeshes().length >= 12);
