@@ -232,7 +232,7 @@ async function main() {
     movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
     rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
     rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
-    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 60 || rangeAfter.moved < 5 ||
+    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 90 || rangeAfter.moved < 5 ||
     rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
     !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ? 1 : 0);
 }
