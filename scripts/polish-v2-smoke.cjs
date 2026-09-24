@@ -58,12 +58,13 @@ const { chromium } = require('playwright');
       player.damageImmunityTimer = 0;
       updateRaid(0.05);
       const postTimer = player.supportFirepowerTimer;
+      const postReductionMult = player.damageReductionMult;
 
       const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
       enemy.maxHealth = 10000;
       enemy.health = 10000;
       player.__supportShot = true;
-      player.supportFirepowerTimer = 8;
+      player.supportFirepowerTimer = 15;
       const enemyBefore = enemy.health;
       damageEnemy(enemy, 100, { ignoreSmoke: true });
       player.__supportShot = false;
@@ -71,6 +72,7 @@ const { chromium } = require('playwright');
       return {
         ...immediate,
         postTimer,
+        postReductionMult,
         boostedDamage: enemyBefore - enemy.health,
         name: getOperatorDefs().medic.nameEn,
         description: getOperatorDefs().medic.skillTextEn,
@@ -119,11 +121,12 @@ const { chromium } = require('playwright');
       firstRescue.health > 1 &&
       firstRescue.reviveCount >= 1 &&
       balance.name === 'Benjamin' &&
-      balance.healed >= 259 && balance.healed <= 261 &&
-      balance.immunity >= 1.79 && balance.immunity <= 1.81 &&
-      balance.postTimer <= 8.1 && balance.postTimer > 7.5 &&
-      balance.boostedDamage >= 124 && balance.boostedDamage <= 126 &&
-      balance.description.includes('+25% bullet damage') &&
+      balance.healed >= 499 && balance.healed <= 501 &&
+      balance.immunity >= 4.99 && balance.immunity <= 5.01 &&
+      balance.postTimer <= 15.1 && balance.postTimer > 14.5 &&
+      balance.postReductionMult === 0.5 &&
+      balance.boostedDamage >= 199 && balance.boostedDamage <= 201 &&
+      balance.description.includes('double bullet damage') &&
       balance.stability?.version === '2026-09-20-stability-v4' &&
       balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
