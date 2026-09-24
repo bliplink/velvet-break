@@ -80,6 +80,33 @@ const { chromium } = require('playwright');
       };
     });
 
+    const kai = await page.evaluate(() => {
+      state.save.selectedOperatorId = 'assault';
+      startRaid();
+      const player = state.raid.player;
+      player.operatorId = 'assault';
+      player.skillUses = 4;
+      player.health = Math.max(1, player.maxHealth - 200);
+      const def = getOperatorDefs().assault;
+      const healthBefore = player.health;
+      useOperatorAbility();
+      const startTimer = player.abilityActiveTimer;
+      const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
+      killEnemy(enemy);
+      return {
+        abilityDuration: def.abilityDuration,
+        startTimer,
+        afterKillTimer: player.abilityActiveTimer,
+        healOnKill: player.health - healthBefore,
+        killExtendSeconds: def.killExtendSeconds,
+        killHeal: def.killHeal,
+        spreadMult: def.spreadMult,
+        recoilMult: def.recoilMult,
+        reloadMult: def.reloadMult,
+        startArmorBonus: def.startArmorBonus,
+      };
+    });
+
     await page.evaluate(() => {
       const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
       enemy.revealedTimer = 10;
@@ -114,7 +141,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    console.log(JSON.stringify({ firstRescue, balance, visual, errors }, null, 2));
+    console.log(JSON.stringify({ firstRescue, balance, kai, visual, errors }, null, 2));
 
     const ok = Boolean(
       !firstRescue.downed &&
@@ -127,6 +154,16 @@ const { chromium } = require('playwright');
       balance.postReductionMult === 0.5 &&
       balance.boostedDamage >= 199 && balance.boostedDamage <= 201 &&
       balance.description.includes('double bullet damage') &&
+      kai.abilityDuration === 35 &&
+      kai.startTimer >= 34.9 && kai.startTimer <= 35.1 &&
+      kai.afterKillTimer >= 36.4 && kai.afterKillTimer <= 36.6 &&
+      kai.healOnKill >= 89 && kai.healOnKill <= 91 &&
+      kai.killExtendSeconds === 1.5 &&
+      kai.killHeal === 90 &&
+      kai.spreadMult === 0.70 &&
+      kai.recoilMult === 0.72 &&
+      kai.reloadMult === 0.72 &&
+      kai.startArmorBonus === 18 &&
       balance.stability?.version === '2026-09-20-stability-v4' &&
       balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
