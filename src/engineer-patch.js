@@ -1003,6 +1003,10 @@
           }
         } else player.incendiaryRefillTimer = FIRE_REFILL;
       }
+      for (const enemy of raid.enemies ?? []) {
+        enemy.engineerSlowTimer = Math.max(0, (enemy.engineerSlowTimer ?? 0) - dt);
+      }
+
       const stunTargeting = raid.stunGrenadeTargeting;
       if (stunTargeting) {
         stunTargeting.target = stunTargetAtMouse();
@@ -1092,7 +1096,6 @@
         if (field.light) field.light.intensity = distance > 60 ? 0 : 0.48 + Math.sin(field.phase * 8.4) * 0.1;
       }
       for (const enemy of raid.enemies ?? []) {
-        enemy.engineerSlowTimer = Math.max(0, (enemy.engineerSlowTimer ?? 0) - dt);
         if (enemy.dead || enemy.despawned) continue;
         const inside = (raid.incendiaryGrid?.at(enemy.x, enemy.z) ?? []).some(field => rules.fireContains(field, enemy, actorFeet, geometryBlocked));
         if (inside) {
