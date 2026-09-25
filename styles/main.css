@@ -1381,6 +1381,73 @@ button {
   font-size: 13px;
 }
 
+.stash-directory-actions,
+.stash-directory-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stash-directory-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.stash-directory-summary > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+}
+
+.stash-directory-summary span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.stash-directory-summary strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stash-directory-controls {
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(120px, .7fr) minmax(120px, .7fr);
+}
+
+.stash-directory-filter,
+.stash-directory-category,
+.stash-directory-sort {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+
+.stash-directory-filter:focus,
+.stash-directory-category:focus,
+.stash-directory-sort:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.stash-directory-row:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--panel) 82%, var(--accent) 4%);
+}
+
 @media (max-width: 760px) {
   .stash-directory-head {
     align-items: stretch;
@@ -1389,6 +1456,23 @@ button {
 
   .stash-directory-filter {
     width: 100%;
+  }
+
+  .stash-directory-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stash-directory-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stash-directory-actions {
+    align-items: stretch;
+  }
+
+  .stash-directory-actions .button,
+  .stash-directory-actions button {
+    flex: 1 1 140px;
   }
 
   .stash-directory-row {
