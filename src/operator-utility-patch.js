@@ -34,7 +34,7 @@
     const SUPPORT_SMOKE_TIME = 7;
     const SUPPORT_SMOKE_RADIUS = 20;
     const SUPPORT_SMOKE_CONTACT_RANGE = 2.2;
-    const GRENADE_DAMAGE = 500;
+    const GRENADE_DAMAGE = 800;
     const GRENADE_RADIUS = 26;
     let utilityView = null;
 
