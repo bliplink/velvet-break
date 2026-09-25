@@ -342,6 +342,8 @@ async function main() {
     renderBasePanel();
 
     const unlockButton = document.querySelector('[data-engineer-unlock]');
+    const lockTextBefore = document.querySelector('.operator-lock-note')?.textContent ?? '';
+    const moneyBeforeEngineer = state.save.money;
     unlockButton?.click();
 
     return {
@@ -349,6 +351,8 @@ async function main() {
       unlocked: Boolean(state.save.engineerUnlocked),
       selectedOperatorId: state.save.selectedOperatorId,
       money: state.save.money,
+      engineerUnlockCost: moneyBeforeEngineer - state.save.money,
+      lockTextBefore,
       ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
       ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
       unlockText: document.querySelector('.operator-lock-note')?.textContent ?? '',
@@ -434,6 +438,7 @@ async function main() {
     !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
     purchaseSetup.prepProductCount !== 0 ||
     !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
+    purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
     purchaseSetup.money >= 300000 || purchaseSetup.money < 250000 ||
     !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
     !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
