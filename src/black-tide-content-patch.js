@@ -41,9 +41,9 @@
     const MAP_ID = 'black-tide-harbor';
     const OPERATOR_ID = 'lingshuang';
     const OPERATOR_PRICE = 50000;
-    const PHASE_DURATION = 40;
-    const PHASE_MOVE_MULT = 1.85;
-    const PHASE_DAMAGE_MULT = 0.25;
+    const PHASE_DURATION = 50;
+    const PHASE_MOVE_MULT = 2.1;
+    const PHASE_DAMAGE_MULT = 0.15;
     const PRISM_MAX = 4;
     const PRISM_REFILL = 10;
     const PRISM_DURATION = 10;
@@ -160,20 +160,20 @@
       passiveEn: 'Female · Warden. Starts with greatly increased armor, much lower recoil and spread, faster reloads, and a powerful Prism Shield for burst protection.',
       skillNameZh: '相位推进',
       skillNameEn: 'Phase Drive',
-      skillTextZh: 'C 手动启动 40 秒：移动速度 +85%，受到伤害降低 75%。',
-      skillTextEn: 'C: activate for 40s to gain +85% movement speed and take 75% less damage.',
+      skillTextZh: 'C 手动启动 50 秒：移动速度 +110%，受到伤害降低 85%。',
+      skillTextEn: 'C: activate for 50s to gain +110% movement speed and take 85% less damage.',
       itemNameZh: '棱镜盾',
       itemNameEn: 'Prism Shield',
-      moveMult: 1.12,
-      spreadMult: 0.72,
-      recoilMult: 0.7,
-      reloadMult: 0.82,
+      moveMult: 1.25,
+      spreadMult: 0.58,
+      recoilMult: 0.55,
+      reloadMult: 0.68,
       detectMult: 1,
       healBonus: 0,
       healCooldownMult: 1,
-      startArmorBonus: 150,
+      startArmorBonus: 250,
       startMedkitBonus: 0,
-      utilityCharges: 2,
+      utilityCharges: 3,
       abilityDuration: PHASE_DURATION,
       abilityCooldown: 0,
       abilityColor: '#7cecff',
@@ -457,6 +457,8 @@
         raid.player.phaseBarrierTimer = 0;
         raid.player.phaseBarrierHp = 0;
         raid.player.phaseBarrierVisual = null;
+        raid.player.frostCanisters = 2;
+        raid.player.frostCanisterGainTimer = 12;
       }
 
       if (raid.modeId === MODE_ID) mountBlackTideMap(raid);
@@ -481,7 +483,7 @@
       player.abilityActiveTimer = PHASE_DURATION;
       player.operatorEffectTimer = PHASE_DURATION;
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#7cecff', 0.17, 0.22);
-      notify(Ls(`相位推进启动：40 秒内移速 +85%，受到伤害降低 75%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +85% movement and 75% damage reduction for 40s. Uses left: ${player.skillUses}/4.`), 'success');
+      notify(Ls(`相位推进启动：50 秒内移速 +110%，受到伤害降低 85%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +110% movement and 85% damage reduction for 50s. Uses left: ${player.skillUses}/4.`), 'success');
       syncHud();
       return true;
     };
@@ -552,6 +554,44 @@
         event.preventDefault();
         event.stopImmediatePropagation();
         usePrismShield();
+      }
+    }, true);
+
+    const FROST_RADIUS = 10;
+    const FROST_DURATION = 5;
+    const FROST_DPS = 50;
+    const FROST_SLOW_MULT = 0.45;
+    const useFrostCanister = () => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (!raid || !player || player.operatorId !== OPERATOR_ID || state.overlay || player.health <= 0 || (player.dropTimer ?? 0) > 0) return false;
+      if ((player.frostCanisters ?? 0) <= 0) {
+        notify(Ls('极寒冷罐不足，等待补充。', 'No Frost Canister available.'), 'warning');
+        return false;
+      }
+      player.frostCanisters -= 1;
+      const x = player.x + Math.sin(player.yaw ?? 0) * 8;
+      const z = player.z + Math.cos(player.yaw ?? 0) * 8;
+      let hits = 0;
+      for (const enemy of raid.enemies ?? []) {
+        if (enemy.dead || enemy.despawned || distance2D(x, z, enemy.x, enemy.z) > FROST_RADIUS) continue;
+        enemy.lingshuangFrostTimer = FROST_DURATION;
+        enemy.lingshuangFrostTick = 1;
+        enemy.lingshuangFrostSlowMult = FROST_SLOW_MULT;
+        hits += 1;
+      }
+      spawnPulse?.(new BABYLON.Vector3(x, 0.5, z), '#9eeeff', 0.32, 0.38);
+      notify(Ls(`极寒冷罐爆发：10 米范围，命中 ${hits} 名敌人，减速并每秒造成 50 伤害，持续 5 秒。`, `Frost Canister: 10m radius, ${hits} targets slowed and taking 50 damage/s for 5s.`), hits ? 'success' : 'warning');
+      return true;
+    };
+    debug.useFrostCanister = useFrostCanister;
+
+    window.addEventListener('keydown', (event) => {
+      const player = state.raid?.player;
+      if (player?.operatorId === OPERATOR_ID && event.code === 'KeyI' && !event.repeat && state.mode === 'raid') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        useFrostCanister();
       }
     }, true);
 
@@ -673,6 +713,25 @@
       if (player?.operatorId === OPERATOR_ID) {
         player.utilityMaxItems = PRISM_MAX;
         player.utilityGainInterval = PRISM_REFILL;
+        player.maxStamina = Math.max(650, player.maxStamina ?? 0);
+        player.stamina = Math.min(player.maxStamina, Math.max(player.stamina ?? 0, 650));
+        if ((player.frostCanisters ?? 0) < 2) {
+          player.frostCanisterGainTimer = Math.max(0, (player.frostCanisterGainTimer ?? 12) - dt);
+          if (player.frostCanisterGainTimer <= 0) {
+            player.frostCanisters = Math.min(2, (player.frostCanisters ?? 0) + 1);
+            player.frostCanisterGainTimer = (player.frostCanisters ?? 0) >= 2 ? 0 : 12;
+          }
+        }
+        for (const enemy of raid.enemies ?? []) {
+          if ((enemy.lingshuangFrostTimer ?? 0) <= 0 || enemy.dead || enemy.despawned) continue;
+          enemy.lingshuangFrostTimer = Math.max(0, enemy.lingshuangFrostTimer - dt);
+          enemy.lingshuangFrostTick = Math.max(0, (enemy.lingshuangFrostTick ?? 1) - dt);
+          enemy.engineerSlowTimer = Math.max(enemy.engineerSlowTimer ?? 0, Math.min(0.25, enemy.lingshuangFrostTimer));
+          if (enemy.lingshuangFrostTick <= 0) {
+            enemy.lingshuangFrostTick += 1;
+            damageEnemy(enemy, FROST_DPS, { ignoreSmoke: true, utilityKind: 'frost-canister' });
+          }
+        }
         player.phaseBarrierTimer = Math.max(0, (player.phaseBarrierTimer ?? 0) - dt);
         if ((player.phaseBarrierTimer ?? 0) <= 0 && player.phaseBarrierVisual) {
           player.phaseBarrierHp = 0;
