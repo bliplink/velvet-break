@@ -326,7 +326,88 @@ async function main() {
     return { moved, healthAfterHit, startedHealing, healthAfterMedkit: raid.player.health,
       targetCount: raid.enemies.length, bossCount: raid.enemies.filter(enemy => enemy.isNamelessBoss).length };
   });
-  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, stashSetup, stashSearch, stashCategory, stashSort, stashAmmoBulk, stashPartsBulk, movingSelected, rangeBefore, rangeAfter, errors, missingResources }, null, 2));
+  const persistencePage = await context.newPage();
+  await persistencePage.goto(`${gameUrl}?v=persistence-reset-smoke`, { waitUntil: 'networkidle' });
+  await persistencePage.waitForTimeout(700);
+
+  const purchaseSetup = await persistencePage.evaluate(() => {
+    state.save = defaultSave();
+    state.save.money = 500000;
+    persistSave();
+    renderBasePanel();
+
+    const prepProducts = getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id));
+    buyShopEntry('weapon_smg');
+    buyShopEntry('part_red_dot');
+    renderBasePanel();
+
+    const unlockButton = document.querySelector('[data-engineer-unlock]');
+    unlockButton?.click();
+
+    return {
+      prepProductCount: prepProducts.length,
+      unlocked: Boolean(state.save.engineerUnlocked),
+      selectedOperatorId: state.save.selectedOperatorId,
+      money: state.save.money,
+      ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
+      ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
+      unlockText: document.querySelector('.operator-lock-note')?.textContent ?? '',
+      hasUnlockButtonAfter: Boolean(document.querySelector('[data-engineer-unlock]')),
+    };
+  });
+
+  await persistencePage.reload({ waitUntil: 'networkidle' });
+  await persistencePage.waitForTimeout(700);
+  const purchaseReload = await persistencePage.evaluate(() => ({
+    unlocked: Boolean(state.save.engineerUnlocked),
+    selectedOperatorId: state.save.selectedOperatorId,
+    money: state.save.money,
+    ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
+    ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
+    prepProductCount: getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id)).length,
+    unlockButton: Boolean(document.querySelector('[data-engineer-unlock]')),
+  }));
+
+  const resetSecurity = await persistencePage.evaluate(() => {
+    const resetDayKey = 'iron-extraction-reset-day-v1';
+    localStorage.removeItem(resetDayKey);
+    state.save.money = 345678;
+    persistSave();
+
+    const originalPrompt = window.prompt;
+    window.prompt = () => 'wrong-password';
+    const wrongResult = resetSave();
+    const afterWrongMoney = state.save.money;
+    const afterWrongDay = localStorage.getItem(resetDayKey);
+
+    window.prompt = () => '20251001';
+    const firstResult = resetSave();
+    const afterFirstMoney = state.save.money;
+    const dayAfterFirst = localStorage.getItem(resetDayKey);
+
+    state.save.money = 456789;
+    persistSave();
+    const secondResult = resetSave();
+    const afterSecondMoney = state.save.money;
+    const dayAfterSecond = localStorage.getItem(resetDayKey);
+    window.prompt = originalPrompt;
+
+    return {
+      wrongResult,
+      afterWrongMoney,
+      afterWrongDay,
+      firstResult,
+      afterFirstMoney,
+      dayAfterFirst,
+      secondResult,
+      afterSecondMoney,
+      dayAfterSecond,
+      defaultMoney: defaultSave().money,
+    };
+  });
+  await persistencePage.close();
+
+  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, stashSetup, stashSearch, stashCategory, stashSort, stashAmmoBulk, stashPartsBulk, movingSelected, rangeBefore, rangeAfter, purchaseSetup, purchaseReload, resetSecurity, errors, missingResources }, null, 2));
   await Promise.race([browser.close(), new Promise(resolve => setTimeout(resolve, 2000))]);
   process.exit(errors.length || missingResources.length || before.mode !== 'raid' || !before.loadoutCollapsed ||
     Math.hypot(after.x - before.x, after.z - before.z) < 0.1 || ammoAfterShot >= ammoBeforeShot || !stairs?.upStarted ||
@@ -350,7 +431,23 @@ async function main() {
     rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
     rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 90 || rangeAfter.moved < 5 ||
     rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
-    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ? 1 : 0);
+    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
+    purchaseSetup.prepProductCount !== 0 ||
+    !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
+    purchaseSetup.money >= 300000 || purchaseSetup.money < 250000 ||
+    !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
+    !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
+    purchaseReload.money !== purchaseSetup.money ||
+    !purchaseReload.ownsSmg || !purchaseReload.ownsRedDot ||
+    purchaseReload.prepProductCount !== 0 || purchaseReload.unlockButton ||
+    resetSecurity.wrongResult !== false ||
+    resetSecurity.afterWrongMoney !== 345678 || resetSecurity.afterWrongDay !== null ||
+    resetSecurity.firstResult !== true ||
+    resetSecurity.afterFirstMoney !== resetSecurity.defaultMoney ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(resetSecurity.dayAfterFirst ?? '') ||
+    resetSecurity.secondResult !== false ||
+    resetSecurity.afterSecondMoney !== 456789 ||
+    resetSecurity.dayAfterSecond !== resetSecurity.dayAfterFirst ? 1 : 0);
 }
 
 main().catch(error => { console.error(error); process.exit(1); });
