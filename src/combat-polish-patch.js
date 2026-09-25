@@ -8,7 +8,11 @@
       typeof damageEnemy === 'undefined' ||
       typeof killEnemy === 'undefined' ||
       typeof animateRaidEntities === 'undefined' ||
-      typeof getCurrentPlayerWeaponStats === 'undefined'
+      typeof getCurrentPlayerWeaponStats === 'undefined' ||
+      typeof distance2D === 'undefined' ||
+      typeof lineOfSightBlocked === 'undefined' ||
+      typeof BABYLON === 'undefined' ||
+      typeof scene === 'undefined'
     ) {
       window.__sdrCombatPolishWaiting = true;
       window.setTimeout(boot, 80);
@@ -29,6 +33,9 @@
       currentPoi: null,
       rareFindCount: 0,
       lastRareFind: null,
+      echoSwingCount: 0,
+      echoHitCount: 0,
+      lastEchoTarget: null,
     };
     window.__sdrCombatPolishDebug = debug;
 
@@ -64,6 +71,12 @@
       #combatLootBanner span{display:block;margin-top:3px;font-size:.68rem;color:#ead7a9}
       #combatLootBanner.is-active{animation:combat-loot 2.15s ease both}
       @keyframes combat-loot{0%{opacity:0;transform:translate(-50%,-16px) scale(.95)}10%{opacity:1;transform:translate(-50%,0) scale(1.02)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,10px) scale(1)}}
+      #echoKnifeStatus{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);padding:5px 9px;border:1px solid rgba(122,219,255,.18);border-radius:3px;background:rgba(5,11,14,.5);backdrop-filter:blur(6px);color:#dff8ff;font-size:.66rem;font-weight:800;letter-spacing:.06em;opacity:0;transition:opacity .15s ease}
+      #echoKnifeStatus.is-visible{opacity:.86}
+      #echoExposureLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+      .echo-exposure-marker{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;color:#ff947f;text-shadow:0 1px 5px #000,0 0 9px rgba(255,74,54,.65);font-size:.66rem;font-weight:900;letter-spacing:.05em;white-space:nowrap}
+      .echo-exposure-marker::before{content:'◆';font-size:1rem;color:#ff6e58;filter:drop-shadow(0 0 5px rgba(255,64,42,.8))}
+      .echo-exposure-marker.is-boss{color:#ffd28a}.echo-exposure-marker.is-boss::before{color:#ffb65d}
     `;
     document.head.appendChild(style);
 
@@ -77,6 +90,8 @@
       <div id="combatExtractLabel"></div>
       <div id="combatShotBloom"></div>
       <div id="combatLootBanner"><strong></strong><span></span></div>
+      <div id="echoExposureLayer"></div>
+      <div id="echoKnifeStatus"></div>
     `;
     document.body.appendChild(hud);
 
@@ -91,6 +106,15 @@
     const lootBanner = hud.querySelector('#combatLootBanner');
     const lootTitle = lootBanner.querySelector('strong');
     const lootDetail = lootBanner.querySelector('span');
+    const echoExposureLayer = hud.querySelector('#echoExposureLayer');
+    const echoKnifeStatus = hud.querySelector('#echoKnifeStatus');
+    const echoMarkers = new Map();
+
+    const ECHO_RANGE = 2.8;
+    const ECHO_DAMAGE = 85;
+    const ECHO_REVEAL_DURATION = 5;
+    const ECHO_COOLDOWN = 0.62;
+    const ECHO_SWING_DURATION = 0.38;
 
     const retrigger = (el, ...classes) => {
       el.classList.remove(...classes);
@@ -228,10 +252,154 @@
       };
     }
 
+    const makeEchoKnifeVisual = () => {
+      const root = new BABYLON.TransformNode('echo-knife-view', scene);
+      root.parent = scene.activeCamera;
+      root.position.set(0.32, -0.28, 0.62);
+      root.rotation.set(-0.08, -0.18, -0.08);
+
+      const steel = new BABYLON.StandardMaterial('echo-knife-steel', scene);
+      steel.diffuseColor = BABYLON.Color3.FromHexString('#c7d8de');
+      steel.emissiveColor = BABYLON.Color3.FromHexString('#39545e').scale(0.4);
+      steel.specularColor = BABYLON.Color3.FromHexString('#f4ffff').scale(0.75);
+
+      const dark = new BABYLON.StandardMaterial('echo-knife-grip', scene);
+      dark.diffuseColor = BABYLON.Color3.FromHexString('#18262c');
+      dark.emissiveColor = BABYLON.Color3.FromHexString('#112027').scale(0.25);
+
+      const accent = new BABYLON.StandardMaterial('echo-knife-accent', scene);
+      accent.diffuseColor = BABYLON.Color3.FromHexString('#66c9e8');
+      accent.emissiveColor = BABYLON.Color3.FromHexString('#66c9e8').scale(0.75);
+
+      const blade = BABYLON.MeshBuilder.CreateBox('echo-knife-blade', { width: 0.07, height: 0.035, depth: 0.54 }, scene);
+      blade.parent = root;
+      blade.position.z = 0.17;
+      blade.material = steel;
+      blade.isPickable = false;
+
+      const tip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-tip', { height: 0.16, diameterTop: 0, diameterBottom: 0.075, tessellation: 4 }, scene);
+      tip.parent = root;
+      tip.position.z = 0.515;
+      tip.rotation.x = Math.PI / 2;
+      tip.material = steel;
+      tip.isPickable = false;
+
+      const guard = BABYLON.MeshBuilder.CreateBox('echo-knife-guard', { width: 0.22, height: 0.045, depth: 0.055 }, scene);
+      guard.parent = root;
+      guard.position.z = -0.11;
+      guard.material = accent;
+      guard.isPickable = false;
+
+      const grip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-handle', { height: 0.3, diameter: 0.075, tessellation: 12 }, scene);
+      grip.parent = root;
+      grip.position.z = -0.28;
+      grip.rotation.x = Math.PI / 2;
+      grip.material = dark;
+      grip.isPickable = false;
+
+      return root;
+    };
+
+    const sameMeleeLevel = (player, enemy) => {
+      const playerRoof = player?.onRoofBuildingId ?? null;
+      const enemyRoof = enemy?.onRoofBuildingId ?? null;
+      return playerRoof === enemyRoof || (!playerRoof && !enemyRoof);
+    };
+
+    const echoTarget = (player) => {
+      let best = null;
+      let bestScore = Infinity;
+      const forwardX = Math.sin(player.yaw ?? 0);
+      const forwardZ = Math.cos(player.yaw ?? 0);
+      for (const enemy of state.raid?.enemies ?? []) {
+        if (!enemy || enemy.dead || enemy.despawned || !sameMeleeLevel(player, enemy)) continue;
+        const dx = enemy.x - player.x;
+        const dz = enemy.z - player.z;
+        const distance = Math.hypot(dx, dz);
+        if (distance > ECHO_RANGE || distance < 0.001) continue;
+        const dot = (dx * forwardX + dz * forwardZ) / distance;
+        if (dot < 0.48) continue;
+        if (lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z)) continue;
+        const score = distance + (1 - dot) * 1.2;
+        if (score < bestScore) {
+          best = enemy;
+          bestScore = score;
+        }
+      }
+      return best;
+    };
+
+    const applyEchoHit = (player) => {
+      const target = echoTarget(player);
+      if (!target) {
+        if (typeof spawnPulse === 'function') spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#75c9df', 0.04, 0.06);
+        return null;
+      }
+      target.echoRevealTimer = ECHO_REVEAL_DURATION;
+      const before = target.health ?? 0;
+      damageEnemy(target, ECHO_DAMAGE, { ignoreSmoke: true });
+      const dealt = Math.max(0, before - Math.max(0, target.health ?? 0));
+      debug.echoHitCount += 1;
+      debug.lastEchoTarget = { enemyId: target.id, reveal: target.echoRevealTimer, damage: dealt };
+      if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(target.x, 1.1, target.z), '#72d9ff', 0.9, 'hard');
+      if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(target.x, 1, target.z), 'hard');
+      notify(L(`回声命中：目标位置暴露 ${ECHO_REVEAL_DURATION} 秒。`, `Echo hit: target position exposed for ${ECHO_REVEAL_DURATION}s.`), 'success');
+      return target;
+    };
+
+    const beginEchoKnifeAttack = () => {
+      const player = state.raid?.player;
+      if (
+        state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
+        (player.dropTimer ?? 0) > 0 || (player.echoKnifeCooldown ?? 0) > 0 ||
+        player.echoKnifeAction || player.executionLocked || player.utilityAction ||
+        player.incendiaryThrow || player.stunGrenadeThrow || player.useAction
+      ) return false;
+      player.echoKnifeCooldown = ECHO_COOLDOWN;
+      player.echoKnifeAction = { timer: 0, duration: ECHO_SWING_DURATION, applied: false, visual: makeEchoKnifeVisual() };
+      state.input.fireHeld = false;
+      debug.echoSwingCount += 1;
+      return true;
+    };
+    window.__sdrUseEchoKnife = beginEchoKnifeAttack;
+
+    window.addEventListener('keydown', (event) => {
+      if ((event.code !== 'KeyT' && event.key?.toLowerCase?.() !== 't') || event.repeat) return;
+      if (state.mode !== 'raid' || state.overlay) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      beginEchoKnifeAttack();
+    }, true);
+
     const animateBeforePolish = animateRaidEntities;
     animateRaidEntities = function polishedEnemyReaction(dt, ...args) {
       const result = animateBeforePolish(dt, ...args);
+      const player = state.raid?.player;
+      if (player) {
+        player.echoKnifeCooldown = Math.max(0, (player.echoKnifeCooldown ?? 0) - dt);
+        const action = player.echoKnifeAction;
+        if (action) {
+          action.timer += dt;
+          const progress = Math.min(1, action.timer / action.duration);
+          const wave = Math.sin(progress * Math.PI);
+          if (action.visual) {
+            action.visual.position.set(0.32 - progress * 0.22, -0.28 + wave * 0.18, 0.62 - wave * 0.22);
+            action.visual.rotation.x = -0.08 - wave * 0.92;
+            action.visual.rotation.y = -0.18 + wave * 0.32;
+            action.visual.rotation.z = -0.08 - wave * 0.58;
+          }
+          if (!action.applied && progress >= 0.32) {
+            action.applied = true;
+            applyEchoHit(player);
+          }
+          if (progress >= 1) {
+            action.visual?.dispose(false, true);
+            player.echoKnifeAction = null;
+          }
+        }
+      }
       for (const enemy of state.raid?.enemies ?? []) {
+        enemy.echoRevealTimer = Math.max(0, (enemy.echoRevealTimer ?? 0) - dt);
         const root = enemy.visual?.root;
         if (!root || enemy.dead) continue;
         const timer = Math.max(0, enemy.hitReactTimer ?? 0);
@@ -291,6 +459,59 @@
 
     let lastPoiId = null;
     let lastExtractKey = null;
+    window.setInterval(() => {
+      const raid = state.raid;
+      const player = raid?.player;
+      const inRaid = state.mode === 'raid' && Boolean(player);
+      echoKnifeStatus.classList.toggle('is-visible', inRaid);
+      if (inRaid) {
+        const cooldown = Math.max(0, player.echoKnifeCooldown ?? 0);
+        echoKnifeStatus.textContent = cooldown > 0
+          ? L(`回声 · T · ${cooldown.toFixed(1)}s`, `Echo · T · ${cooldown.toFixed(1)}s`)
+          : L('回声 · T 近战', 'Echo · T melee');
+      }
+
+      const activeIds = new Set();
+      if (inRaid && scene.activeCamera && refs?.canvas) {
+        const engine = scene.getEngine();
+        const renderWidth = engine.getRenderWidth();
+        const renderHeight = engine.getRenderHeight();
+        const viewport = scene.activeCamera.viewport.toGlobal(renderWidth, renderHeight);
+        const rect = refs.canvas.getBoundingClientRect();
+        for (const enemy of raid.enemies ?? []) {
+          if (enemy.dead || enemy.despawned || (enemy.echoRevealTimer ?? 0) <= 0) continue;
+          const id = String(enemy.id ?? `${enemy.x}:${enemy.z}`);
+          activeIds.add(id);
+          let marker = echoMarkers.get(id);
+          if (!marker) {
+            marker = document.createElement('div');
+            marker.className = 'echo-exposure-marker';
+            echoExposureLayer.appendChild(marker);
+            echoMarkers.set(id, marker);
+          }
+          marker.classList.toggle('is-boss', Boolean(enemy.isNamelessBoss));
+          const rootPosition = enemy.visual?.root?.getAbsolutePosition?.();
+          const world = new BABYLON.Vector3(enemy.x, (rootPosition?.y ?? 0) + 2.05, enemy.z);
+          const projected = BABYLON.Vector3.Project(world, BABYLON.Matrix.Identity(), scene.getTransformMatrix(), viewport);
+          const screenX = rect.left + projected.x * (rect.width / Math.max(1, renderWidth));
+          const screenY = rect.top + projected.y * (rect.height / Math.max(1, renderHeight));
+          const visible = projected.z >= 0 && projected.z <= 1 &&
+            screenX >= rect.left - 40 && screenX <= rect.right + 40 &&
+            screenY >= rect.top - 40 && screenY <= rect.bottom + 40;
+          marker.hidden = !visible;
+          marker.style.left = `${screenX}px`;
+          marker.style.top = `${screenY}px`;
+          marker.textContent = `${enemyLabel(enemy)} · ${enemy.echoRevealTimer.toFixed(1)}s`;
+        }
+      }
+      for (const [id, marker] of echoMarkers) {
+        if (!activeIds.has(id)) {
+          marker.remove();
+          echoMarkers.delete(id);
+        }
+      }
+    }, 80);
+
     window.setInterval(() => {
       const player = state.raid?.player;
       if (!player || state.mode !== 'raid') {
