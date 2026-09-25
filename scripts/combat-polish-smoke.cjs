@@ -100,6 +100,7 @@ const { chromium } = require('playwright');
     });
 
     const echo = await page.evaluate(() => {
+      if (state.overlay) closeLootPanel();
       const raid = state.raid;
       const player = raid.player;
       player.dropTimer = 0;
