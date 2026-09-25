@@ -372,8 +372,8 @@
       Object.assign(defs.assault, {
         nameZh: '凯',
         nameEn: 'Kai',
-        passiveZh: '男 · 前线突击手，控枪更稳、换弹更快，过载击杀可持续续航。',
-        passiveEn: 'Male · Frontline breacher with steadier gun control, faster reloads, and stronger Overdrive kill sustain.',
+        passiveZh: '男 · 前线突击手，初始护甲耐久 200，护甲耐久消耗减半；控枪更稳、换弹更快，过载击杀可持续续航。',
+        passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption, plus steadier gun control, faster reloads, and stronger Overdrive kill sustain.',
         skillTextZh: '手动启动：35 秒内移速 x2、伤害翻倍；期间每击败一人延长 1.5 秒并恢复 90 生命。',
         skillTextEn: 'Manual: 35s of x2 speed and double damage. Each kill adds 1.5s and restores 90 HP.',
         itemNameZh: '高级手雷',
@@ -386,7 +386,8 @@
         spreadMult: 0.70,
         recoilMult: 0.72,
         reloadMult: 0.72,
-        startArmorBonus: 18,
+        startArmorBonus: 170,
+        armorDurabilityCostMult: 0.5,
       });
       Object.assign(defs.medic, {
         nameZh: '本杰明',
