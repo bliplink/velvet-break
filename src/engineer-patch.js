@@ -22,7 +22,7 @@
     window.__sdrEngineerPatchApplied = true;
 
     const ENGINEER_ID = 'engineer';
-    const ENGINEER_PRICE = 100000;
+    const ENGINEER_PRICE = 200000;
     const BARRIER_LENGTH = 15;
     const BARRIER_DEPTH = 0.72;
     const BARRIER_HEIGHT = 3.05;
@@ -153,7 +153,7 @@
               <div class="item-meta">${L('技能：' + L(operator.skillNameZh, operator.skillNameEn) + ' · ' + L(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${L('专属道具：' + L(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
               ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多 10 个，G 部署；火焰弹：最多 2 个，I 选点 / 确认；震撼弹：最多 2 个，O 选点 / 确认，命中敌人减速 10 秒。三种道具均持续补充。', 'Rapid Barrier: max 10, G deploy; Incendiary: max 2, I select / confirm; Stun Grenade: max 2, O select / confirm and slows enemies for 10s. All utilities resupply over time.')}</div>` : ''}
-              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>` : ''}
+              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>` : ''}
             </div>
             <div class="stack-list">
               ${unlocked
@@ -168,7 +168,7 @@
       const button = event.target.closest('[data-engineer-unlock]');
       if (!button || isEngineerUnlocked()) return;
       if (state.save.money < ENGINEER_PRICE) {
-        notify(L('资金不足，需要 100,000。', 'Not enough funds. Need 100,000.'), 'danger');
+        notify(L('资金不足，需要 200,000。', 'Not enough funds. Need 200,000.'), 'danger');
         return;
       }
       state.save.money -= ENGINEER_PRICE;
