@@ -47,12 +47,18 @@ const { chromium } = require('playwright');
       const player = state.raid.player;
       player.operatorId = 'medic';
       player.health = Math.max(1, player.maxHealth - 600);
+      player.armor = 0;
       player.skillUses = 4;
       const before = player.health;
+      const maxArmor = player.maxArmor;
       useOperatorAbility();
       const immediate = {
         healed: player.health - before,
+        armorRestored: player.armor,
+        maxArmor,
         immunity: player.damageImmunityTimer,
+        speedBoost: player.medicSpeedBoostTimer,
+        activeTimer: player.abilityActiveTimer,
       };
 
       player.damageImmunityTimer = 0;
@@ -64,7 +70,7 @@ const { chromium } = require('playwright');
       enemy.maxHealth = 10000;
       enemy.health = 10000;
       player.__supportShot = true;
-      player.supportFirepowerTimer = 15;
+      player.supportFirepowerTimer = 25;
       const enemyBefore = enemy.health;
       damageEnemy(enemy, 100, { ignoreSmoke: true });
       player.__supportShot = false;
@@ -153,19 +159,86 @@ const { chromium } = require('playwright');
       };
     });
 
-    console.log(JSON.stringify({ firstRescue, balance, kai, visual, errors }, null, 2));
+    const stun = await page.evaluate(() => {
+      state.save.engineerUnlocked = true;
+      state.save.selectedOperatorId = 'engineer';
+      startRaid();
+      const raid = state.raid;
+      const player = raid.player;
+      player.operatorId = 'engineer';
+      player.dropTimer = 0;
+      player.stunGrenadeItems = 1;
+
+      let target = null;
+      for (let step = 0; step < 12 && !target; step++) {
+        const angle = (Math.PI * 2 * step) / 12;
+        const rawX = player.x + Math.cos(angle) * 4;
+        const rawZ = player.z + Math.sin(angle) * 4;
+        const placed = resolveStaticPlacement(rawX, rawZ, 0.7);
+        if (!lineOfSightBlocked(player.x, player.z, placed.x, placed.z) && !pointInsideObstaclePadding(placed.x, placed.z, 0.7)) {
+          target = { x: placed.x, y: 0, z: placed.z };
+        }
+      }
+      if (!target) target = { x: player.x + 2, y: 0, z: player.z };
+
+      const enemy = raid.enemies.find(e => !e.dead && !e.despawned);
+      enemy.x = target.x;
+      enemy.z = target.z;
+      enemy.health = Math.max(enemy.health, 10000);
+      enemy.maxHealth = Math.max(enemy.maxHealth, 10000);
+
+      raid.mouseWorldPointer = { clientX: 640, clientY: 400 };
+      const originalPick = scene.pick.bind(scene);
+      scene.pick = () => ({
+        hit: true,
+        pickedPoint: new BABYLON.Vector3(target.x, target.y, target.z),
+        pickedMesh: { name: 'ground' },
+      });
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyO' }));
+      const targetingStarted = Boolean(raid.stunGrenadeTargeting);
+      const markerName = raid.stunGrenadeTargeting?.marker?.name ?? '';
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyO' }));
+      const itemAfterThrow = player.stunGrenadeItems;
+      const throwStarted = Boolean(player.stunGrenadeThrow);
+
+      for (let i = 0; i < 80 && !(enemy.engineerSlowTimer > 0); i++) {
+        enemy.x = target.x;
+        enemy.z = target.z;
+        updateRaid(0.05);
+      }
+      const slowTimer = enemy.engineerSlowTimer ?? 0;
+      const hudText = document.getElementById('stunGrenadePanel')?.textContent ?? '';
+      scene.pick = originalPick;
+
+      return {
+        targetingStarted,
+        markerName,
+        itemAfterThrow,
+        throwStarted,
+        slowTimer,
+        targetingEnded: !raid.stunGrenadeTargeting,
+        throwEnded: !player.stunGrenadeThrow,
+        hudText,
+      };
+    });
+
+    console.log(JSON.stringify({ firstRescue, balance, kai, visual, stun, errors }, null, 2));
 
     const ok = Boolean(
       !firstRescue.downed &&
       firstRescue.health > 1 &&
       firstRescue.reviveCount >= 1 &&
       balance.name === 'Benjamin' &&
-      balance.healed >= 499 && balance.healed <= 501 &&
-      balance.immunity >= 4.99 && balance.immunity <= 5.01 &&
-      balance.postTimer <= 15.1 && balance.postTimer > 14.5 &&
-      balance.postReductionMult === 0.5 &&
-      balance.boostedDamage >= 199 && balance.boostedDamage <= 201 &&
-      balance.description.includes('double bullet damage') &&
+      balance.healed >= 599 && balance.healed <= 601 &&
+      balance.armorRestored === balance.maxArmor &&
+      balance.immunity >= 7.99 && balance.immunity <= 8.01 &&
+      balance.speedBoost >= 32.9 && balance.speedBoost <= 33.1 &&
+      balance.activeTimer >= 32.9 && balance.activeTimer <= 33.1 &&
+      balance.postTimer <= 25.1 && balance.postTimer > 24.5 &&
+      balance.postReductionMult === 0.3 &&
+      balance.boostedDamage >= 249 && balance.boostedDamage <= 251 &&
+      balance.description.includes('2.5x bullet damage') &&
       kai.abilityDuration === 35 &&
       kai.startTimer >= 34.9 && kai.startTimer <= 35.1 &&
       kai.afterKillTimer >= 36.4 && kai.afterKillTimer <= 36.6 &&
@@ -181,6 +254,14 @@ const { chromium } = require('playwright');
       kai.armorBeforeHit === 200 &&
       kai.armorAfterHit >= 167.49 && kai.armorAfterHit <= 167.51 &&
       kai.armorLoss >= 32.49 && kai.armorLoss <= 32.51 &&
+      stun.targetingStarted &&
+      stun.markerName === 'stun-grenade-target-radius' &&
+      stun.itemAfterThrow === 0 &&
+      stun.throwStarted &&
+      stun.slowTimer > 8.5 && stun.slowTimer <= 10 &&
+      stun.targetingEnded &&
+      stun.throwEnded &&
+      /震撼弹|Stun Grenade/.test(stun.hudText) &&
       balance.stability?.version === '2026-09-20-stability-v4' &&
       balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
