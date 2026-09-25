@@ -28,6 +28,11 @@
     const BARRIER_HEIGHT = 3.05;
     const BARRIER_LIMIT = 8;
     const ENGINEER_UTILITY_MAX = 10;
+    const STUN_RADIUS = 10;
+    const STUN_SLOW_DURATION = 10;
+    const STUN_SLOW_MULT = 0.45;
+    const STUN_ITEM_MAX = 2;
+    const STUN_REFILL = 20;
     // One metre from an enemy's body edge. Actor coordinates are body centres,
     // therefore collision radii are included in this practical interaction range.
     const rules = window.SDRCombat;
@@ -147,7 +152,7 @@
               <div class="item-meta">${L(operator.passiveZh, operator.passiveEn)}</div>
               <div class="item-meta">${L('技能：' + L(operator.skillNameZh, operator.skillNameEn) + ' · ' + L(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${L('专属道具：' + L(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
-              ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多携带 10 个，场上同时保留 8 个；火焰弹：最多携带 2 个，I 选点 / 确认。两者均每 20 秒补充 1 个。', 'Rapid Barrier: carry 10, keep 8 deployed; Incendiary: carry 2, press I to select / confirm. Each refills once every 20s.')}</div>` : ''}
+              ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多 10 个，G 部署；火焰弹：最多 2 个，I 选点 / 确认；震撼弹：最多 2 个，O 选点 / 确认，命中敌人减速 10 秒。三种道具均持续补充。', 'Rapid Barrier: max 10, G deploy; Incendiary: max 2, I select / confirm; Stun Grenade: max 2, O select / confirm and slows enemies for 10s. All utilities resupply over time.')}</div>` : ''}
               ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>` : ''}
             </div>
             <div class="stack-list">
@@ -188,8 +193,9 @@
     const moveBeforeEngineer = moveEntityWithCollision;
     moveEntityWithCollision = function moveWithEngineerBarriers(entity, dx, dz, radius) {
       if ((entity.engineerStunTimer ?? 0) > 0) return;
+      const slowMult = entity !== state.raid?.player && (entity.engineerSlowTimer ?? 0) > 0 ? STUN_SLOW_MULT : 1;
       const before = { x: entity.x, z: entity.z };
-      moveBeforeEngineer(entity, dx, dz, radius);
+      moveBeforeEngineer(entity, dx * slowMult, dz * slowMult, radius);
       if (entity !== state.raid?.player && collidesWithBarrier(entity.x, entity.z, radius)) {
         entity.x = before.x;
         entity.z = before.z;
@@ -341,7 +347,7 @@
     useOperatorUtility = function useEngineerUtility() {
       const player = state.raid?.player;
       if (player?.operatorId !== ENGINEER_ID) return utilityBeforeEngineer();
-      if (state.overlay || player.utilityAction || player.incendiaryThrow) return;
+      if (state.overlay || player.utilityAction || player.incendiaryThrow || player.stunGrenadeThrow || state.raid?.incendiaryTargeting || state.raid?.stunGrenadeTargeting) return;
       if ((player.utilityItems ?? 0) <= 0) {
         notify(L('速凝掩体不足，等待补充。', 'No Rapid Barrier available. Wait for resupply.'), 'warning');
         return;
@@ -465,7 +471,7 @@
     const shootBeforeIncendiary = attemptShoot;
     attemptShoot = function engineerControlledShot() {
       const player = state.raid?.player;
-      if (player?.incendiaryThrow || player?.barrierDeployAction) return;
+      if (player?.incendiaryThrow || player?.stunGrenadeThrow || player?.barrierDeployAction) return;
       if (player?.operatorId !== ENGINEER_ID) return shootBeforeIncendiary();
       const before = { ammo: player.ammoInMag, pitch: player.pitch, kick: player.recoilKick ?? 0, recoil: viewModel?.recoil ?? 0 };
       const result = shootBeforeIncendiary();
@@ -851,7 +857,7 @@
       const raid = state.raid;
       const player = raid?.player;
       if (state.mode !== 'raid' || state.overlay || player?.operatorId !== ENGINEER_ID || player.health <= 0) return;
-      if (player.incendiaryThrow || player.utilityAction || player.useAction || player.executionLocked || (player.dropTimer ?? 0) > 0) return;
+      if (player.incendiaryThrow || player.stunGrenadeThrow || raid.stunGrenadeTargeting || player.utilityAction || player.useAction || player.executionLocked || (player.dropTimer ?? 0) > 0) return;
       player.incendiaryItems ??= 1;
       if (player.incendiaryItems <= 0) {
         notify(L('火焰弹补充中。', 'Incendiary resupplying.'), 'warning');
@@ -884,9 +890,110 @@
       state.input.fireHeld = false;
     };
 
+    const makeStunGrenadeModel = (held = false) => {
+      const root = new BABYLON.TransformNode('stun-grenade', scene);
+      const body = BABYLON.MeshBuilder.CreateCylinder('stun-grenade-body', { height: 0.23, diameter: 0.13, tessellation: 16 }, scene);
+      body.parent = root;
+      body.material = fireMaterial('stun-grenade-metal', '#d7e5eb');
+      const band = BABYLON.MeshBuilder.CreateCylinder('stun-grenade-band', { height: 0.055, diameter: 0.136, tessellation: 16 }, scene);
+      band.parent = root;
+      band.material = fireMaterial('stun-grenade-band-mat', '#68c9ff');
+      const cap = BABYLON.MeshBuilder.CreateCylinder('stun-grenade-cap', { height: 0.05, diameter: 0.09, tessellation: 12 }, scene);
+      cap.parent = root;
+      cap.position.y = 0.14;
+      cap.material = fireMaterial('stun-grenade-cap-mat', '#29363d');
+      const pin = BABYLON.MeshBuilder.CreateTorus('stun-grenade-pin', { diameter: 0.066, thickness: 0.012, tessellation: 12 }, scene);
+      pin.parent = root;
+      pin.position.set(0.055, 0.165, 0);
+      pin.material = cap.material;
+      if (held) {
+        const glove = BABYLON.MeshBuilder.CreateBox('stun-grenade-gloved-hand', { width: 0.15, height: 0.1, depth: 0.17 }, scene);
+        glove.parent = root;
+        glove.position.set(0.015, -0.03, -0.07);
+        glove.material = fireMaterial('stun-engineer-glove', '#333e42');
+      }
+      for (const mesh of root.getChildMeshes()) mesh.isPickable = false;
+      return root;
+    };
+
+    const stunTargetAtMouse = () => {
+      const raid = state.raid;
+      const player = raid?.player;
+      const target = getMouseWorldTarget();
+      if (!player || !target || !Number.isFinite(target.y) || Math.abs(target.x) > PLAYABLE_HALF || Math.abs(target.z) > PLAYABLE_HALF) return null;
+      const from = { x: player.x, y: actorFeet(player) + 1.25, z: player.z };
+      const to = { x: target.x, y: target.y + 0.22, z: target.z };
+      if (geometryBlocked(from, to)) return null;
+      return target;
+    };
+
+    const detonateStunGrenade = (raid, target) => {
+      const center = { x: target.x, y: target.y + 0.25, z: target.z };
+      let hits = 0;
+      for (const enemy of raid.enemies ?? []) {
+        if (enemy.dead || enemy.despawned || distance2D(target.x, target.z, enemy.x, enemy.z) > STUN_RADIUS) continue;
+        const enemyPoint = { x: enemy.x, y: actorFeet(enemy) + 0.85, z: enemy.z };
+        if (geometryBlocked(center, enemyPoint)) continue;
+        enemy.engineerSlowTimer = Math.max(enemy.engineerSlowTimer ?? 0, STUN_SLOW_DURATION);
+        hits += 1;
+      }
+      spawnImpactBurst(new BABYLON.Vector3(target.x, target.y + 0.5, target.z), '#dff7ff', 2.4, 'hard');
+      spawnPulse(new BABYLON.Vector3(target.x, target.y + 0.35, target.z), '#9fe8ff', 0.34, 0.28);
+      playImpactAudio(new BABYLON.Vector3(target.x, target.y + 0.4, target.z), 'hard');
+      notify(
+        L(`震撼弹命中 ${hits} 名敌人：移动速度降低至 45%，持续 10 秒。`, `Stun Grenade hit ${hits} enemies: movement reduced to 45% for 10s.`),
+        hits ? 'success' : 'warning',
+      );
+    };
+
+    const useStunGrenade = () => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (state.mode !== 'raid' || state.overlay || player?.operatorId !== ENGINEER_ID || player.health <= 0) return;
+      if (player.stunGrenadeThrow || player.incendiaryThrow || raid.incendiaryTargeting || player.utilityAction || player.useAction || player.executionLocked || (player.dropTimer ?? 0) > 0) return;
+      player.stunGrenadeItems ??= 1;
+      if (player.stunGrenadeItems <= 0) {
+        notify(L('震撼弹补充中。', 'Stun Grenade resupplying.'), 'warning');
+        return;
+      }
+      if (!raid.stunGrenadeTargeting) {
+        const marker = BABYLON.MeshBuilder.CreateTorus('stun-grenade-target-radius', { diameter: STUN_RADIUS * 2, thickness: 0.14, tessellation: 64 }, scene);
+        marker.material = fireMaterial('stun-grenade-target-mat', '#9fe8ff');
+        marker.isPickable = false;
+        marker.setEnabled(false);
+        raid.stunGrenadeTargeting = { marker, target: null };
+        document.exitPointerLock?.();
+        state.input.fireHeld = false;
+        notify(L('震撼弹选点：用鼠标选择可见落点，再按 O 投掷；Esc 取消。', 'Stun Grenade targeting: choose a visible point with the mouse, press O again to throw; Esc cancels.'), 'success');
+        return;
+      }
+      const target = stunTargetAtMouse();
+      if (!target) {
+        notify(L('震撼弹落点无效：请选择无遮挡的可见地面或屋顶。', 'Invalid Stun Grenade point: choose visible ground or rooftop with no obstruction.'), 'warning');
+        return;
+      }
+      disposeFireNode(raid.stunGrenadeTargeting.marker);
+      raid.stunGrenadeTargeting = null;
+      player.stunGrenadeItems -= 1;
+      player.stunGrenadeRefillTimer ??= STUN_REFILL;
+      const held = makeStunGrenadeModel(true);
+      held.parent = scene.activeCamera;
+      held.position.set(0.28, -0.24, 0.6);
+      player.stunGrenadeThrow = { target: { ...target }, timer: 0, held };
+      state.input.fireHeld = false;
+    };
+
     const updateIncendiaries = (raid, dt) => {
       const player = raid.player;
       if (player.operatorId === ENGINEER_ID) {
+        player.stunGrenadeItems ??= 1;
+        if (player.stunGrenadeItems < STUN_ITEM_MAX) {
+          player.stunGrenadeRefillTimer = (player.stunGrenadeRefillTimer ?? STUN_REFILL) - dt;
+          while (player.stunGrenadeRefillTimer <= 0 && player.stunGrenadeItems < STUN_ITEM_MAX) {
+            player.stunGrenadeItems++;
+            player.stunGrenadeRefillTimer += STUN_REFILL;
+          }
+        } else player.stunGrenadeRefillTimer = STUN_REFILL;
         player.incendiaryItems ??= 1;
         if (player.incendiaryItems < FIRE_ITEM_MAX) {
           player.incendiaryRefillTimer = (player.incendiaryRefillTimer ?? FIRE_REFILL) - dt;
@@ -896,6 +1003,46 @@
           }
         } else player.incendiaryRefillTimer = FIRE_REFILL;
       }
+      const stunTargeting = raid.stunGrenadeTargeting;
+      if (stunTargeting) {
+        stunTargeting.target = stunTargetAtMouse();
+        stunTargeting.marker.setEnabled(Boolean(stunTargeting.target));
+        if (stunTargeting.target) stunTargeting.marker.position.set(stunTargeting.target.x, stunTargeting.target.y + 0.1, stunTargeting.target.z);
+      }
+      const stunAction = player.stunGrenadeThrow;
+      if (stunAction) {
+        stunAction.timer += dt;
+        if (stunAction.held) {
+          const p = Math.min(1, stunAction.timer / 0.45);
+          stunAction.held.position.set(0.28 - p * 0.18, -0.24 + Math.sin(p * Math.PI) * 0.34, 0.6 - Math.sin(p * Math.PI) * 0.28 + p * 0.27);
+          stunAction.held.rotation.x = -Math.sin(p * Math.PI) * 1.1;
+          if (p >= 1) {
+            stunAction.held.computeWorldMatrix(true);
+            stunAction.start = stunAction.held.getAbsolutePosition().clone();
+            disposeFireNode(stunAction.held);
+            stunAction.held = null;
+            stunAction.projectile = makeStunGrenadeModel();
+            stunAction.projectile.position.copyFrom(stunAction.start);
+            stunAction.flightStart = stunAction.timer;
+            stunAction.flightDuration = clamp(distance2D(stunAction.start.x, stunAction.start.z, stunAction.target.x, stunAction.target.z) / 38, 0.5, 2.2);
+          }
+        } else if (stunAction.projectile) {
+          const p = clamp((stunAction.timer - stunAction.flightStart) / stunAction.flightDuration, 0, 1);
+          stunAction.projectile.position.set(
+            lerp(stunAction.start.x, stunAction.target.x, p),
+            lerp(stunAction.start.y, stunAction.target.y + 0.12, p) + Math.sin(p * Math.PI) * 5.5,
+            lerp(stunAction.start.z, stunAction.target.z, p),
+          );
+          stunAction.projectile.rotation.x += dt * 11;
+          stunAction.projectile.rotation.z += dt * 6;
+          if (p >= 1) {
+            disposeFireNode(stunAction.projectile);
+            detonateStunGrenade(raid, stunAction.target);
+            player.stunGrenadeThrow = null;
+          }
+        }
+      }
+
       const targeting = raid.incendiaryTargeting;
       if (targeting) {
         targeting.target = fireTargetAtMouse();
@@ -945,6 +1092,7 @@
         if (field.light) field.light.intensity = distance > 60 ? 0 : 0.48 + Math.sin(field.phase * 8.4) * 0.1;
       }
       for (const enemy of raid.enemies ?? []) {
+        enemy.engineerSlowTimer = Math.max(0, (enemy.engineerSlowTimer ?? 0) - dt);
         if (enemy.dead || enemy.despawned) continue;
         const inside = (raid.incendiaryGrid?.at(enemy.x, enemy.z) ?? []).some(field => rules.fireContains(field, enemy, actorFeet, geometryBlocked));
         if (inside) {
@@ -971,15 +1119,21 @@
     window.addEventListener('keydown', (event) => {
       const raid = state.raid;
       if (state.mode !== 'raid' || raid?.player?.operatorId !== ENGINEER_ID) return;
-      if (event.code === 'Escape' && raid.incendiaryTargeting) {
+      if (event.code === 'Escape' && (raid.incendiaryTargeting || raid.stunGrenadeTargeting)) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        disposeFireNode(raid.incendiaryTargeting.marker);
+        disposeFireNode(raid.incendiaryTargeting?.marker);
+        disposeFireNode(raid.stunGrenadeTargeting?.marker);
         raid.incendiaryTargeting = null;
+        raid.stunGrenadeTargeting = null;
       } else if (event.code === 'KeyI' && !event.repeat && !state.overlay) {
         event.preventDefault();
         event.stopImmediatePropagation();
         useIncendiary();
+      } else if (event.code === 'KeyO' && !event.repeat && !state.overlay) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        useStunGrenade();
       }
     }, true);
 
@@ -987,8 +1141,11 @@
     clearRaid = function clearEngineerEffects() {
       const raid = state.raid;
       disposeFireNode(raid?.incendiaryTargeting?.marker);
+      disposeFireNode(raid?.stunGrenadeTargeting?.marker);
       disposeFireNode(raid?.player?.incendiaryThrow?.held);
       disposeFireNode(raid?.player?.incendiaryThrow?.projectile);
+      disposeFireNode(raid?.player?.stunGrenadeThrow?.held);
+      disposeFireNode(raid?.player?.stunGrenadeThrow?.projectile);
       for (const field of raid?.incendiaryFields ?? []) {
         for (const system of field.systems ?? []) system.dispose(false);
         field.light?.dispose();
@@ -1073,7 +1230,17 @@
         const host = document.querySelector('#hud .hud-left .tactical-strip') ?? document.querySelector('#hud .hud-left');
         host?.appendChild(firePanel);
       }
+      let stunPanel = document.getElementById('stunGrenadePanel');
+      if (!stunPanel) {
+        stunPanel = document.createElement('div');
+        stunPanel.id = 'stunGrenadePanel';
+        stunPanel.className = 'hud-stat compact-stat';
+        stunPanel.innerHTML = '<span id="stunGrenadeLabel"></span><strong id="stunGrenadeCount"></strong><small id="stunGrenadeStatus"></small>';
+        const host = document.querySelector('#hud .hud-left .tactical-strip') ?? document.querySelector('#hud .hud-left');
+        host?.appendChild(stunPanel);
+      }
       firePanel.hidden = player.operatorId !== ENGINEER_ID;
+      stunPanel.hidden = player.operatorId !== ENGINEER_ID;
       if (player.operatorId === ENGINEER_ID) {
         firePanel.querySelector('#incendiaryLabel').textContent = L('火焰弹 · I', 'Incendiary · I');
         firePanel.querySelector('#incendiaryCount').textContent = `${player.incendiaryItems ?? 1}/${FIRE_ITEM_MAX}`;
@@ -1084,6 +1251,17 @@
             : (player.incendiaryItems ?? 1) >= FIRE_ITEM_MAX
               ? L('库存已满', 'Stock full')
               : L(`${Math.ceil(player.incendiaryRefillTimer ?? FIRE_REFILL)} 秒后补充 1 个`, `+1 in ${Math.ceil(player.incendiaryRefillTimer ?? FIRE_REFILL)}s`);
+      }
+      if (player.operatorId === ENGINEER_ID) {
+        stunPanel.querySelector('#stunGrenadeLabel').textContent = L('震撼弹 · O', 'Stun Grenade · O');
+        stunPanel.querySelector('#stunGrenadeCount').textContent = `${player.stunGrenadeItems ?? 1}/${STUN_ITEM_MAX}`;
+        stunPanel.querySelector('#stunGrenadeStatus').textContent = player.stunGrenadeThrow
+          ? L('投掷中', 'Throwing')
+          : state.raid.stunGrenadeTargeting
+            ? L('O 确认落点 · Esc 取消', 'O confirm · Esc cancel')
+            : (player.stunGrenadeItems ?? 1) >= STUN_ITEM_MAX
+              ? L('库存已满', 'Stock full')
+              : L(`${Math.ceil(player.stunGrenadeRefillTimer ?? STUN_REFILL)} 秒后补充 1 个`, `+1 in ${Math.ceil(player.stunGrenadeRefillTimer ?? STUN_REFILL)}s`);
       }
       if (player.operatorId === 'medic' && refs.supportPrompt) {
         refs.supportPrompt.textContent = (player.benjaminKillShieldTimer ?? 0) > 0
@@ -1102,7 +1280,7 @@
         const rows = document.querySelectorAll('#raidLoadoutList .prep-row');
         for (const row of rows) {
           if (/^(专属道具|Utility)$/.test(row.firstElementChild?.textContent ?? '')) {
-            row.lastElementChild.textContent = L(`速凝掩体 ${player.utilityItems ?? 0}/10 · G；火焰弹 ${player.incendiaryItems ?? 1}/2 · I`, `Barrier ${player.utilityItems ?? 0}/10 · G; Incendiary ${player.incendiaryItems ?? 1}/2 · I`);
+            row.lastElementChild.textContent = L(`速凝掩体 ${player.utilityItems ?? 0}/10 · G；火焰弹 ${player.incendiaryItems ?? 1}/2 · I；震撼弹 ${player.stunGrenadeItems ?? 1}/2 · O`, `Barrier ${player.utilityItems ?? 0}/10 · G; Incendiary ${player.incendiaryItems ?? 1}/2 · I; Stun ${player.stunGrenadeItems ?? 1}/2 · O`);
           }
         }
       }
@@ -1126,7 +1304,7 @@
     const style = document.createElement('style');
     style.textContent = `
       .operator-card.is-locked{opacity:.7}.operator-card .operator-lock-note{color:#f3c477}.hud-stat #operatorUtilityValue{font-size:.84rem}
-      #hud .hud-left .tactical-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+      #hud .hud-left .tactical-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
       #hud .tactical-strip .hud-stat{min-width:0;overflow-wrap:anywhere}
       #hud .raid-side-panel{width:clamp(210px,20vw,250px);gap:6px}
       #hud .raid-side-panel .overlay-section{padding:8px 10px}
