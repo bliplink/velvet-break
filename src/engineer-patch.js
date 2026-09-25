@@ -56,8 +56,8 @@
     const engineerDef = {
       id: ENGINEER_ID,
       nameZh: '彦飞', nameEn: 'Yanfei',
-      passiveZh: '男 · 工程位，后坐力与散布均为普通值的 20%；G 部署速凝掩体，I 投掷火焰弹。两种道具每 20 秒各补充 1 个。',
-      passiveEn: 'Male · Engineer with 20% recoil and spread. G: Rapid Barrier. I: Incendiary. Each item refills once every 20s.',
+      passiveZh: '男 · 工程位，后坐力与散布均为普通值的 20%；G 部署速凝掩体，I 投掷火焰弹，O 投掷震撼弹。三种道具持续补充。',
+      passiveEn: 'Male · Engineer with 20% recoil and spread. G: Rapid Barrier. I: Incendiary. O: Stun Grenade. All three utility types resupply over time.',
       skillNameZh: '定点传送', skillNameEn: 'Point Warp',
       skillTextZh: 'C 启动 25 秒传送窗口，期间不耗体力、受到伤害降低三分之一；启动时全场敌人硬控 7 秒。J 瞬移至鼠标位置，可上房顶但不能穿墙。',
       skillTextEn: 'C: 25s stamina-free warp with one-third damage reduction; stun all enemies for 7s on activation. J: warp to the mouse point, including roofs, without passing through walls.',
@@ -99,10 +99,10 @@
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        undefined,
-        undefined,
+        skillTextZh: '手动启动：生命与护甲回满，8 秒完全免伤并获得 33 秒 50% 移速提升；免伤结束后 25 秒仅承受 30% 伤害，子弹伤害提升至 2.5 倍。',
+        skillTextEn: 'Manual: fully restore health and armor, gain 8s immunity and +50% movement for 33s; then take only 30% damage and deal 2.5x bullet damage for 25s.',
         spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
-        abilityDuration: 20, abilityColor: '#74e0a0',
+        speedBoostMult: 1.5, abilityDuration: 33, abilityColor: '#74e0a0',
       });
       defs[ENGINEER_ID] = { ...engineerDef };
       return defs;
@@ -363,10 +363,12 @@
         if ((player.abilityActiveTimer ?? 0) > 0 || (player.skillUses ?? 0) <= 0) return abilityBeforeEngineer();
         player.skillUses -= 1;
         player.abilityCharges = player.skillUses;
-        player.abilityActiveTimer = 20;
-        player.operatorEffectTimer = 20;
-        player.health = Math.min(player.maxHealth, player.health + 500);
-        player.damageImmunityTimer = 5;
+        player.abilityActiveTimer = 33;
+        player.operatorEffectTimer = 33;
+        player.health = player.maxHealth;
+        player.armor = player.maxArmor ?? player.armor;
+        player.damageImmunityTimer = 8;
+        player.medicSpeedBoostTimer = Math.max(player.medicSpeedBoostTimer ?? 0, 33);
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.supportFirepowerTimer = 0;
@@ -374,7 +376,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：恢复 500 生命、免伤 5 秒；随后 15 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +500 HP, 5s immunity, then 15s of half damage and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：生命与护甲回满，8 秒免伤、33 秒移速 +50%；随后 25 秒仅承受 30% 伤害并造成 2.5 倍子弹伤害。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: full health and armor, 8s immunity, +50% movement for 33s; then 25s taking 30% damage and dealing 2.5x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
@@ -567,11 +569,11 @@
 
       if (current.operatorId === 'medic' && current.benjaminPostPhasePending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.benjaminPostPhasePending = false;
-        current.damageReductionTimer = 15;
-        current.damageReductionMult = 0.5;
-        current.supportFirepowerTimer = 15;
+        current.damageReductionTimer = 25;
+        current.damageReductionMult = 0.3;
+        current.supportFirepowerTimer = 25;
         spawnPulse(new BABYLON.Vector3(current.x, 1, current.z), '#d6ff98', 0.14, 0.16);
-        notify(L('免伤结束：接下来 15 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 15 seconds of half damage taken and double bullet damage.'), 'success');
+        notify(L('免伤结束：接下来 25 秒仅承受 30% 伤害，子弹伤害提升至 2.5 倍。', 'Immunity ended: for 25s take only 30% damage and deal 2.5x bullet damage.'), 'success');
       }
 
       const execution = currentRaid.engineerExecution;
