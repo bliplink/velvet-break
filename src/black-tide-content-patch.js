@@ -713,8 +713,8 @@
       if (player?.operatorId === OPERATOR_ID) {
         player.utilityMaxItems = PRISM_MAX;
         player.utilityGainInterval = PRISM_REFILL;
-        player.maxStamina = Math.max(650, player.maxStamina ?? 0);
-        player.stamina = Math.min(player.maxStamina, Math.max(player.stamina ?? 0, 650));
+        player.maxStamina = 500;
+        player.stamina = Math.min(500, Number(player.stamina ?? 500));
         if ((player.frostCanisters ?? 0) < 2) {
           player.frostCanisterGainTimer = Math.max(0, (player.frostCanisterGainTimer ?? 12) - dt);
           if (player.frostCanisterGainTimer <= 0) {
