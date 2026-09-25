@@ -99,6 +99,92 @@ const { chromium } = require('playwright');
       };
     });
 
+    const echo = await page.evaluate(() => {
+      const raid = state.raid;
+      const player = raid.player;
+      player.dropTimer = 0;
+      player.executionLocked = false;
+      player.utilityAction = null;
+      player.useAction = null;
+      player.echoKnifeCooldown = 0;
+      player.onRoofBuildingId = null;
+      player.insideBuildingId = null;
+
+      let spot = null;
+      for (let x = -96; x <= 96 && !spot; x += 16) {
+        for (let z = -96; z <= 96 && !spot; z += 16) {
+          const targetZ = z + 1.8;
+          if (
+            !pointInsideObstaclePadding(x, z, 1) &&
+            !pointInsideObstaclePadding(x, targetZ, 0.8) &&
+            !lineOfSightBlocked(x, z, x, targetZ)
+          ) {
+            spot = { x, z, targetZ };
+          }
+        }
+      }
+      if (!spot) throw new Error('No clear Echo melee QA position');
+
+      const target = raid.enemies.find(enemy => !enemy.dead && !enemy.despawned);
+      if (!target) throw new Error('No Echo melee QA target');
+      for (const enemy of raid.enemies) {
+        if (enemy !== target) enemy.despawned = true;
+      }
+      player.x = spot.x;
+      player.z = spot.z;
+      player.yaw = 0;
+      target.x = spot.x;
+      target.z = spot.targetZ;
+      target.onRoofBuildingId = null;
+      target.insideBuildingId = null;
+      target.dead = false;
+      target.despawned = false;
+      target.health = Math.max(500, target.health ?? 0);
+      target.maxHealth = Math.max(target.health, target.maxHealth ?? 0);
+      target.echoRevealTimer = 0;
+
+      window.__echoTargetId = target.id;
+      const healthBefore = target.health;
+      const swingsBefore = window.__sdrCombatPolishDebug.echoSwingCount;
+      const hitsBefore = window.__sdrCombatPolishDebug.echoHitCount;
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyT', key: 't' }));
+      const actionStarted = Boolean(player.echoKnifeAction);
+      animateRaidEntities(0.13);
+      return {
+        actionStarted,
+        damage: healthBefore - target.health,
+        revealTimer: target.echoRevealTimer ?? 0,
+        swingDelta: window.__sdrCombatPolishDebug.echoSwingCount - swingsBefore,
+        hitDelta: window.__sdrCombatPolishDebug.echoHitCount - hitsBefore,
+        debugTarget: window.__sdrCombatPolishDebug.lastEchoTarget,
+        knifeMeshes: scene.meshes.filter(mesh => String(mesh.name).startsWith('echo-knife-')).length,
+      };
+    });
+
+    await page.waitForTimeout(140);
+    const echoMarker = await page.evaluate(() => {
+      const marker = document.querySelector('.echo-exposure-marker');
+      const status = document.getElementById('echoKnifeStatus');
+      return {
+        exists: Boolean(marker),
+        hidden: marker?.hidden ?? true,
+        text: marker?.textContent ?? '',
+        statusText: status?.textContent ?? '',
+        statusVisible: status?.classList.contains('is-visible') ?? false,
+      };
+    });
+
+    const echoExpired = await page.evaluate(() => {
+      const target = state.raid.enemies.find(enemy => enemy.id === window.__echoTargetId);
+      for (let index = 0; index < 52; index++) animateRaidEntities(0.1);
+      return {
+        revealTimer: target?.echoRevealTimer ?? 0,
+        actionEnded: !state.raid.player.echoKnifeAction,
+      };
+    });
+    await page.waitForTimeout(120);
+    echoExpired.markerRemoved = await page.evaluate(() => !document.querySelector('.echo-exposure-marker'));
+
     const poi = await page.evaluate(() => {
       const def = obstacleDefs.find(entry => entry.id === 'center-depot');
       const resolved = window.__sdrRaidDesignConfig?.resolvePoi(def.x, def.z);
@@ -132,7 +218,7 @@ const { chromium } = require('playwright');
       visible: document.getElementById('combatExtractLabel')?.classList.contains('is-visible') ?? false,
     }));
 
-    console.log(JSON.stringify({ shot, hit, kill, rareLoot, poi, poiHud, extractionHud, extractionHudAfter, errors }, null, 2));
+    console.log(JSON.stringify({ shot, hit, kill, rareLoot, echo, echoMarker, echoExpired, poi, poiHud, extractionHud, extractionHudAfter, errors }, null, 2));
 
     const ok = Boolean(
       shot.ammoAfter === shot.ammoBefore - 1 &&
@@ -155,6 +241,21 @@ const { chromium } = require('playwright');
       rareLoot.bannerActive &&
       /QA Legendary Core/.test(rareLoot.bannerText) &&
       rareLoot.version === '2026-09-19-combat-polish-v4' &&
+      echo.actionStarted &&
+      echo.damage >= 80 && echo.damage <= 90 &&
+      echo.revealTimer >= 4.99 && echo.revealTimer <= 5.01 &&
+      echo.swingDelta === 1 &&
+      echo.hitDelta === 1 &&
+      echo.debugTarget?.reveal === 5 &&
+      echo.knifeMeshes >= 4 &&
+      echoMarker.exists &&
+      !echoMarker.hidden &&
+      /回声|Echo|Hostile|敌人|Heavy|Hunter|无名|Nameless/.test(echoMarker.text) &&
+      /回声|Echo/.test(echoMarker.statusText) &&
+      echoMarker.statusVisible &&
+      echoExpired.revealTimer === 0 &&
+      echoExpired.actionEnded &&
+      echoExpired.markerRemoved &&
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
