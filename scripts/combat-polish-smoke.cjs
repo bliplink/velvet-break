@@ -306,7 +306,7 @@ const { chromium } = require('playwright');
       echo.config?.revealDuration === 5 &&
       echoMarker.exists &&
       !echoMarker.hidden &&
-      /回声|Echo|Hostile|敌人|Heavy|Hunter|无名|Nameless/.test(echoMarker.text) &&
+      /回声|Echo|Hostile|敌人|重装兵|Heavy|猎手|Hunter|无名|Nameless/.test(echoMarker.text) &&
       /回声|Echo/.test(echoMarker.statusText) &&
       echoMarker.statusVisible &&
       echoExpired.revealTimer === 0 &&
