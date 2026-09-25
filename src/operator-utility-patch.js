@@ -396,8 +396,8 @@
         passiveEn: 'Male · Tactical support specialist with extra medical supplies and sustained fire.',
         skillNameZh: '火力增益',
         skillNameEn: 'Firepower Boost',
-        skillTextZh: '手动启动：立即回满生命与护甲，获得 8 秒完全免伤和 33 秒 50% 移速提升；免伤结束后 25 秒受到伤害仅为 30%，子弹伤害提升至 2.5 倍。技能不会自动触发。',
-        skillTextEn: 'Manual: fully restore health and armor, gain 8s immunity and +50% movement speed for 33s; after immunity, take only 30% damage and deal 2.5x bullet damage for 25s. Never auto-triggers.',
+        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒；随后 8 秒伤害减半且子弹伤害翻倍。技能不会自动触发。',
+        skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then take half damage and deal double bullet damage for 8s. Never auto-triggers.',
         itemNameZh: '增益烟雾',
         itemNameEn: 'Recovery Smoke',
       });
@@ -458,16 +458,15 @@
         notify(L(`扫描区域已揭示 ${revealed} 名敌人和兵种，已清除正在交火的最近 ${targets.length} 名敌人。`, `Scan revealed ${revealed} enemies and classes; eliminated ${targets.length} nearest enemies currently engaging you.`), 'success');
       } else {
         spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), operator.abilityColor ?? '#74e0a0', 0.14, 0.22);
-        player.health = player.maxHealth;
-        player.armor = player.maxArmor ?? player.armor;
-        player.damageImmunityTimer = 8;
-        player.medicSpeedBoostTimer = Math.max(player.medicSpeedBoostTimer ?? 0, 33);
+        player.health = Math.min(player.maxHealth, player.health + 800);
+        player.damageImmunityTimer = 12;
+        player.medicSpeedBoostTimer = 0;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.medicPostShieldPending = true;
         player.supportFirepowerTimer = 0;
         player.supportFirepowerPending = true;
-        notify(L(`战术增益已启动：生命与护甲回满，8 秒免伤、33 秒移速 +50%；随后 25 秒仅承受 30% 伤害并造成 2.5 倍子弹伤害。剩余技能 ${player.skillUses}/4。`, `Combat boost active: full health and armor, 8s immunity, +50% movement for 33s; then 25s taking 30% damage and dealing 2.5x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益已启动：恢复 800 生命，12 秒免伤；随后 8 秒伤害减半并造成双倍子弹伤害。剩余技能 ${player.skillUses}/4。`, `Combat boost active: +800 HP, 12s immunity, then 8s half damage and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
       }
       syncUtilityUi();
       syncHud();
@@ -703,7 +702,7 @@
         return;
       }
       const boostedDamage = player?.__supportShot && player.operatorId === 'medic' && (player.supportFirepowerTimer ?? 0) > 0
-        ? damage * 2.5
+        ? damage * 2
         : damage;
       return originalDamageEnemy(enemy, boostedDamage, options);
     };
@@ -826,8 +825,8 @@
       }
       if (current?.supportFirepowerPending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.supportFirepowerPending = false;
-        current.supportFirepowerTimer = 25;
-        notify(L('免伤结束：接下来 25 秒仅承受 30% 伤害，子弹伤害提升至 2.5 倍。', 'Immunity ended: for 25s take only 30% damage and deal 2.5x bullet damage.'), 'success');
+        current.supportFirepowerTimer = 8;
+        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 8 seconds of half damage taken and double bullet damage.'), 'success');
       }
       if (current) {
         // Old layers refill abilityCharges. The raid-wide four-use cap is authoritative.

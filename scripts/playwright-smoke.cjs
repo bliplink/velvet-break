@@ -187,6 +187,111 @@ async function main() {
     await page.keyboard.up('e');
   }
   await page.locator('#returnBaseButton').click();
+
+  const stashSetup = await page.evaluate(() => {
+    const ammoId = Object.keys(AMMO_DEFS)[0];
+    const partId = Object.keys(PART_DEFS).find(id => !state.save.armory.ownedParts.includes(id)) ?? Object.keys(PART_DEFS)[0];
+    const ammoBefore = Number(state.save.prepAmmo[ammoId] ?? 0);
+    state.save.armory.ownedParts = state.save.armory.ownedParts.filter(id => id !== partId);
+    const partOwnedBefore = state.save.armory.ownedParts.includes(partId);
+    state.save.stash = [
+      {
+        uid: 'qa-stash-ammo',
+        id: 'qa-stash-ammo',
+        name: 'QA Ammo Stack',
+        category: 'Ammo',
+        rarity: 'common',
+        value: 900,
+        weight: 1.2,
+        itemType: 'ammo',
+        ammoId,
+        rounds: 45,
+      },
+      {
+        uid: 'qa-stash-part',
+        id: 'qa-stash-part',
+        name: 'QA New Part',
+        category: 'Parts',
+        rarity: 'rare',
+        value: 5200,
+        weight: 0.7,
+        itemType: 'part',
+        partId,
+      },
+      {
+        uid: 'qa-stash-value',
+        id: 'qa-stash-value',
+        name: 'QA Valuable',
+        category: 'Valuable',
+        rarity: 'legendary',
+        value: 12000,
+        weight: 1.1,
+        itemType: 'loot',
+      },
+    ];
+    window.__qaStashAmmoId = ammoId;
+    window.__qaStashPartId = partId;
+    window.__qaStashAmmoBefore = ammoBefore;
+    window.__qaStashPartOwnedBefore = partOwnedBefore;
+    window.__sdrStashDirectoryState = { query: '', category: 'all', sort: 'value-desc' };
+    renderBasePanel();
+    return {
+      debug: window.__sdrStashDirectoryDebug,
+      summaryText: document.querySelector('.stash-directory-summary')?.textContent ?? '',
+      controls: {
+        search: Boolean(document.querySelector('.stash-directory-filter')),
+        category: Boolean(document.querySelector('.stash-directory-category')),
+        sort: Boolean(document.querySelector('.stash-directory-sort')),
+        ammoBulk: Boolean(document.querySelector('[data-stash-bulk="ammo"]')),
+        partsBulk: Boolean(document.querySelector('[data-stash-bulk="parts"]')),
+        echoLoadout: Boolean(document.querySelector('[data-echo-melee-loadout]')),
+        echoArmory: Boolean(document.querySelector('[data-echo-melee-armory]')),
+      },
+    };
+  });
+
+  await page.locator('.stash-directory-filter').fill('QA Valuable');
+  const stashSearch = await page.evaluate(() => ({
+    visibleGroups: window.__sdrStashDirectoryDebug?.visibleGroups ?? -1,
+    visibleRows: Array.from(document.querySelectorAll('#stashDirectory .stash-directory-row')).filter(row => !row.hidden).length,
+  }));
+
+  await page.locator('.stash-directory-filter').fill('');
+  await page.selectOption('.stash-directory-category', encodeURIComponent('Ammo'));
+  const stashCategory = await page.evaluate(() => ({
+    visibleGroups: window.__sdrStashDirectoryDebug?.visibleGroups ?? -1,
+    category: window.__sdrStashDirectoryDebug?.category ?? null,
+  }));
+
+  await page.selectOption('.stash-directory-category', 'all');
+  await page.selectOption('.stash-directory-sort', 'name-asc');
+  const stashSort = await page.evaluate(() => {
+    const names = Array.from(document.querySelectorAll('#stashDirectory .stash-directory-row:not([hidden]) .stash-directory-name strong'))
+      .map(node => node.textContent.trim());
+    const locale = getLanguage() === 'zh' ? 'zh-CN' : 'en';
+    const sorted = names.slice().sort((left, right) => left.localeCompare(right, locale));
+    return {
+      sort: window.__sdrStashDirectoryDebug?.sort ?? null,
+      names,
+      isSorted: names.length === sorted.length && names.every((name, index) => name === sorted[index]),
+    };
+  });
+
+  await page.locator('[data-stash-bulk="ammo"]').click();
+  const stashAmmoBulk = await page.evaluate(() => ({
+    stashCount: state.save.stash.length,
+    ammoGain: Number(state.save.prepAmmo[window.__qaStashAmmoId] ?? 0) - window.__qaStashAmmoBefore,
+    ammoItemsLeft: state.save.stash.filter(item => item.itemType === 'ammo').length,
+  }));
+
+  await page.locator('[data-stash-bulk="parts"]').click();
+  const stashPartsBulk = await page.evaluate(() => ({
+    stashCount: state.save.stash.length,
+    ownsPart: state.save.armory.ownedParts.includes(window.__qaStashPartId),
+    partItemsLeft: state.save.stash.filter(item => item.itemType === 'part' && item.partId === window.__qaStashPartId).length,
+    version: window.__sdrStashDirectoryDebug?.version ?? null,
+  }));
+
   await page.locator('#practiceSection [data-expansion-range-motion="moving"]').click();
   const movingSelected = await page.locator('#practiceSection [data-expansion-range-motion="moving"]').getAttribute('aria-pressed');
   await page.locator('#practiceSection [data-expansion-action="start-range"]').click();
@@ -221,7 +326,92 @@ async function main() {
     return { moved, healthAfterHit, startedHealing, healthAfterMedkit: raid.player.health,
       targetCount: raid.enemies.length, bossCount: raid.enemies.filter(enemy => enemy.isNamelessBoss).length };
   });
-  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, movingSelected, rangeBefore, rangeAfter, errors, missingResources }, null, 2));
+  const persistencePage = await context.newPage();
+  await persistencePage.goto(`${gameUrl}?v=persistence-reset-smoke`, { waitUntil: 'networkidle' });
+  await persistencePage.waitForTimeout(700);
+
+  const purchaseSetup = await persistencePage.evaluate(() => {
+    state.save = defaultSave();
+    state.save.money = 500000;
+    persistSave();
+    renderBasePanel();
+
+    const prepProducts = getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id));
+    buyShopEntry('weapon_smg');
+    buyShopEntry('part_red_dot');
+    renderBasePanel();
+
+    const unlockButton = document.querySelector('[data-engineer-unlock]');
+    const lockTextBefore = document.querySelector('.operator-lock-note')?.textContent ?? '';
+    const moneyBeforeEngineer = state.save.money;
+    unlockButton?.click();
+
+    return {
+      prepProductCount: prepProducts.length,
+      unlocked: Boolean(state.save.engineerUnlocked),
+      selectedOperatorId: state.save.selectedOperatorId,
+      money: state.save.money,
+      engineerUnlockCost: moneyBeforeEngineer - state.save.money,
+      lockTextBefore,
+      ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
+      ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
+      unlockText: document.querySelector('.operator-lock-note')?.textContent ?? '',
+      hasUnlockButtonAfter: Boolean(document.querySelector('[data-engineer-unlock]')),
+    };
+  });
+
+  await persistencePage.reload({ waitUntil: 'networkidle' });
+  await persistencePage.waitForTimeout(700);
+  const purchaseReload = await persistencePage.evaluate(() => ({
+    unlocked: Boolean(state.save.engineerUnlocked),
+    selectedOperatorId: state.save.selectedOperatorId,
+    money: state.save.money,
+    ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
+    ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
+    prepProductCount: getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id)).length,
+    unlockButton: Boolean(document.querySelector('[data-engineer-unlock]')),
+  }));
+
+  const resetSecurity = await persistencePage.evaluate(() => {
+    const resetDayKey = 'iron-extraction-reset-day-v1';
+    localStorage.removeItem(resetDayKey);
+    state.save.money = 345678;
+    persistSave();
+
+    const originalPrompt = window.prompt;
+    window.prompt = () => 'wrong-password';
+    const wrongResult = resetSave();
+    const afterWrongMoney = state.save.money;
+    const afterWrongDay = localStorage.getItem(resetDayKey);
+
+    window.prompt = () => '20251001';
+    const firstResult = resetSave();
+    const afterFirstMoney = state.save.money;
+    const dayAfterFirst = localStorage.getItem(resetDayKey);
+
+    state.save.money = 456789;
+    persistSave();
+    const secondResult = resetSave();
+    const afterSecondMoney = state.save.money;
+    const dayAfterSecond = localStorage.getItem(resetDayKey);
+    window.prompt = originalPrompt;
+
+    return {
+      wrongResult,
+      afterWrongMoney,
+      afterWrongDay,
+      firstResult,
+      afterFirstMoney,
+      dayAfterFirst,
+      secondResult,
+      afterSecondMoney,
+      dayAfterSecond,
+      defaultMoney: defaultSave().money,
+    };
+  });
+  await persistencePage.close();
+
+  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, stashSetup, stashSearch, stashCategory, stashSort, stashAmmoBulk, stashPartsBulk, movingSelected, rangeBefore, rangeAfter, purchaseSetup, purchaseReload, resetSecurity, errors, missingResources }, null, 2));
   await Promise.race([browser.close(), new Promise(resolve => setTimeout(resolve, 2000))]);
   process.exit(errors.length || missingResources.length || before.mode !== 'raid' || !before.loadoutCollapsed ||
     Math.hypot(after.x - before.x, after.z - before.z) < 0.1 || ammoAfterShot >= ammoBeforeShot || !stairs?.upStarted ||
@@ -229,12 +419,40 @@ async function main() {
     mobile.map.x + mobile.map.width > 390 || mobile.language.x + mobile.language.width > 390 ||
     mobile.actionPad.x + mobile.actionPad.width > 390 || mobile.notices > 3 ||
     !extraction?.sequenceStarted || !extraction.resultVisible || !extraction.survived ||
+    stashSetup.debug?.version !== '2026-09-25-stash-v2' ||
+    stashSetup.debug?.itemCount !== 3 || stashSetup.debug?.groupCount !== 3 || stashSetup.debug?.categoryCount !== 3 ||
+    !stashSetup.controls.search || !stashSetup.controls.category || !stashSetup.controls.sort ||
+    !stashSetup.controls.ammoBulk || !stashSetup.controls.partsBulk ||
+    !stashSetup.controls.echoLoadout || !stashSetup.controls.echoArmory ||
+    stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1 ||
+    stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo') ||
+    stashSort.sort !== 'name-asc' || stashSort.names.length !== 3 || !stashSort.isSorted ||
+    stashAmmoBulk.ammoGain !== 45 || stashAmmoBulk.ammoItemsLeft !== 0 || stashAmmoBulk.stashCount !== 2 ||
+    !stashPartsBulk.ownsPart || stashPartsBulk.partItemsLeft !== 0 || stashPartsBulk.stashCount !== 1 ||
+    stashPartsBulk.version !== '2026-09-25-stash-v2' ||
     movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
     rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
     rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
     rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 90 || rangeAfter.moved < 5 ||
     rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
-    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ? 1 : 0);
+    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
+    purchaseSetup.prepProductCount !== 0 ||
+    !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
+    purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
+    purchaseSetup.money >= 300000 || purchaseSetup.money < 250000 ||
+    !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
+    !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
+    purchaseReload.money !== purchaseSetup.money ||
+    !purchaseReload.ownsSmg || !purchaseReload.ownsRedDot ||
+    purchaseReload.prepProductCount !== 0 || purchaseReload.unlockButton ||
+    resetSecurity.wrongResult !== false ||
+    resetSecurity.afterWrongMoney !== 345678 || resetSecurity.afterWrongDay !== null ||
+    resetSecurity.firstResult !== true ||
+    resetSecurity.afterFirstMoney !== resetSecurity.defaultMoney ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(resetSecurity.dayAfterFirst ?? '') ||
+    resetSecurity.secondResult !== false ||
+    resetSecurity.afterSecondMoney !== 456789 ||
+    resetSecurity.dayAfterSecond !== resetSecurity.dayAfterFirst ? 1 : 0);
 }
 
 main().catch(error => { console.error(error); process.exit(1); });

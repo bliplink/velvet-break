@@ -22,7 +22,7 @@
     window.__sdrEngineerPatchApplied = true;
 
     const ENGINEER_ID = 'engineer';
-    const ENGINEER_PRICE = 100000;
+    const ENGINEER_PRICE = 200000;
     const BARRIER_LENGTH = 15;
     const BARRIER_DEPTH = 0.72;
     const BARRIER_HEIGHT = 3.05;
@@ -104,10 +104,10 @@
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        skillTextZh: '手动启动：生命与护甲回满，8 秒完全免伤并获得 33 秒 50% 移速提升；免伤结束后 25 秒仅承受 30% 伤害，子弹伤害提升至 2.5 倍。',
-        skillTextEn: 'Manual: fully restore health and armor, gain 8s immunity and +50% movement for 33s; then take only 30% damage and deal 2.5x bullet damage for 25s.',
+        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒；随后 8 秒减伤一半且子弹伤害翻倍。增益烟雾持续 7 秒。',
+        skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then 8s of half incoming damage and double bullet damage. Recovery Smoke lasts 7s.',
         spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
-        speedBoostMult: 1.5, abilityDuration: 33, abilityColor: '#74e0a0',
+        abilityDuration: 20, abilityColor: '#74e0a0',
       });
       defs[ENGINEER_ID] = { ...engineerDef };
       return defs;
@@ -116,6 +116,21 @@
     getOperatorOrder = function engineerOperatorOrder() {
       return ['assault', 'medic', ENGINEER_ID];
     };
+
+    const restoreEngineerPurchaseFromPersistentSave = () => {
+      try {
+        const raw = localStorage.getItem('iron-extraction-save-v1');
+        if (!raw) return;
+        const persisted = JSON.parse(raw);
+        if (persisted?.engineerUnlocked) {
+          state.save.engineerUnlocked = true;
+          if (persisted.selectedOperatorId === ENGINEER_ID) state.save.selectedOperatorId = ENGINEER_ID;
+        }
+      } catch (error) {
+        console.warn('Failed to restore Yanfei purchase state.', error);
+      }
+    };
+    restoreEngineerPurchaseFromPersistentSave();
 
     const isEngineerUnlocked = () => Boolean(state.save.engineerUnlocked);
     const ensureSelection = () => {
@@ -132,7 +147,7 @@
     const setOperatorBeforeEngineer = setSelectedOperator;
     setSelectedOperator = function selectEngineerOperator(operatorId) {
       if (operatorId === ENGINEER_ID && !isEngineerUnlocked()) {
-        notify(L('彦飞尚未解锁，需要 100,000 资金。', 'Yanfei is locked. 100,000 funds are required.'), 'warning');
+        notify(L('彦飞尚未解锁，需要 200,000 资金。', 'Yanfei is locked. 200,000 funds are required.'), 'warning');
         return;
       }
       return setOperatorBeforeEngineer(operatorId);
@@ -153,7 +168,7 @@
               <div class="item-meta">${L('技能：' + L(operator.skillNameZh, operator.skillNameEn) + ' · ' + L(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${L('专属道具：' + L(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
               ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多 10 个，G 部署；火焰弹：最多 2 个，I 选点 / 确认；震撼弹：最多 2 个，O 选点 / 确认，命中敌人减速 10 秒。三种道具均持续补充。', 'Rapid Barrier: max 10, G deploy; Incendiary: max 2, I select / confirm; Stun Grenade: max 2, O select / confirm and slows enemies for 10s. All utilities resupply over time.')}</div>` : ''}
-              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>` : ''}
+              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>` : ''}
             </div>
             <div class="stack-list">
               ${unlocked
@@ -168,7 +183,7 @@
       const button = event.target.closest('[data-engineer-unlock]');
       if (!button || isEngineerUnlocked()) return;
       if (state.save.money < ENGINEER_PRICE) {
-        notify(L('资金不足，需要 100,000。', 'Not enough funds. Need 100,000.'), 'danger');
+        notify(L('资金不足，需要 200,000。', 'Not enough funds. Need 200,000.'), 'danger');
         return;
       }
       state.save.money -= ENGINEER_PRICE;
@@ -369,12 +384,11 @@
         if ((player.abilityActiveTimer ?? 0) > 0 || (player.skillUses ?? 0) <= 0) return abilityBeforeEngineer();
         player.skillUses -= 1;
         player.abilityCharges = player.skillUses;
-        player.abilityActiveTimer = 33;
-        player.operatorEffectTimer = 33;
-        player.health = player.maxHealth;
-        player.armor = player.maxArmor ?? player.armor;
-        player.damageImmunityTimer = 8;
-        player.medicSpeedBoostTimer = Math.max(player.medicSpeedBoostTimer ?? 0, 33);
+        player.abilityActiveTimer = 20;
+        player.operatorEffectTimer = 20;
+        player.health = Math.min(player.maxHealth, player.health + 800);
+        player.damageImmunityTimer = 12;
+        player.medicSpeedBoostTimer = 0;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.supportFirepowerTimer = 0;
@@ -382,7 +396,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：生命与护甲回满，8 秒免伤、33 秒移速 +50%；随后 25 秒仅承受 30% 伤害并造成 2.5 倍子弹伤害。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: full health and armor, 8s immunity, +50% movement for 33s; then 25s taking 30% damage and dealing 2.5x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：恢复 800 生命、免伤 12 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +800 HP, 12s immunity, then 8s of half damage taken and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
@@ -575,11 +589,11 @@
 
       if (current.operatorId === 'medic' && current.benjaminPostPhasePending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.benjaminPostPhasePending = false;
-        current.damageReductionTimer = 25;
-        current.damageReductionMult = 0.3;
-        current.supportFirepowerTimer = 25;
+        current.damageReductionTimer = 8;
+        current.damageReductionMult = 0.5;
+        current.supportFirepowerTimer = 8;
         spawnPulse(new BABYLON.Vector3(current.x, 1, current.z), '#d6ff98', 0.14, 0.16);
-        notify(L('免伤结束：接下来 25 秒仅承受 30% 伤害，子弹伤害提升至 2.5 倍。', 'Immunity ended: for 25s take only 30% damage and deal 2.5x bullet damage.'), 'success');
+        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 8 seconds of half damage taken and double bullet damage.'), 'success');
       }
 
       const execution = currentRaid.engineerExecution;

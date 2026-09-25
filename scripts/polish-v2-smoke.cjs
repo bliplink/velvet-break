@@ -46,7 +46,7 @@ const { chromium } = require('playwright');
       startRaid();
       const player = state.raid.player;
       player.operatorId = 'medic';
-      player.health = Math.max(1, player.maxHealth - 600);
+      player.health = Math.max(1, player.maxHealth - 900);
       player.armor = 0;
       player.skillUses = 4;
       const before = player.health;
@@ -54,7 +54,7 @@ const { chromium } = require('playwright');
       useOperatorAbility();
       const immediate = {
         healed: player.health - before,
-        armorRestored: player.armor,
+        armorAfterSkill: player.armor,
         maxArmor,
         immunity: player.damageImmunityTimer,
         speedBoost: player.medicSpeedBoostTimer,
@@ -70,7 +70,7 @@ const { chromium } = require('playwright');
       enemy.maxHealth = 10000;
       enemy.health = 10000;
       player.__supportShot = true;
-      player.supportFirepowerTimer = 25;
+      player.supportFirepowerTimer = 8;
       const enemyBefore = enemy.health;
       damageEnemy(enemy, 100, { ignoreSmoke: true });
       player.__supportShot = false;
@@ -230,15 +230,17 @@ const { chromium } = require('playwright');
       firstRescue.health > 1 &&
       firstRescue.reviveCount >= 1 &&
       balance.name === 'Benjamin' &&
-      balance.healed >= 599 && balance.healed <= 601 &&
-      balance.armorRestored === balance.maxArmor &&
-      balance.immunity >= 7.99 && balance.immunity <= 8.01 &&
-      balance.speedBoost >= 32.9 && balance.speedBoost <= 33.1 &&
-      balance.activeTimer >= 32.9 && balance.activeTimer <= 33.1 &&
-      balance.postTimer <= 25.1 && balance.postTimer > 24.5 &&
-      balance.postReductionMult === 0.3 &&
-      balance.boostedDamage >= 249 && balance.boostedDamage <= 251 &&
-      balance.description.includes('2.5x bullet damage') &&
+      balance.healed >= 799 && balance.healed <= 801 &&
+      balance.armorAfterSkill === 0 &&
+      balance.maxArmor > 0 &&
+      balance.immunity >= 11.99 && balance.immunity <= 12.01 &&
+      balance.speedBoost === 0 &&
+      balance.activeTimer >= 19.9 && balance.activeTimer <= 20.1 &&
+      balance.postTimer <= 8.1 && balance.postTimer > 7.5 &&
+      balance.postReductionMult === 0.5 &&
+      balance.boostedDamage >= 199 && balance.boostedDamage <= 201 &&
+      balance.description.includes('restore 800 HP') &&
+      balance.description.includes('double bullet damage') &&
       kai.abilityDuration === 35 &&
       kai.startTimer >= 34.9 && kai.startTimer <= 35.1 &&
       kai.afterKillTimer >= 36.4 && kai.afterKillTimer <= 36.6 &&

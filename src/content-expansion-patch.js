@@ -280,12 +280,99 @@
       return result;
     };
 
+    const RESET_DAY_KEY = 'iron-extraction-reset-day-v1';
+    const RESET_PASSWORD = '20251001';
+
+    const shopBeforeStashUpgrade = getShopEntries;
+    getShopEntries = function permanentShopOnly() {
+      return shopBeforeStashUpgrade().filter((entry) => entry.kind !== 'prep');
+    };
+
+    const getLocalDayKey = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const runProtectedDailyReset = () => {
+      const today = getLocalDayKey();
+      let lastResetDay = '';
+      try {
+        lastResetDay = localStorage.getItem(RESET_DAY_KEY) ?? '';
+      } catch {}
+      if (lastResetDay === today) {
+        notify(L('今天已经重置过一次，明天才能再次重置。', 'The save has already been reset once today. Try again tomorrow.'), 'warning');
+        return false;
+      }
+      const password = window.prompt?.(L('输入重置密码。每天最多重置一次。', 'Enter the reset password. Only one reset is allowed per day.'), '') ?? null;
+      if (password === null) return false;
+      if (password !== RESET_PASSWORD) {
+        notify(L('重置密码错误。', 'Incorrect reset password.'), 'danger');
+        return false;
+      }
+      try {
+        localStorage.setItem(RESET_DAY_KEY, today);
+      } catch {}
+      state.save = defaultSave();
+      persistSave();
+      if (typeof renderBasePanel === 'function') renderBasePanel();
+      notify(L('存档已重置。今天不能再次重置。', 'Save reset complete. Another reset is not allowed today.'), 'warning');
+      return true;
+    };
+
+    resetSave = runProtectedDailyReset;
+
+    if (refs.saveResetButton && !refs.saveResetButton.dataset.dailyResetProtected) {
+      refs.saveResetButton.dataset.dailyResetProtected = 'true';
+      refs.saveResetButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runProtectedDailyReset();
+      }, true);
+    }
+
+    window.__sdrPersistenceDebug = {
+      version: '2026-09-25-persistence-v2',
+      resetDayKey: RESET_DAY_KEY,
+      resetPasswordRequired: true,
+      oneResetPerDay: true,
+      shopHasPrep: () => getShopEntries().some((entry) => entry.kind === 'prep'),
+      getLocalDayKey,
+      runProtectedDailyReset,
+    };
+
     const originalRenderBasePanel = renderBasePanel;
     renderBasePanel = function renderProductionBasePanel() {
       const result = originalRenderBasePanel();
+      enhanceEchoLoadoutInfo();
       enhanceStashDirectory();
       return result;
     };
+
+    function enhanceEchoLoadoutInfo() {
+      if (state.mode !== 'base') return;
+      if (refs.loadoutPrep && !refs.loadoutPrep.querySelector('[data-echo-melee-loadout]')) {
+        refs.loadoutPrep.insertAdjacentHTML('beforeend', `
+          <div class="prep-row" data-echo-melee-loadout>
+            <span>${L('近战武器', 'Melee weapon')}</span>
+            <strong>${L('回声 · 3 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视', 'Echo · 3m · 200 damage · 0.5s per slash · T attack · H inspect')}</strong>
+          </div>
+        `);
+      }
+      if (refs.armoryPanel && !refs.armoryPanel.querySelector('[data-echo-melee-armory]')) {
+        refs.armoryPanel.insertAdjacentHTML('afterbegin', `
+          <article class="stash-row echo-melee-armory" data-echo-melee-armory>
+            <div>
+              <div class="item-title rarity-rare">${L('回声', 'Echo')}</div>
+              <div class="item-meta">${L('蓝色科技近战副武器 · 3 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用', 'Blue-tech melee sidearm · 3m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke')}</div>
+            </div>
+            <strong class="item-meta">${L('已装备', 'Equipped')}</strong>
+          </article>
+        `);
+      }
+    }
 
     function enhanceStashDirectory() {
       if (state.mode !== 'base' || !refs.stashList?.parentElement) return;
@@ -297,53 +384,213 @@
         directory.className = 'stash-directory';
         parent.insertBefore(directory, refs.stashList);
       }
+
+      const viewState = window.__sdrStashDirectoryState ??= {
+        query: '',
+        category: 'all',
+        sort: 'value-desc',
+      };
       const stash = state.save.stash ?? [];
       const groups = new Map();
+      const categories = new Map();
+      let totalValue = 0;
+      let totalWeight = 0;
+
       for (const item of stash) {
-        const key = item.itemType === 'ammo' && item.ammoId ? `ammo:${item.ammoId}` : item.itemType === 'part' && item.partId ? `part:${item.partId}` : `item:${item.id}`;
+        const key = item.itemType === 'ammo' && item.ammoId
+          ? `ammo:${item.ammoId}`
+          : item.itemType === 'part' && item.partId
+            ? `part:${item.partId}`
+            : `item:${item.id}`;
         const group = groups.get(key) ?? { item, count: 0, value: 0, weight: 0, rounds: 0 };
         group.count += 1;
         group.value += Number(item.value ?? 0);
         group.weight += Number(item.weight ?? 0);
         group.rounds += Number(item.rounds ?? 0);
         groups.set(key, group);
+
+        const category = String(item.category ?? L('其他', 'Other'));
+        categories.set(category, (categories.get(category) ?? 0) + 1);
+        totalValue += Number(item.value ?? 0);
+        totalWeight += Number(item.weight ?? 0);
       }
+
+      const rarityRank = { common: 0, uncommon: 1, rare: 2, epic: 3, legendary: 4, red: 5 };
+      const compareGroups = (left, right) => {
+        if (viewState.sort === 'count-desc') return right.count - left.count || right.value - left.value;
+        if (viewState.sort === 'weight-desc') return right.weight - left.weight || right.value - left.value;
+        if (viewState.sort === 'name-asc') return getItemLabel(left.item).localeCompare(getItemLabel(right.item), getLanguage() === 'zh' ? 'zh-CN' : 'en');
+        if (viewState.sort === 'rarity-desc') return (rarityRank[right.item.rarity] ?? 0) - (rarityRank[left.item.rarity] ?? 0) || right.value - left.value;
+        return right.value - left.value;
+      };
+
       const groupsMarkup = Array.from(groups.values())
-        .sort((left, right) => right.value - left.value)
-        .map(({ item, count, value, weight, rounds }) => `
-          <div class="stash-directory-row">
-            <div class="stash-directory-name">
-              <strong class="rarity-${item.rarity}">${getItemLabel(item)}</strong>
-              <span>${itemMetaLine(item)}</span>
+        .sort(compareGroups)
+        .map(({ item, count, value, weight, rounds }) => {
+          const category = String(item.category ?? L('其他', 'Other'));
+          return `
+            <div class="stash-directory-row" data-stash-category="${encodeURIComponent(category)}">
+              <div class="stash-directory-name">
+                <strong class="rarity-${item.rarity}">${getItemLabel(item)}</strong>
+                <span>${itemMetaLine(item)}</span>
+              </div>
+              <div class="stash-directory-stats">
+                <b>x${count}</b>
+                <span>${formatMoney(value)}</span>
+                <span>${formatWeight(weight)}${rounds > 0 ? ` · ${rounds} ${L('发', 'rounds')}` : ''}</span>
+              </div>
             </div>
-            <div class="stash-directory-stats">
-              <b>x${count}</b>
-              <span>${formatMoney(value)}</span>
-              <span>${formatWeight(weight)}${rounds > 0 ? ` · ${rounds} ${L('发', 'rounds')}` : ''}</span>
-            </div>
-          </div>
-        `)
+          `;
+        })
         .join('');
+
+      const categoryOptions = Array.from(categories.entries())
+        .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+        .map(([category, count]) => {
+          const value = encodeURIComponent(category);
+          return `<option value="${value}" ${viewState.category === value ? 'selected' : ''}>${category} · ${count}</option>`;
+        })
+        .join('');
+
+      const ammoCount = stash.filter((item) => item.itemType === 'ammo' && item.ammoId).length;
+      const newPartCount = stash.filter((item) =>
+        item.itemType === 'part' &&
+        item.partId &&
+        !state.save.armory.ownedParts.includes(item.partId),
+      ).length;
+
       directory.innerHTML = `
         <div class="stash-directory-head">
           <div>
             <strong>${L('仓库目录', 'Stash Directory')}</strong>
-            <span>${stash.length ? L('按物品归类显示，便于核对数量、价值和重量。', 'Grouped by item for a precise count, value, and weight check.') : L('暂无物资', 'No stored items')}</span>
+            <span>${stash.length ? L('按物品归类管理，支持搜索、分类、排序和批量收纳。', 'Grouped inventory with search, category filters, sorting, and batch storage actions.') : L('暂无物资', 'No stored items')}</span>
           </div>
-          <input class="stash-directory-filter" type="search" placeholder="${L('搜索物品', 'Search items')}" aria-label="${L('搜索仓库物品', 'Search stash items')}" />
+          <div class="stash-directory-actions">
+            <button class="ghost-button small" type="button" data-stash-bulk="ammo" ${ammoCount ? '' : 'disabled'}>${L(`弹药入库 ${ammoCount}`, `Store ammo ${ammoCount}`)}</button>
+            <button class="ghost-button small" type="button" data-stash-bulk="parts" ${newPartCount ? '' : 'disabled'}>${L(`收纳新配件 ${newPartCount}`, `Archive new parts ${newPartCount}`)}</button>
+          </div>
         </div>
+
+        <div class="stash-directory-summary">
+          <div><span>${L('物资', 'Items')}</span><strong>${stash.length}</strong></div>
+          <div><span>${L('总价值', 'Total value')}</span><strong>${formatMoney(totalValue)}</strong></div>
+          <div><span>${L('总重量', 'Total weight')}</span><strong>${formatWeight(totalWeight)}</strong></div>
+          <div><span>${L('分类', 'Categories')}</span><strong>${categories.size}</strong></div>
+        </div>
+
+        <div class="stash-directory-controls">
+          <input class="stash-directory-filter" type="search" value="${viewState.query.replace(/"/g, '&quot;')}" placeholder="${L('搜索物品', 'Search items')}" aria-label="${L('搜索仓库物品', 'Search stash items')}" />
+          <select class="stash-directory-category" aria-label="${L('仓库分类', 'Stash category')}">
+            <option value="all" ${viewState.category === 'all' ? 'selected' : ''}>${L('全部分类', 'All categories')}</option>
+            ${categoryOptions}
+          </select>
+          <select class="stash-directory-sort" aria-label="${L('仓库排序', 'Stash sort')}">
+            <option value="value-desc" ${viewState.sort === 'value-desc' ? 'selected' : ''}>${L('总价值优先', 'Value first')}</option>
+            <option value="count-desc" ${viewState.sort === 'count-desc' ? 'selected' : ''}>${L('数量优先', 'Count first')}</option>
+            <option value="weight-desc" ${viewState.sort === 'weight-desc' ? 'selected' : ''}>${L('重量优先', 'Weight first')}</option>
+            <option value="rarity-desc" ${viewState.sort === 'rarity-desc' ? 'selected' : ''}>${L('稀有度优先', 'Rarity first')}</option>
+            <option value="name-asc" ${viewState.sort === 'name-asc' ? 'selected' : ''}>${L('名称排序', 'Name')}</option>
+          </select>
+        </div>
+
         <div class="stash-directory-list">${groupsMarkup || `<div class="item-meta">${L('仓库里还没有带出的物资。', 'The stash is empty.')}</div>`}</div>
       `;
-      const filter = directory.querySelector('.stash-directory-filter');
-      filter?.addEventListener('input', () => {
-        const query = filter.value.trim().toLowerCase();
+
+      const applyFilters = () => {
+        const query = String(viewState.query ?? '').trim().toLowerCase();
+        const category = viewState.category === 'all' ? '' : decodeURIComponent(viewState.category);
+        const categoryLower = category.toLowerCase();
+        let visibleGroups = 0;
+
         for (const row of refs.stashList.querySelectorAll('.stash-row')) {
-          row.hidden = Boolean(query && !row.textContent.toLowerCase().includes(query));
+          const text = row.textContent.toLowerCase();
+          row.hidden = Boolean(
+            (query && !text.includes(query)) ||
+            (categoryLower && !text.includes(categoryLower))
+          );
         }
         for (const row of directory.querySelectorAll('.stash-directory-row')) {
-          row.hidden = Boolean(query && !row.textContent.toLowerCase().includes(query));
+          const text = row.textContent.toLowerCase();
+          const rowCategory = decodeURIComponent(row.dataset.stashCategory ?? '').toLowerCase();
+          row.hidden = Boolean(
+            (query && !text.includes(query)) ||
+            (categoryLower && rowCategory !== categoryLower)
+          );
+          if (!row.hidden) visibleGroups += 1;
         }
+
+        window.__sdrStashDirectoryDebug = {
+          version: '2026-09-25-stash-v2',
+          itemCount: stash.length,
+          groupCount: groups.size,
+          visibleGroups,
+          totalValue,
+          totalWeight,
+          categoryCount: categories.size,
+          query: viewState.query,
+          category: viewState.category,
+          sort: viewState.sort,
+        };
+      };
+
+      const filter = directory.querySelector('.stash-directory-filter');
+      filter?.addEventListener('input', () => {
+        viewState.query = filter.value;
+        applyFilters();
       });
+      directory.querySelector('.stash-directory-category')?.addEventListener('change', (event) => {
+        viewState.category = event.currentTarget.value;
+        applyFilters();
+      });
+      directory.querySelector('.stash-directory-sort')?.addEventListener('change', (event) => {
+        viewState.sort = event.currentTarget.value;
+        enhanceStashDirectory();
+      });
+
+      directory.querySelector('[data-stash-bulk="ammo"]')?.addEventListener('click', () => {
+        const nextStash = [];
+        let itemCount = 0;
+        let roundCount = 0;
+        for (const item of state.save.stash ?? []) {
+          if (item.itemType === 'ammo' && item.ammoId) {
+            const rounds = Math.max(0, Number(item.rounds ?? 0));
+            state.save.prepAmmo[item.ammoId] = (state.save.prepAmmo[item.ammoId] ?? 0) + rounds;
+            roundCount += rounds;
+            itemCount += 1;
+          } else {
+            nextStash.push(item);
+          }
+        }
+        if (!itemCount) return;
+        state.save.stash = nextStash;
+        persistSave();
+        renderBasePanel();
+        notify(L(`已将 ${itemCount} 组弹药（${roundCount} 发）存入弹药库。`, `Stored ${itemCount} ammo stacks (${roundCount} rounds) in the ammo reserve.`), 'success');
+      });
+
+      directory.querySelector('[data-stash-bulk="parts"]')?.addEventListener('click', () => {
+        const nextStash = [];
+        const learned = [];
+        for (const item of state.save.stash ?? []) {
+          if (
+            item.itemType === 'part' &&
+            item.partId &&
+            !state.save.armory.ownedParts.includes(item.partId)
+          ) {
+            state.save.armory.ownedParts.push(item.partId);
+            learned.push(item);
+          } else {
+            nextStash.push(item);
+          }
+        }
+        if (!learned.length) return;
+        state.save.stash = nextStash;
+        persistSave();
+        renderBasePanel();
+        notify(L(`已将 ${learned.length} 个新配件收入军械库。`, `Archived ${learned.length} new parts in the armory.`), 'success');
+      });
+
+      applyFilters();
     }
 
     // This patch loads after the lobby's first paint. Repaint once so the
