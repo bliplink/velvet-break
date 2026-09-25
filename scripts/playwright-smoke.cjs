@@ -263,11 +263,19 @@ async function main() {
     category: window.__sdrStashDirectoryDebug?.category ?? null,
   }));
 
+  await page.selectOption('.stash-directory-category', 'all');
   await page.selectOption('.stash-directory-sort', 'name-asc');
-  const stashSort = await page.evaluate(() => ({
-    sort: window.__sdrStashDirectoryDebug?.sort ?? null,
-    first: document.querySelector('#stashDirectory .stash-directory-row:not([hidden]) .stash-directory-name strong')?.textContent ?? '',
-  }));
+  const stashSort = await page.evaluate(() => {
+    const names = Array.from(document.querySelectorAll('#stashDirectory .stash-directory-row:not([hidden]) .stash-directory-name strong'))
+      .map(node => node.textContent.trim());
+    const locale = getLanguage() === 'zh' ? 'zh-CN' : 'en';
+    const sorted = names.slice().sort((left, right) => left.localeCompare(right, locale));
+    return {
+      sort: window.__sdrStashDirectoryDebug?.sort ?? null,
+      names,
+      isSorted: names.length === sorted.length && names.every((name, index) => name === sorted[index]),
+    };
+  });
 
   await page.locator('[data-stash-bulk="ammo"]').click();
   const stashAmmoBulk = await page.evaluate(() => ({
@@ -333,7 +341,7 @@ async function main() {
     !stashSetup.controls.echoLoadout || !stashSetup.controls.echoArmory ||
     stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1 ||
     stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo') ||
-    stashSort.sort !== 'name-asc' || !/QA Ammo Stack/.test(stashSort.first) ||
+    stashSort.sort !== 'name-asc' || stashSort.names.length !== 3 || !stashSort.isSorted ||
     stashAmmoBulk.ammoGain !== 45 || stashAmmoBulk.ammoItemsLeft !== 0 || stashAmmoBulk.stashCount !== 2 ||
     !stashPartsBulk.ownsPart || stashPartsBulk.partItemsLeft !== 0 || stashPartsBulk.stashCount !== 1 ||
     stashPartsBulk.version !== '2026-09-25-stash-v2' ||
