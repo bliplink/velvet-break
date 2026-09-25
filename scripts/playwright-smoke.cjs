@@ -192,6 +192,7 @@ async function main() {
     const ammoId = Object.keys(AMMO_DEFS)[0];
     const partId = Object.keys(PART_DEFS).find(id => !state.save.armory.ownedParts.includes(id)) ?? Object.keys(PART_DEFS)[0];
     const ammoBefore = Number(state.save.prepAmmo[ammoId] ?? 0);
+    state.save.armory.ownedParts = state.save.armory.ownedParts.filter(id => id !== partId);
     const partOwnedBefore = state.save.armory.ownedParts.includes(partId);
     state.save.stash = [
       {
@@ -243,6 +244,8 @@ async function main() {
         sort: Boolean(document.querySelector('.stash-directory-sort')),
         ammoBulk: Boolean(document.querySelector('[data-stash-bulk="ammo"]')),
         partsBulk: Boolean(document.querySelector('[data-stash-bulk="parts"]')),
+        echoLoadout: Boolean(document.querySelector('[data-echo-melee-loadout]')),
+        echoArmory: Boolean(document.querySelector('[data-echo-melee-armory]')),
       },
     };
   });
@@ -327,6 +330,7 @@ async function main() {
     stashSetup.debug?.itemCount !== 3 || stashSetup.debug?.groupCount !== 3 || stashSetup.debug?.categoryCount !== 3 ||
     !stashSetup.controls.search || !stashSetup.controls.category || !stashSetup.controls.sort ||
     !stashSetup.controls.ammoBulk || !stashSetup.controls.partsBulk ||
+    !stashSetup.controls.echoLoadout || !stashSetup.controls.echoArmory ||
     stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1 ||
     stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo') ||
     stashSort.sort !== 'name-asc' || !/QA Ammo Stack/.test(stashSort.first) ||
