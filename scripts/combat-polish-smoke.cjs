@@ -221,7 +221,7 @@ const { chromium } = require('playwright');
       const blockedBefore = window.__sdrCombatPolishDebug.echoSmokeBlockedCount;
       const attack = window.__sdrUseEchoKnife();
       const inspect = window.__sdrInspectEchoKnife();
-      return {
+      const result = {
         attack,
         inspect,
         healthDelta: healthBefore - target.health,
@@ -230,6 +230,10 @@ const { chromium } = require('playwright');
         action: Boolean(player.echoKnifeAction),
         inspectAction: Boolean(player.echoKnifeInspect),
       };
+      player.supportSmokeTimer = 0;
+      player.supportSmokeX = null;
+      player.supportSmokeZ = null;
+      return result;
     });
 
     const poi = await page.evaluate(() => {
@@ -245,7 +249,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForTimeout(450);
+    await page.waitForTimeout(900);
     const poiHud = await page.evaluate(() => ({
       text: document.getElementById('combatPoiLabel')?.textContent ?? '',
       visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
@@ -259,7 +263,7 @@ const { chromium } = require('playwright');
       raid.player.z = zone.z;
       return { zoneKind: zone.kind, zoneId: zone.id };
     });
-    await page.waitForTimeout(450);
+    await page.waitForTimeout(900);
     const extractionHudAfter = await page.evaluate(() => ({
       text: document.getElementById('combatExtractLabel')?.textContent ?? '',
       visible: document.getElementById('combatExtractLabel')?.classList.contains('is-visible') ?? false,
