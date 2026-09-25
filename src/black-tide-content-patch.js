@@ -46,8 +46,8 @@
     const PHASE_DAMAGE_MULT = 0.25;
     const PRISM_MAX = 4;
     const PRISM_REFILL = 10;
-    const PRISM_DURATION = 20;
-    const PRISM_HP = 500;
+    const PRISM_DURATION = 10;
+    const PRISM_HP = 1000;
     const THREAT_STEP = 90;
     const THREAT_MAX = 3;
 
@@ -222,7 +222,7 @@
         const extra = operatorId === 'engineer'
           ? `<div class="item-meta">${Ls('速凝掩体：G；火焰弹：I；震撼弹：O。', 'Rapid Barrier: G; Incendiary: I; Stun Grenade: O.')}</div>`
           : operatorId === OPERATOR_ID
-            ? `<div class="item-meta">${Ls('棱镜盾：500 点护盾，持续 20 秒；最多 4 个，每 10 秒补充 1 个，G 使用。', 'Prism Shield: 500 shield for 20s; max 4, +1 every 10s, press G.')}</div>`
+            ? `<div class="item-meta">${Ls('棱镜盾：1000 点护盾，持续 10 秒；最多 4 个，每 10 秒补充 1 个，G 使用。', 'Prism Shield: 1000 shield for 10s; max 4, +1 every 10s, press G.')}</div>`
             : '';
         const lock = operatorId === 'engineer'
           ? `<div class="item-meta operator-lock-note">${Ls('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>`
@@ -534,7 +534,7 @@
       player.phaseBarrierTimer = PRISM_DURATION;
       createPrismVisual(player);
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#62e5ff', 0.2, 0.3);
-      notify(Ls('棱镜盾已展开：500 点护盾，持续 20 秒。', 'Prism Shield deployed: 500 shield for 20 seconds.'), 'success');
+      notify(Ls('棱镜盾已展开：1000 点护盾，持续 10 秒。', 'Prism Shield deployed: 1000 shield for 10 seconds.'), 'success');
       syncHud();
       return true;
     };
@@ -564,26 +564,39 @@
       usePrismShield();
     }, true);
 
+    let prismDamageSource = null;
+    const shootBeforePrismReflect = enemyShoot;
+    enemyShoot = function prismTrackedEnemyShot(enemy, options = {}) {
+      prismDamageSource = enemy;
+      try { return shootBeforePrismReflect(enemy, options); }
+      finally { prismDamageSource = null; }
+    };
+
     const hurtBeforeWarden = applyDamageToPlayer;
     applyDamageToPlayer = function lingshuangDamageProtection(amount) {
       const player = state.raid?.player;
       if (player?.operatorId !== OPERATOR_ID) return hurtBeforeWarden(amount);
 
-      let incoming = Math.max(0, Number(amount) || 0);
-      if ((player.abilityActiveTimer ?? 0) > 0) incoming *= PHASE_DAMAGE_MULT;
-
-      if ((player.phaseBarrierTimer ?? 0) > 0 && (player.phaseBarrierHp ?? 0) > 0 && incoming > 0) {
-        const absorbed = Math.min(player.phaseBarrierHp, incoming);
-        player.phaseBarrierHp -= absorbed;
-        incoming -= absorbed;
+      const rawIncoming = Math.max(0, Number(amount) || 0);
+      if ((player.phaseBarrierTimer ?? 0) > 0 && (player.phaseBarrierHp ?? 0) > 0 && rawIncoming > 0) {
+        player.phaseBarrierHp = Math.max(0, player.phaseBarrierHp - rawIncoming);
+        const source = prismDamageSource;
+        if (source && !source.dead && !source.despawned) {
+          damageEnemy(source, rawIncoming, { ignoreSmoke: true });
+          spawnImpactBurst?.(new BABYLON.Vector3(source.x, 1.05, source.z), '#62e5ff', 0.85, 'hard');
+        }
+        spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#62e5ff', 0.08, 0.08);
         if (player.phaseBarrierHp <= 0.001) {
           player.phaseBarrierHp = 0;
           player.phaseBarrierTimer = 0;
           disposePrismVisual(player);
-          notify(Ls('棱镜盾已破碎。', 'Prism Shield depleted.'), 'warning');
+          notify(Ls('棱镜盾已耗尽。', 'Prism Shield depleted.'), 'warning');
         }
+        return;
       }
 
+      let incoming = rawIncoming;
+      if ((player.abilityActiveTimer ?? 0) > 0) incoming *= PHASE_DAMAGE_MULT;
       if (incoming <= 0.001) return;
       return hurtBeforeWarden(incoming);
     };
