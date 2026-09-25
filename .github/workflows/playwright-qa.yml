@@ -2,7 +2,7 @@ name: Playwright QA
 
 on:
   push:
-    branches: [main]
+    branches: [main, benjamin-buff-yanfei-stun-20260925]
     paths:
       - ".github/workflows/playwright-qa.yml"
       - "index.html"
