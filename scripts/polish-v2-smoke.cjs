@@ -17,6 +17,7 @@ const { chromium } = require('playwright');
 
     await page.evaluate(() => {
       state.save.selectedOperatorId = 'assault';
+      state.save.prep.armorBonus = 0;
       startRaid();
       state.raid.player.dropTimer = 0;
       const c = state.raid.companion;
@@ -93,6 +94,11 @@ const { chromium } = require('playwright');
       const startTimer = player.abilityActiveTimer;
       const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
       killEnemy(enemy);
+      const startingArmor = player.maxArmor;
+      const armorBeforeHit = player.armor;
+      player.health = player.maxHealth;
+      applyDamageToPlayer(100);
+      const armorAfterHit = player.armor;
       return {
         abilityDuration: def.abilityDuration,
         startTimer,
@@ -104,6 +110,11 @@ const { chromium } = require('playwright');
         recoilMult: def.recoilMult,
         reloadMult: def.reloadMult,
         startArmorBonus: def.startArmorBonus,
+        armorDurabilityCostMult: def.armorDurabilityCostMult,
+        startingArmor,
+        armorBeforeHit,
+        armorAfterHit,
+        armorLoss: armorBeforeHit - armorAfterHit,
       };
     });
 
@@ -163,7 +174,12 @@ const { chromium } = require('playwright');
       kai.spreadMult === 0.70 &&
       kai.recoilMult === 0.72 &&
       kai.reloadMult === 0.72 &&
-      kai.startArmorBonus === 18 &&
+      kai.startArmorBonus === 170 &&
+      kai.armorDurabilityCostMult === 0.5 &&
+      kai.startingArmor === 200 &&
+      kai.armorBeforeHit === 200 &&
+      kai.armorAfterHit >= 167.49 && kai.armorAfterHit <= 167.51 &&
+      kai.armorLoss >= 32.49 && kai.armorLoss <= 32.51 &&
       balance.stability?.version === '2026-09-20-stability-v4' &&
       balance.stability?.rescueInputRecoveries >= 1 &&
       visual.xray.revealEnabled === 0 &&
