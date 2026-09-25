@@ -83,6 +83,7 @@ const { chromium } = require('playwright');
 
     const kai = await page.evaluate(() => {
       state.save.selectedOperatorId = 'assault';
+      state.save.prep.armorBonus = 0;
       startRaid();
       const player = state.raid.player;
       player.operatorId = 'assault';
