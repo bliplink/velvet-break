@@ -374,6 +374,9 @@
     const animateBeforePolish = animateRaidEntities;
     animateRaidEntities = function polishedEnemyReaction(dt, ...args) {
       const result = animateBeforePolish(dt, ...args);
+      for (const enemy of state.raid?.enemies ?? []) {
+        enemy.echoRevealTimer = Math.max(0, (enemy.echoRevealTimer ?? 0) - dt);
+      }
       const player = state.raid?.player;
       if (player) {
         player.echoKnifeCooldown = Math.max(0, (player.echoKnifeCooldown ?? 0) - dt);
@@ -399,7 +402,6 @@
         }
       }
       for (const enemy of state.raid?.enemies ?? []) {
-        enemy.echoRevealTimer = Math.max(0, (enemy.echoRevealTimer ?? 0) - dt);
         const root = enemy.visual?.root;
         if (!root || enemy.dead) continue;
         const timer = Math.max(0, enemy.hitReactTimer ?? 0);
