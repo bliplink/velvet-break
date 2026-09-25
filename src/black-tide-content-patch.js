@@ -42,7 +42,7 @@
     const OPERATOR_ID = 'lingshuang';
     const OPERATOR_PRICE = 50000;
     const PHASE_DURATION = 50;
-    const PHASE_MOVE_MULT = 2.1;
+    const PHASE_MOVE_MULT = 1.6666667;
     const PHASE_DAMAGE_MULT = 0.15;
     const PRISM_MAX = 4;
     const PRISM_REFILL = 10;
@@ -161,10 +161,10 @@
       skillNameZh: '相位推进',
       skillNameEn: 'Phase Drive',
       skillTextZh: 'C 手动启动 50 秒：移动速度 +110%，受到伤害降低 85%。',
-      skillTextEn: 'C: activate for 50s to gain +110% movement speed and take 85% less damage.',
+      skillTextEn: 'C: activate for 50s to gain +66.7% phase movement speed and take 85% less damage.',
       itemNameZh: '棱镜盾',
       itemNameEn: 'Prism Shield',
-      moveMult: 1.25,
+      moveMult: 1.2,
       spreadMult: 0.58,
       recoilMult: 0.55,
       reloadMult: 0.68,
@@ -483,7 +483,7 @@
       player.abilityActiveTimer = PHASE_DURATION;
       player.operatorEffectTimer = PHASE_DURATION;
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#7cecff', 0.17, 0.22);
-      notify(Ls(`相位推进启动：50 秒内移速 +110%，受到伤害降低 85%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +110% movement and 85% damage reduction for 50s. Uses left: ${player.skillUses}/4.`), 'success');
+      notify(Ls(`相位推进启动：50 秒内移速提升至 3.0×，受到伤害降低 85%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +66.7% phase movement and 85% damage reduction for 50s. Uses left: ${player.skillUses}/4.`), 'success');
       syncHud();
       return true;
     };
