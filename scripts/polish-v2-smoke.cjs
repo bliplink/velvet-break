@@ -17,7 +17,6 @@ const { chromium } = require('playwright');
 
     await page.evaluate(() => {
       state.save.selectedOperatorId = 'assault';
-      state.save.prep.armorBonus = 0;
       startRaid();
       state.raid.player.dropTimer = 0;
       const c = state.raid.companion;
@@ -95,6 +94,7 @@ const { chromium } = require('playwright');
       const startTimer = player.abilityActiveTimer;
       const enemy = state.raid.enemies.find(e => !e.dead && !e.despawned);
       killEnemy(enemy);
+      const healOnKill = player.health - healthBefore;
       const startingArmor = player.maxArmor;
       const armorBeforeHit = player.armor;
       player.health = player.maxHealth;
@@ -104,7 +104,7 @@ const { chromium } = require('playwright');
         abilityDuration: def.abilityDuration,
         startTimer,
         afterKillTimer: player.abilityActiveTimer,
-        healOnKill: player.health - healthBefore,
+        healOnKill,
         killExtendSeconds: def.killExtendSeconds,
         killHeal: def.killHeal,
         spreadMult: def.spreadMult,
