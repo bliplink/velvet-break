@@ -650,6 +650,17 @@
       if (!raid || !player || raid.execution || raid.engineerExecution) return null;
       let nearest = null;
       let best = Infinity;
+      const expiredFireFields = (raid.incendiaryFields ?? []).filter(field => (field.life ?? 0) <= 0);
+      if (expiredFireFields.length) {
+        for (const field of expiredFireFields) {
+          for (const system of field.systems ?? []) system.dispose(false);
+          field.light?.dispose();
+          disposeFireNode(field.root);
+        }
+        raid.incendiaryFields = (raid.incendiaryFields ?? []).filter(field => (field.life ?? 0) > 0);
+        raid.incendiaryGrid = new rules.SpatialGrid();
+        for (const field of raid.incendiaryFields) raid.incendiaryGrid.add(field);
+      }
       for (const enemy of raid.enemies ?? []) {
         if (!rules.executionEligible(player, enemy, actorFeet, geometryBlocked)) continue;
         const distance = distance2D(player.x, player.z, enemy.x, enemy.z);
@@ -740,6 +751,7 @@
     const FIRE_RADIUS = rules.config.fireRadius;
     const FIRE_ITEM_MAX = 2;
     const FIRE_REFILL = 20;
+    const FIRE_DURATION = 10;
     const disposeFireNode = (node) => node?.dispose(false, true);
 
     const fireMaterial = (name, color, alpha = 1) => {
@@ -853,7 +865,7 @@
       light.range = 24;
       light.intensity = 0.56;
       raid.incendiaryFields ??= [];
-      const field = { ...target, root, systems, light, particlesActive: true, phase: 0 };
+      const field = { ...target, root, systems, light, particlesActive: true, phase: 0, life: FIRE_DURATION };
       raid.incendiaryFields.push(field);
       raid.incendiaryGrid ??= new rules.SpatialGrid();
       raid.incendiaryGrid.add(field);
@@ -1098,6 +1110,7 @@
       }
       for (const field of raid.incendiaryFields ?? []) {
         field.phase += dt;
+        field.life = Math.max(0, (field.life ?? FIRE_DURATION) - dt);
         const distance = distance2D(player.x, player.z, field.x, field.z);
         field.root.setEnabled(distance < 120);
         const shouldRun = distance < 120;
