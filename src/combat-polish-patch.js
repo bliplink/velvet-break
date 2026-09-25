@@ -149,9 +149,36 @@
           disabled: false,
         },
       ];
-      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...entries]
+      const echoUnlocked = Boolean(state.save.echoUnlocked);
+      const echoEntry = {
+        id: 'echo_unlock',
+        kind: 'permanent',
+        name: L('回声', 'Echo'),
+        description: L('永久解锁回声近战武器：12 米攻击范围、200 伤害、0.5 秒一刀，命中暴露敌人 5 秒。', 'Permanently unlock Echo melee: 12m range, 200 damage, 0.5s slash, reveals hit enemies for 5s.'),
+        price: 100000,
+        status: echoUnlocked ? L('已永久解锁', 'Permanently unlocked') : L('永久购买', 'Permanent purchase'),
+        disabled: echoUnlocked,
+      };
+      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...entries]
         .filter((entry) => entry.id !== 'emergency_funding');
     };
+
+    const echoUnlocked = () => Boolean(state.save.echoUnlocked);
+
+    const basePanelEchoUnlockHandler = (event) => {
+      const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
+      if (!button || echoUnlocked()) return;
+      if ((state.save.money ?? 0) < 100000) {
+        notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
+        return;
+      }
+      state.save.money -= 100000;
+      state.save.echoUnlocked = true;
+      persistSave();
+      renderBasePanel();
+      notify(L('回声已永久解锁。', 'Echo permanently unlocked.'), 'success');
+    };
+    refs?.basePanel?.addEventListener?.('click', basePanelEchoUnlockHandler, true);
 
     const syncEchoBaseInfo = () => {
       const loadout = refs?.loadoutPrep?.querySelector?.('[data-echo-melee-loadout] strong');
@@ -459,6 +486,10 @@
 
     const beginEchoKnifeAttack = () => {
       const player = state.raid?.player;
+      if (!echoUnlocked()) {
+        notify(L('需要先在商店用 100,000 资金永久购买回声。', 'Purchase Echo permanently in the shop for 100,000 first.'), 'warning');
+        return false;
+      }
       if (
         state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
         (player.dropTimer ?? 0) > 0 || (player.echoKnifeCooldown ?? 0) > 0 ||
@@ -479,6 +510,10 @@
 
     const beginEchoKnifeInspect = () => {
       const player = state.raid?.player;
+      if (!echoUnlocked()) {
+        notify(L('需要先在商店用 100,000 资金永久购买回声。', 'Purchase Echo permanently in the shop for 100,000 first.'), 'warning');
+        return false;
+      }
       if (
         state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
         (player.dropTimer ?? 0) > 0 || player.echoKnifeAction || player.echoKnifeInspect ||
