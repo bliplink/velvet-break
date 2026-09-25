@@ -166,7 +166,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForTimeout(140);
+    await page.waitForTimeout(360);
     const echoMarker = await page.evaluate(() => {
       const marker = document.querySelector('.echo-exposure-marker');
       const status = document.getElementById('echoKnifeStatus');
