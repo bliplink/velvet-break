@@ -41,13 +41,13 @@
     const MAP_ID = 'black-tide-harbor';
     const OPERATOR_ID = 'lingshuang';
     const OPERATOR_PRICE = 240000;
-    const PHASE_DURATION = 18;
-    const PHASE_MOVE_MULT = 1.25;
-    const PHASE_DAMAGE_MULT = 0.65;
-    const PRISM_MAX = 2;
-    const PRISM_REFILL = 25;
-    const PRISM_DURATION = 8;
-    const PRISM_HP = 120;
+    const PHASE_DURATION = 30;
+    const PHASE_MOVE_MULT = 1.6;
+    const PHASE_DAMAGE_MULT = 0.4;
+    const PRISM_MAX = 3;
+    const PRISM_REFILL = 15;
+    const PRISM_DURATION = 15;
+    const PRISM_HP = 300;
     const THREAT_STEP = 90;
     const THREAT_MAX = 3;
 
@@ -160,8 +160,8 @@
       passiveEn: 'Female · Warden. Starts with 100 armor, reduced recoil and spread, and a Prism Shield for burst protection.',
       skillNameZh: '相位推进',
       skillNameEn: 'Phase Drive',
-      skillTextZh: 'C 手动启动 18 秒：移动速度 +25%，受到伤害降低 35%。',
-      skillTextEn: 'C: activate for 18s to gain +25% movement speed and take 35% less damage.',
+      skillTextZh: 'C 手动启动 30 秒：移动速度 +60%，受到伤害降低 60%。',
+      skillTextEn: 'C: activate for 30s to gain +60% movement speed and take 60% less damage.',
       itemNameZh: '棱镜盾',
       itemNameEn: 'Prism Shield',
       moveMult: 1.02,
@@ -222,7 +222,7 @@
         const extra = operatorId === 'engineer'
           ? `<div class="item-meta">${Ls('速凝掩体：G；火焰弹：I；震撼弹：O。', 'Rapid Barrier: G; Incendiary: I; Stun Grenade: O.')}</div>`
           : operatorId === OPERATOR_ID
-            ? `<div class="item-meta">${Ls('棱镜盾：120 点护盾，持续 8 秒；最多 2 个，每 25 秒补充 1 个，G 使用。', 'Prism Shield: 120 shield for 8s; max 2, +1 every 25s, press G.')}</div>`
+            ? `<div class="item-meta">${Ls('棱镜盾：300 点护盾，持续 15 秒；最多 3 个，每 15 秒补充 1 个，G 使用。', 'Prism Shield: 300 shield for 15s; max 3, +1 every 15s, press G.')}</div>`
             : '';
         const lock = operatorId === 'engineer'
           ? `<div class="item-meta operator-lock-note">${Ls('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>`
@@ -481,7 +481,7 @@
       player.abilityActiveTimer = PHASE_DURATION;
       player.operatorEffectTimer = PHASE_DURATION;
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#7cecff', 0.17, 0.22);
-      notify(Ls(`相位推进启动：18 秒内移速 +25%，受到伤害降低 35%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +25% movement and 35% damage reduction for 18s. Uses left: ${player.skillUses}/4.`), 'success');
+      notify(Ls(`相位推进启动：30 秒内移速 +60%，受到伤害降低 60%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +60% movement and 60% damage reduction for 30s. Uses left: ${player.skillUses}/4.`), 'success');
       syncHud();
       return true;
     };
@@ -534,7 +534,7 @@
       player.phaseBarrierTimer = PRISM_DURATION;
       createPrismVisual(player);
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#62e5ff', 0.2, 0.3);
-      notify(Ls('棱镜盾已展开：120 点护盾，持续 8 秒。', 'Prism Shield deployed: 120 shield for 8 seconds.'), 'success');
+      notify(Ls('棱镜盾已展开：300 点护盾，持续 15 秒。', 'Prism Shield deployed: 300 shield for 15 seconds.'), 'success');
       syncHud();
       return true;
     };
