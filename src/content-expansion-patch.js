@@ -332,7 +332,7 @@
       const compareGroups = (left, right) => {
         if (viewState.sort === 'count-desc') return right.count - left.count || right.value - left.value;
         if (viewState.sort === 'weight-desc') return right.weight - left.weight || right.value - left.value;
-        if (viewState.sort === 'name-asc') return getItemLabel(left.item).localeCompare(getItemLabel(right.item), state.lang === 'zh' ? 'zh-CN' : 'en');
+        if (viewState.sort === 'name-asc') return getItemLabel(left.item).localeCompare(getItemLabel(right.item), getLanguage() === 'zh' ? 'zh-CN' : 'en');
         if (viewState.sort === 'rarity-desc') return (rarityRank[right.item.rarity] ?? 0) - (rarityRank[left.item.rarity] ?? 0) || right.value - left.value;
         return right.value - left.value;
       };
