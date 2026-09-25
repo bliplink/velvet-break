@@ -239,6 +239,9 @@ const { chromium } = require('playwright');
     const poi = await page.evaluate(() => {
       const def = obstacleDefs.find(entry => entry.id === 'center-depot');
       const resolved = window.__sdrRaidDesignConfig?.resolvePoi(def.x, def.z);
+      state.input.keys.clear();
+      state.raid.player.structureAction = null;
+      state.raid.player.mobilityAction = null;
       state.raid.player.x = def.x;
       state.raid.player.z = def.z;
       return {
@@ -249,7 +252,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForTimeout(900);
+    await page.waitForFunction(() => window.__sdrCombatPolishDebug?.currentPoi === 'center-depot', null, { timeout: 2500 });
     const poiHud = await page.evaluate(() => ({
       text: document.getElementById('combatPoiLabel')?.textContent ?? '',
       visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
