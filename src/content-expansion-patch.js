@@ -280,6 +280,67 @@
       return result;
     };
 
+    const RESET_DAY_KEY = 'iron-extraction-reset-day-v1';
+    const RESET_PASSWORD = '20251001';
+
+    const shopBeforeStashUpgrade = getShopEntries;
+    getShopEntries = function permanentShopOnly() {
+      return shopBeforeStashUpgrade().filter((entry) => entry.kind !== 'prep');
+    };
+
+    const getLocalDayKey = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    const runProtectedDailyReset = () => {
+      const today = getLocalDayKey();
+      let lastResetDay = '';
+      try {
+        lastResetDay = localStorage.getItem(RESET_DAY_KEY) ?? '';
+      } catch {}
+      if (lastResetDay === today) {
+        notify(L('今天已经重置过一次，明天才能再次重置。', 'The save has already been reset once today. Try again tomorrow.'), 'warning');
+        return false;
+      }
+      const password = window.prompt?.(L('输入重置密码。每天最多重置一次。', 'Enter the reset password. Only one reset is allowed per day.'), '') ?? null;
+      if (password === null) return false;
+      if (password !== RESET_PASSWORD) {
+        notify(L('重置密码错误。', 'Incorrect reset password.'), 'danger');
+        return false;
+      }
+      try {
+        localStorage.setItem(RESET_DAY_KEY, today);
+      } catch {}
+      state.save = defaultSave();
+      persistSave();
+      if (typeof renderBasePanel === 'function') renderBasePanel();
+      notify(L('存档已重置。今天不能再次重置。', 'Save reset complete. Another reset is not allowed today.'), 'warning');
+      return true;
+    };
+
+    if (refs.saveResetButton && !refs.saveResetButton.dataset.dailyResetProtected) {
+      refs.saveResetButton.dataset.dailyResetProtected = 'true';
+      refs.saveResetButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        runProtectedDailyReset();
+      }, true);
+    }
+
+    window.__sdrPersistenceDebug = {
+      version: '2026-09-25-persistence-v2',
+      resetDayKey: RESET_DAY_KEY,
+      resetPasswordRequired: true,
+      oneResetPerDay: true,
+      shopHasPrep: () => getShopEntries().some((entry) => entry.kind === 'prep'),
+      getLocalDayKey,
+      runProtectedDailyReset,
+    };
+
     const originalRenderBasePanel = renderBasePanel;
     renderBasePanel = function renderProductionBasePanel() {
       const result = originalRenderBasePanel();
