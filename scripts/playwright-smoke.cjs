@@ -187,6 +187,100 @@ async function main() {
     await page.keyboard.up('e');
   }
   await page.locator('#returnBaseButton').click();
+
+  const stashSetup = await page.evaluate(() => {
+    const ammoId = Object.keys(AMMO_DEFS)[0];
+    const partId = Object.keys(PART_DEFS).find(id => !state.save.armory.ownedParts.includes(id)) ?? Object.keys(PART_DEFS)[0];
+    const ammoBefore = Number(state.save.prepAmmo[ammoId] ?? 0);
+    const partOwnedBefore = state.save.armory.ownedParts.includes(partId);
+    state.save.stash = [
+      {
+        uid: 'qa-stash-ammo',
+        id: 'qa-stash-ammo',
+        name: 'QA Ammo Stack',
+        category: 'Ammo',
+        rarity: 'common',
+        value: 900,
+        weight: 1.2,
+        itemType: 'ammo',
+        ammoId,
+        rounds: 45,
+      },
+      {
+        uid: 'qa-stash-part',
+        id: 'qa-stash-part',
+        name: 'QA New Part',
+        category: 'Parts',
+        rarity: 'rare',
+        value: 5200,
+        weight: 0.7,
+        itemType: 'part',
+        partId,
+      },
+      {
+        uid: 'qa-stash-value',
+        id: 'qa-stash-value',
+        name: 'QA Valuable',
+        category: 'Valuable',
+        rarity: 'legendary',
+        value: 12000,
+        weight: 1.1,
+        itemType: 'loot',
+      },
+    ];
+    window.__qaStashAmmoId = ammoId;
+    window.__qaStashPartId = partId;
+    window.__qaStashAmmoBefore = ammoBefore;
+    window.__qaStashPartOwnedBefore = partOwnedBefore;
+    window.__sdrStashDirectoryState = { query: '', category: 'all', sort: 'value-desc' };
+    renderBasePanel();
+    return {
+      debug: window.__sdrStashDirectoryDebug,
+      summaryText: document.querySelector('.stash-directory-summary')?.textContent ?? '',
+      controls: {
+        search: Boolean(document.querySelector('.stash-directory-filter')),
+        category: Boolean(document.querySelector('.stash-directory-category')),
+        sort: Boolean(document.querySelector('.stash-directory-sort')),
+        ammoBulk: Boolean(document.querySelector('[data-stash-bulk="ammo"]')),
+        partsBulk: Boolean(document.querySelector('[data-stash-bulk="parts"]')),
+      },
+    };
+  });
+
+  await page.locator('.stash-directory-filter').fill('QA Valuable');
+  const stashSearch = await page.evaluate(() => ({
+    visibleGroups: window.__sdrStashDirectoryDebug?.visibleGroups ?? -1,
+    visibleRows: Array.from(document.querySelectorAll('#stashDirectory .stash-directory-row')).filter(row => !row.hidden).length,
+  }));
+
+  await page.locator('.stash-directory-filter').fill('');
+  await page.selectOption('.stash-directory-category', encodeURIComponent('Ammo'));
+  const stashCategory = await page.evaluate(() => ({
+    visibleGroups: window.__sdrStashDirectoryDebug?.visibleGroups ?? -1,
+    category: window.__sdrStashDirectoryDebug?.category ?? null,
+  }));
+
+  await page.selectOption('.stash-directory-sort', 'name-asc');
+  const stashSort = await page.evaluate(() => ({
+    sort: window.__sdrStashDirectoryDebug?.sort ?? null,
+    first: document.querySelector('#stashDirectory .stash-directory-row:not([hidden]) .stash-directory-name strong')?.textContent ?? '',
+  }));
+
+  await page.locator('[data-stash-bulk="ammo"]').click();
+  const stashAmmoBulk = await page.evaluate(() => ({
+    stashCount: state.save.stash.length,
+    ammoGain: Number(state.save.prepAmmo[window.__qaStashAmmoId] ?? 0) - window.__qaStashAmmoBefore,
+    ammoItemsLeft: state.save.stash.filter(item => item.itemType === 'ammo').length,
+  }));
+
+  await page.locator('[data-stash-bulk="parts"]').click();
+  const stashPartsBulk = await page.evaluate(() => ({
+    stashCount: state.save.stash.length,
+    ownsPart: state.save.armory.ownedParts.includes(window.__qaStashPartId),
+    partItemsLeft: state.save.stash.filter(item => item.itemType === 'part' && item.partId === window.__qaStashPartId).length,
+    version: window.__sdrStashDirectoryDebug?.version ?? null,
+  }));
+
   await page.locator('#practiceSection [data-expansion-range-motion="moving"]').click();
   const movingSelected = await page.locator('#practiceSection [data-expansion-range-motion="moving"]').getAttribute('aria-pressed');
   await page.locator('#practiceSection [data-expansion-action="start-range"]').click();
@@ -221,7 +315,7 @@ async function main() {
     return { moved, healthAfterHit, startedHealing, healthAfterMedkit: raid.player.health,
       targetCount: raid.enemies.length, bossCount: raid.enemies.filter(enemy => enemy.isNamelessBoss).length };
   });
-  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, movingSelected, rangeBefore, rangeAfter, errors, missingResources }, null, 2));
+  console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, stashSetup, stashSearch, stashCategory, stashSort, stashAmmoBulk, stashPartsBulk, movingSelected, rangeBefore, rangeAfter, errors, missingResources }, null, 2));
   await Promise.race([browser.close(), new Promise(resolve => setTimeout(resolve, 2000))]);
   process.exit(errors.length || missingResources.length || before.mode !== 'raid' || !before.loadoutCollapsed ||
     Math.hypot(after.x - before.x, after.z - before.z) < 0.1 || ammoAfterShot >= ammoBeforeShot || !stairs?.upStarted ||
@@ -229,6 +323,16 @@ async function main() {
     mobile.map.x + mobile.map.width > 390 || mobile.language.x + mobile.language.width > 390 ||
     mobile.actionPad.x + mobile.actionPad.width > 390 || mobile.notices > 3 ||
     !extraction?.sequenceStarted || !extraction.resultVisible || !extraction.survived ||
+    stashSetup.debug?.version !== '2026-09-25-stash-v2' ||
+    stashSetup.debug?.itemCount !== 3 || stashSetup.debug?.groupCount !== 3 || stashSetup.debug?.categoryCount !== 3 ||
+    !stashSetup.controls.search || !stashSetup.controls.category || !stashSetup.controls.sort ||
+    !stashSetup.controls.ammoBulk || !stashSetup.controls.partsBulk ||
+    stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1 ||
+    stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo') ||
+    stashSort.sort !== 'name-asc' || !/QA Ammo Stack/.test(stashSort.first) ||
+    stashAmmoBulk.ammoGain !== 45 || stashAmmoBulk.ammoItemsLeft !== 0 || stashAmmoBulk.stashCount !== 2 ||
+    !stashPartsBulk.ownsPart || stashPartsBulk.partItemsLeft !== 0 || stashPartsBulk.stashCount !== 1 ||
+    stashPartsBulk.version !== '2026-09-25-stash-v2' ||
     movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
     rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
     rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
