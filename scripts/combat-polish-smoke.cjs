@@ -114,7 +114,7 @@ const { chromium } = require('playwright');
       let spot = null;
       for (let x = -96; x <= 96 && !spot; x += 16) {
         for (let z = -96; z <= 96 && !spot; z += 16) {
-          const targetZ = z + 2.9;
+          const targetZ = z + 3.9;
           if (
             !pointInsideObstaclePadding(x, z, 1) &&
             !pointInsideObstaclePadding(x, targetZ, 0.8) &&
@@ -169,13 +169,11 @@ const { chromium } = require('playwright');
     await page.waitForTimeout(360);
     const echoMarker = await page.evaluate(() => {
       const marker = document.querySelector('.echo-exposure-marker');
-      const status = document.getElementById('echoKnifeStatus');
       return {
         exists: Boolean(marker),
         hidden: marker?.hidden ?? true,
         text: marker?.textContent ?? '',
-        statusText: status?.textContent ?? '',
-        statusVisible: status?.classList.contains('is-visible') ?? false,
+        statusRemoved: !document.getElementById('echoKnifeStatus'),
       };
     });
 
@@ -303,15 +301,14 @@ const { chromium } = require('playwright');
       echo.debugTarget?.reveal === 5 &&
       echo.knifeMeshes >= 12 &&
       echo.allTechBlue &&
-      echo.config?.range === 3 &&
+      echo.config?.range === 4 &&
       echo.config?.damage === 200 &&
       echo.config?.cooldown === 0.5 &&
       echo.config?.revealDuration === 5 &&
       echoMarker.exists &&
       !echoMarker.hidden &&
       /回声|Echo|Hostile|敌人|重装兵|Heavy|猎手|Hunter|无名|Nameless/.test(echoMarker.text) &&
-      /回声|Echo/.test(echoMarker.statusText) &&
-      echoMarker.statusVisible &&
+      echoMarker.statusRemoved &&
       echoExpired.revealTimer === 0 &&
       echoExpired.actionEnded &&
       echoExpired.markerRemoved &&
