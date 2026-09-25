@@ -117,6 +117,21 @@
       return ['assault', 'medic', ENGINEER_ID];
     };
 
+    const restoreEngineerPurchaseFromPersistentSave = () => {
+      try {
+        const raw = localStorage.getItem('iron-extraction-save-v1');
+        if (!raw) return;
+        const persisted = JSON.parse(raw);
+        if (persisted?.engineerUnlocked) {
+          state.save.engineerUnlocked = true;
+          if (persisted.selectedOperatorId === ENGINEER_ID) state.save.selectedOperatorId = ENGINEER_ID;
+        }
+      } catch (error) {
+        console.warn('Failed to restore Yanfei purchase state.', error);
+      }
+    };
+    restoreEngineerPurchaseFromPersistentSave();
+
     const isEngineerUnlocked = () => Boolean(state.save.engineerUnlocked);
     const ensureSelection = () => {
       if (!["assault", "medic", ENGINEER_ID].includes(state.save.selectedOperatorId)) {
@@ -132,7 +147,7 @@
     const setOperatorBeforeEngineer = setSelectedOperator;
     setSelectedOperator = function selectEngineerOperator(operatorId) {
       if (operatorId === ENGINEER_ID && !isEngineerUnlocked()) {
-        notify(L('彦飞尚未解锁，需要 100,000 资金。', 'Yanfei is locked. 100,000 funds are required.'), 'warning');
+        notify(L('彦飞尚未解锁，需要 200,000 资金。', 'Yanfei is locked. 200,000 funds are required.'), 'warning');
         return;
       }
       return setOperatorBeforeEngineer(operatorId);
