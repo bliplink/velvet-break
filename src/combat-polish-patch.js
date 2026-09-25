@@ -73,8 +73,6 @@
       #combatLootBanner span{display:block;margin-top:3px;font-size:.68rem;color:#ead7a9}
       #combatLootBanner.is-active{animation:combat-loot 2.15s ease both}
       @keyframes combat-loot{0%{opacity:0;transform:translate(-50%,-16px) scale(.95)}10%{opacity:1;transform:translate(-50%,0) scale(1.02)}72%{opacity:1}100%{opacity:0;transform:translate(-50%,10px) scale(1)}}
-      #echoKnifeStatus{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);padding:5px 9px;border:1px solid rgba(122,219,255,.18);border-radius:3px;background:rgba(5,11,14,.5);backdrop-filter:blur(6px);color:#dff8ff;font-size:.66rem;font-weight:800;letter-spacing:.06em;opacity:0;transition:opacity .15s ease}
-      #echoKnifeStatus.is-visible{opacity:.86}
       #echoExposureLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden}
       .echo-exposure-marker{position:absolute;transform:translate(-50%,-50%);display:grid;justify-items:center;gap:2px;color:#ff947f;text-shadow:0 1px 5px #000,0 0 9px rgba(255,74,54,.65);font-size:.66rem;font-weight:900;letter-spacing:.05em;white-space:nowrap}
       .echo-exposure-marker::before{content:'◆';font-size:1rem;color:#ff6e58;filter:drop-shadow(0 0 5px rgba(255,64,42,.8))}
@@ -93,7 +91,6 @@
       <div id="combatShotBloom"></div>
       <div id="combatLootBanner"><strong></strong><span></span></div>
       <div id="echoExposureLayer"></div>
-      <div id="echoKnifeStatus"></div>
     `;
     document.body.appendChild(hud);
 
@@ -109,16 +106,77 @@
     const lootTitle = lootBanner.querySelector('strong');
     const lootDetail = lootBanner.querySelector('span');
     const echoExposureLayer = hud.querySelector('#echoExposureLayer');
-    const echoKnifeStatus = hud.querySelector('#echoKnifeStatus');
     const echoMarkers = new Map();
 
-    const ECHO_RANGE = 3;
+    const ECHO_RANGE = 4;
     const ECHO_DAMAGE = 200;
     const ECHO_REVEAL_DURATION = 5;
     const ECHO_COOLDOWN = 0.5;
     const ECHO_SWING_DURATION = 0.34;
     const ECHO_INSPECT_DURATION = 1.55;
     const ECHO_SUPPORT_SMOKE_RADIUS = 20;
+
+    const shopBeforeEchoRangeUpdate = getShopEntries;
+    getShopEntries = function restorePrepShopAfterSubsidyCleanup() {
+      const entries = shopBeforeEchoRangeUpdate();
+      const existing = new Set(entries.map((entry) => entry.id));
+      const restoredPrep = [
+        {
+          id: 'prep_medkit',
+          kind: 'prep',
+          name: L('战地医疗包', 'Field Medkit'),
+          description: L('下次出击时医疗包 +1', 'Adds 1 medkit to the next raid'),
+          price: 900,
+          status: L(`已备 ${state.save.prep.medkitBonus}`, `Prepared ${state.save.prep.medkitBonus}`),
+          disabled: false,
+        },
+        {
+          id: 'prep_surgical',
+          kind: 'prep',
+          name: L('手术包', 'Surgical Kit'),
+          description: L('下次出击时额外获得 2 个医疗包', 'Adds 2 more medkits to the next raid'),
+          price: 1700,
+          status: L('重型医疗补给', 'Heavy medical supply'),
+          disabled: false,
+        },
+        {
+          id: 'prep_armor',
+          kind: 'prep',
+          name: L('复合护甲板', 'Composite Plates'),
+          description: L('下次出击时初始护甲 +35', 'Adds 35 starting armor for the next raid'),
+          price: 1200,
+          status: L(`已备 +${state.save.prep.armorBonus}`, `Prepared +${state.save.prep.armorBonus}`),
+          disabled: false,
+        },
+      ];
+      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...entries]
+        .filter((entry) => entry.id !== 'emergency_funding');
+    };
+
+    const syncEchoBaseInfo = () => {
+      const loadout = refs?.loadoutPrep?.querySelector?.('[data-echo-melee-loadout] strong');
+      if (loadout) {
+        loadout.textContent = L(
+          '回声 · 4 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视',
+          'Echo · 4m · 200 damage · 0.5s per slash · T attack · H inspect',
+        );
+      }
+      const armoryMeta = refs?.armoryPanel?.querySelector?.('[data-echo-melee-armory] .item-meta');
+      if (armoryMeta) {
+        armoryMeta.textContent = L(
+          '蓝色科技近战副武器 · 4 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用',
+          'Blue-tech melee sidearm · 4m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke',
+        );
+      }
+    };
+
+    const renderBaseBeforeEchoRangeUpdate = renderBasePanel;
+    renderBasePanel = function renderBaseWithEchoRange(...args) {
+      const result = renderBaseBeforeEchoRangeUpdate.apply(this, args);
+      syncEchoBaseInfo();
+      return result;
+    };
+    syncEchoBaseInfo();
 
     const isEchoBlockedBySmoke = (player = state.raid?.player) => Boolean(
       player &&
@@ -584,18 +642,6 @@
       const raid = state.raid;
       const player = raid?.player;
       const inRaid = state.mode === 'raid' && Boolean(player);
-      echoKnifeStatus.classList.toggle('is-visible', inRaid);
-      if (inRaid) {
-        const cooldown = Math.max(0, player.echoKnifeCooldown ?? 0);
-        echoKnifeStatus.textContent = isEchoBlockedBySmoke(player)
-          ? L('回声 · 烟雾中禁用', 'Echo · disabled in smoke')
-          : player.echoKnifeInspect
-            ? L('回声 · 检视中', 'Echo · inspecting')
-            : cooldown > 0
-              ? L(`回声 · T · ${cooldown.toFixed(1)}s · H 检视`, `Echo · T · ${cooldown.toFixed(1)}s · H inspect`)
-              : L('回声 · T 近战 · H 检视', 'Echo · T melee · H inspect');
-      }
-
       const activeIds = new Set();
       if (inRaid && scene.activeCamera && refs?.canvas) {
         const engine = scene.getEngine();

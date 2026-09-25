@@ -43,6 +43,8 @@ const { chromium } = require('playwright');
       shopHasPrep: window.__sdrPersistenceDebug?.shopHasPrep?.() ?? true,
       renderedPrepProducts: Array.from(document.querySelectorAll('#shopList [data-shop-id]'))
         .some(button => String(button.dataset.shopId || '').startsWith('prep_')),
+      emergencyFundingPresent: getShopEntries().some(entry => entry.id === 'emergency_funding') ||
+        Boolean(document.querySelector('#shopList [data-shop-id="emergency_funding"]')),
       persistenceVersion: window.__sdrPersistenceDebug?.version ?? null,
     }));
 
@@ -94,8 +96,9 @@ const { chromium } = require('playwright');
       afterReload.ownsSmg &&
       afterReload.ownsRedDot &&
       afterReload.selectedWeaponId === 'smg' &&
-      afterReload.shopHasPrep === false &&
-      afterReload.renderedPrepProducts === false &&
+      afterReload.shopHasPrep === true &&
+      afterReload.renderedPrepProducts === true &&
+      afterReload.emergencyFundingPresent === false &&
       afterReload.persistenceVersion === '2026-09-25-persistence-v2' &&
       wrongPassword.unchanged &&
       !wrongPassword.dayMarker &&

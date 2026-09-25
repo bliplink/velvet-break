@@ -265,17 +265,7 @@
       },
     };
 
-    const CUSTOM_SHOP_STOCK = {
-      emergency_funding: {
-        id: 'emergency_funding',
-        nameZh: '没钱了吧，我来助你',
-        nameEn: 'Out of Money? I Can Help',
-        descriptionZh: '购买后立即获得 10000 资金，可无限购买。',
-        descriptionEn: 'Instantly grants 10,000 funds. Unlimited supply.',
-        price: 0,
-        grantMoney: 10000,
-      },
-    };
+    const CUSTOM_SHOP_STOCK = {};
 
     const CUSTOM_UTILITY_META = {
       vanguard: {
