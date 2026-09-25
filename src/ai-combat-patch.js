@@ -113,9 +113,35 @@
       return enemy;
     };
 
+    const resetEnemyRuntimeState = (enemy) => {
+      if (!enemy || enemy.isRangeTarget) return enemy;
+      enemy.aiStrengthProfile = null;
+      enemy.navPath = [];
+      enemy.navPathIndex = 0;
+      enemy.navRepathTimer = 0;
+      enemy.navAvoidFrames = 0;
+      enemy.navAvoidSide = 1;
+      enemy.coverTarget = null;
+      enemy.stairAction = null;
+      enemy.stairVisualY = 0;
+      enemy.mobilityAction = null;
+      enemy.mobilityCooldown = 0;
+      enemy.engineerStunTimer = 0;
+      enemy.engineerSlowTimer = 0;
+      enemy.echoRevealTimer = 0;
+      enemy.revealedTimer = 0;
+      enemy.alertTimer = 0;
+      enemy.investigateTimer = 0;
+      enemy.combatState = 'patrol';
+      enemy.strafeDirection = 1;
+      enemy.routeIndex = 0;
+      enemy.despawned = false;
+      return enemy;
+    };
+
     const createEnemyBeforeReview = createEnemy;
     createEnemy = function createStrengthenedEnemy(spawn, index) {
-      return strengthenEnemy(createEnemyBeforeReview(spawn, index));
+      return strengthenEnemy(resetEnemyRuntimeState(createEnemyBeforeReview(spawn, index)));
     };
 
     const moveBeforeNavigation = moveEntityWithCollision;
@@ -528,6 +554,28 @@
         player.health = Math.min(player.maxHealth, player.health + 30);
         const restored = Math.max(0, Math.round(player.health - beforeHealth));
         if (restored > 0) notify(L(`彦飞枪械击败恢复 ${restored} 生命。`, `Yanfei gun kill restored ${restored} HP.`), 'success');
+      }
+      return result;
+    };
+
+    const startRaidBeforeAiReset = startRaid;
+    startRaid = function startRaidWithFreshAiState(...args) {
+      const result = startRaidBeforeAiReset.apply(this, args);
+      const raid = state.raid;
+      if (raid?.enemies) {
+        const seen = new Set();
+        raid.enemies = raid.enemies.filter((enemy) => {
+          if (!enemy || seen.has(enemy.id)) {
+            enemy?.visual?.root?.dispose?.(false, true);
+            return false;
+          }
+          seen.add(enemy.id);
+          resetEnemyRuntimeState(enemy);
+          strengthenEnemy(enemy);
+          return true;
+        });
+        raid.initialEnemyCount = raid.enemies.length;
+        raid.enemyCount = raid.enemies.length;
       }
       return result;
     };
