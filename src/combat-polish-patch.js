@@ -159,7 +159,15 @@
         status: echoUnlocked ? L('已永久解锁', 'Permanently unlocked') : L('永久购买', 'Permanent purchase'),
         disabled: echoUnlocked,
       };
-      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...entries]
+      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...(echoUnlocked && !existing.has('echo_smoke_upgrade') ? [{
+          id: 'echo_smoke_upgrade',
+          kind: 'permanent',
+          name: L('回声 · 烟雾适应', 'Echo · Smoke Adaptation'),
+          description: L('再支付 150,000，永久允许回声在烟雾中攻击和检视。', 'Pay another 150,000 to permanently use and inspect Echo inside smoke.'),
+          price: 150000,
+          status: state.save.echoSmokeUnlocked ? L('已永久解锁', 'Permanently unlocked') : L('永久升级', 'Permanent upgrade'),
+          disabled: Boolean(state.save.echoSmokeUnlocked),
+        }] : []), ...entries]
         .filter((entry) => entry.id !== 'emergency_funding');
     };
 
@@ -167,6 +175,20 @@
 
     const basePanelEchoUnlockHandler = (event) => {
       const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
+      const smokeButton = event.target?.closest?.('[data-shop-id="echo_smoke_upgrade"]');
+      if (smokeButton) {
+        if (!echoUnlocked() || state.save.echoSmokeUnlocked) return;
+        if ((state.save.money ?? 0) < 150000) {
+          notify(L('资金不足：烟雾适应需要 150,000。', 'Not enough funds: Smoke Adaptation costs 150,000.'), 'danger');
+          return;
+        }
+        state.save.money -= 150000;
+        state.save.echoSmokeUnlocked = true;
+        persistSave();
+        renderBasePanel();
+        notify(L('回声烟雾适应已永久解锁。', 'Echo Smoke Adaptation permanently unlocked.'), 'success');
+        return;
+      }
       if (!button || echoUnlocked()) return;
       if ((state.save.money ?? 0) < 100000) {
         notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
@@ -496,7 +518,7 @@
         player.echoKnifeAction || player.echoKnifeInspect || player.executionLocked || player.utilityAction ||
         player.incendiaryThrow || player.stunGrenadeThrow || player.useAction
       ) return false;
-      if (isEchoBlockedBySmoke(player)) {
+      if (isEchoBlockedBySmoke(player) && !state.save.echoSmokeUnlocked) {
         debug.echoSmokeBlockedCount += 1;
         notify(L('烟雾中无法使用回声。', 'Echo cannot be used inside smoke.'), 'warning');
         return false;
@@ -520,7 +542,7 @@
         player.executionLocked || player.utilityAction || player.incendiaryThrow ||
         player.stunGrenadeThrow || player.useAction
       ) return false;
-      if (isEchoBlockedBySmoke(player)) {
+      if (isEchoBlockedBySmoke(player) && !state.save.echoSmokeUnlocked) {
         debug.echoSmokeBlockedCount += 1;
         notify(L('烟雾中无法检视回声。', 'Echo cannot be inspected inside smoke.'), 'warning');
         return false;
@@ -541,18 +563,24 @@
       inspectDuration: ECHO_INSPECT_DURATION,
     };
 
+    let echoAttackHeld = false;
     window.addEventListener('keydown', (event) => {
       const lower = event.key?.toLowerCase?.() ?? '';
-      if (event.repeat || state.mode !== 'raid' || state.overlay) return;
+      if (state.mode !== 'raid' || state.overlay) return;
       if (event.code === 'KeyT' || lower === 't') {
         event.preventDefault();
         event.stopImmediatePropagation();
-        beginEchoKnifeAttack();
+        echoAttackHeld = true;
+        if (!event.repeat) beginEchoKnifeAttack();
       } else if (event.code === 'KeyH' || lower === 'h') {
         event.preventDefault();
         event.stopImmediatePropagation();
         beginEchoKnifeInspect();
       }
+    }, true);
+    window.addEventListener('keyup', (event) => {
+      const lower = event.key?.toLowerCase?.() ?? '';
+      if (event.code === 'KeyT' || lower === 't') echoAttackHeld = false;
     }, true);
 
     const animateBeforePolish = animateRaidEntities;
@@ -564,6 +592,7 @@
       const player = state.raid?.player;
       if (player) {
         player.echoKnifeCooldown = Math.max(0, (player.echoKnifeCooldown ?? 0) - dt);
+        if (echoAttackHeld && !player.echoKnifeAction && !player.echoKnifeInspect && (player.echoKnifeCooldown ?? 0) <= 0) beginEchoKnifeAttack();
         const action = player.echoKnifeAction;
         if (action) {
           action.timer += dt;
