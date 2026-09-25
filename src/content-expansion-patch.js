@@ -294,7 +294,7 @@
         refs.loadoutPrep.insertAdjacentHTML('beforeend', `
           <div class="prep-row" data-echo-melee-loadout>
             <span>${L('近战武器', 'Melee weapon')}</span>
-            <strong>${L('回声 · T · 命中暴露 5 秒', 'Echo · T · 5s exposure on hit')}</strong>
+            <strong>${L('回声 · 3 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视', 'Echo · 3m · 200 damage · 0.5s per slash · T attack · H inspect')}</strong>
           </div>
         `);
       }
@@ -303,7 +303,7 @@
           <article class="stash-row echo-melee-armory" data-echo-melee-armory>
             <div>
               <div class="item-title rarity-rare">${L('回声', 'Echo')}</div>
-              <div class="item-meta">${L('固定近战副武器 · T 挥刀 · 命中目标后暴露其位置 5 秒', 'Permanent melee sidearm · T to slash · exposes a hit target for 5 seconds')}</div>
+              <div class="item-meta">${L('蓝色科技近战副武器 · 3 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用', 'Blue-tech melee sidearm · 3m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke')}</div>
             </div>
             <strong class="item-meta">${L('已装备', 'Equipped')}</strong>
           </article>
