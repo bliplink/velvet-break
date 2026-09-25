@@ -64,6 +64,9 @@ jobs:
       - name: Verify combat polish
         run: node scripts/combat-polish-smoke.cjs
 
+      - name: Verify persistence shop and protected reset
+        run: node scripts/persistence-reset-smoke.cjs
+
       - name: Verify risk reward raid loop v2
         run: node scripts/raid-loop-v2-smoke.cjs
 
