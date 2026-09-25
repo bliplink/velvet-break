@@ -513,6 +513,15 @@
         player.utilityMaxItems = ENGINEER_UTILITY_MAX;
         player.utilityGainInterval = 20;
       }
+      if (player) {
+        player.maxStamina = 500;
+        if (!player.__stamina500Initialized) {
+          player.__stamina500Initialized = true;
+          player.stamina = 500;
+        } else {
+          player.stamina = Math.min(500, Number(player.stamina ?? 500));
+        }
+      }
       const staminaBefore = player?.stamina;
       const result = updateBeforeEngineer(dt);
       const currentRaid = state.raid;
