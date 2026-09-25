@@ -70,14 +70,14 @@
         enemy.aiStrengthProfile = 'boss';
         // Boss health deliberately remains operator-dependent (2,000 for Kai, 1,500 otherwise).
         enemy.damage = Math.max(36, enemy.damage ?? 0);
-        enemy.speed = Math.max(5.7, enemy.speed ?? 0);
+        enemy.speed = Math.max(6.4, enemy.speed ?? 0);
         enemy.preferredRange = Math.max(35, enemy.preferredRange ?? 0);
         enemy.longFireRange = Math.max(46, enemy.longFireRange ?? 0);
         enemy.detectRange = Math.max(50, enemy.detectRange ?? 0);
         enemy.fireInterval = Math.min(0.32, enemy.fireInterval ?? 0.32);
         enemy.shotBurst = Math.max(5, enemy.shotBurst ?? 1);
         enemy.accuracyBonus = Math.max(0.36, enemy.accuracyBonus ?? 0);
-        enemy.combatSpeedMult = Math.max(1.2, enemy.combatSpeedMult ?? 1);
+        enemy.combatSpeedMult = Math.max(1.32, enemy.combatSpeedMult ?? 1);
         return enemy;
       }
       if (enemy.isNamelessMinion) {
@@ -86,7 +86,7 @@
           enemy.maxHealth = 180;
           enemy.health = Math.min(enemy.health ?? 180, 180);
           enemy.damage = 12;
-          enemy.speed = 3.6;
+          enemy.speed = 4.25;
           enemy.detectRange = 30;
           enemy.preferredRange = 16;
           enemy.longFireRange = 24;
@@ -102,13 +102,13 @@
       enemy.maxHealth = Math.round((enemy.maxHealth ?? enemy.health ?? 100) * 1.35);
       enemy.health = Math.round(enemy.maxHealth * ratio);
       enemy.damage = Math.round((enemy.damage ?? 10) * 1.18);
-      enemy.speed = (enemy.speed ?? 2.5) * 1.12;
+      enemy.speed = (enemy.speed ?? 2.5) * 1.28;
       enemy.preferredRange = (enemy.preferredRange ?? 16) * 1.18;
       enemy.longFireRange = Math.max((enemy.longFireRange ?? enemy.preferredRange) * 1.3, enemy.preferredRange * 1.42);
       enemy.detectRange = (enemy.detectRange ?? 28) * 1.2;
       enemy.fireInterval = (enemy.fireInterval ?? 1) * 0.86;
       enemy.accuracyBonus = (enemy.accuracyBonus ?? 0) + 0.1;
-      enemy.combatSpeedMult = (enemy.combatSpeedMult ?? 1) * 1.08;
+      enemy.combatSpeedMult = (enemy.combatSpeedMult ?? 1) * 1.18;
       enemy.shotBurst = Math.max(enemy.shotBurst ?? 1, enemy.type === 'hunter' ? 3 : 2);
       return enemy;
     };
