@@ -514,12 +514,13 @@
         player.utilityGainInterval = 20;
       }
       if (player) {
-        player.maxStamina = 500;
-        if (!player.__stamina500Initialized) {
-          player.__stamina500Initialized = true;
-          player.stamina = 500;
+        const staminaCap = player.operatorId === 'lingshuang' ? 650 : 500;
+        player.maxStamina = staminaCap;
+        if (!player.__staminaCapInitialized) {
+          player.__staminaCapInitialized = true;
+          player.stamina = staminaCap;
         } else {
-          player.stamina = Math.min(500, Number(player.stamina ?? 500));
+          player.stamina = Math.min(staminaCap, Math.max(0, Number(player.stamina ?? staminaCap)));
         }
       }
       const staminaBefore = player?.stamina;
