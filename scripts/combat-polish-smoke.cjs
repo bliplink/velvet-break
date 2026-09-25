@@ -114,7 +114,7 @@ const { chromium } = require('playwright');
       let spot = null;
       for (let x = -96; x <= 96 && !spot; x += 16) {
         for (let z = -96; z <= 96 && !spot; z += 16) {
-          const targetZ = z + 1.8;
+          const targetZ = z + 2.9;
           if (
             !pointInsideObstaclePadding(x, z, 1) &&
             !pointInsideObstaclePadding(x, targetZ, 0.8) &&
@@ -151,6 +151,8 @@ const { chromium } = require('playwright');
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyT', key: 't' }));
       const actionStarted = Boolean(player.echoKnifeAction);
       animateRaidEntities(0.13);
+      const echoVisual = player.echoKnifeAction?.visual;
+      const techMeshes = echoVisual?.getChildMeshes?.() ?? [];
       return {
         actionStarted,
         damage: healthBefore - target.health,
@@ -158,7 +160,9 @@ const { chromium } = require('playwright');
         swingDelta: window.__sdrCombatPolishDebug.echoSwingCount - swingsBefore,
         hitDelta: window.__sdrCombatPolishDebug.echoHitCount - hitsBefore,
         debugTarget: window.__sdrCombatPolishDebug.lastEchoTarget,
-        knifeMeshes: scene.meshes.filter(mesh => String(mesh.name).startsWith('echo-knife-')).length,
+        knifeMeshes: techMeshes.length,
+        allTechBlue: techMeshes.length >= 12 && techMeshes.every(mesh => mesh.metadata?.techBlue === true),
+        config: window.__sdrEchoKnifeConfig,
       };
     });
 
@@ -185,6 +189,48 @@ const { chromium } = require('playwright');
     });
     await page.waitForTimeout(120);
     echoExpired.markerRemoved = await page.evaluate(() => !document.querySelector('.echo-exposure-marker'));
+
+    const echoInspect = await page.evaluate(() => {
+      const player = state.raid.player;
+      player.echoKnifeCooldown = 0;
+      const before = window.__sdrCombatPolishDebug.echoInspectCount;
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyH', key: 'h' }));
+      const started = Boolean(player.echoKnifeInspect);
+      const meshCount = player.echoKnifeInspect?.visual?.getChildMeshes?.().length ?? 0;
+      animateRaidEntities(0.42);
+      const rotationY = player.echoKnifeInspect?.visual?.rotation?.y ?? 0;
+      for (let index = 0; index < 15; index++) animateRaidEntities(0.1);
+      return {
+        started,
+        meshCount,
+        rotationY,
+        ended: !player.echoKnifeInspect,
+        delta: window.__sdrCombatPolishDebug.echoInspectCount - before,
+      };
+    });
+
+    const echoSmoke = await page.evaluate(() => {
+      const player = state.raid.player;
+      const target = state.raid.enemies.find(enemy => enemy.id === window.__echoTargetId);
+      player.echoKnifeCooldown = 0;
+      player.supportSmokeTimer = 7;
+      player.supportSmokeX = player.x;
+      player.supportSmokeZ = player.z;
+      target.echoRevealTimer = 0;
+      const healthBefore = target.health;
+      const blockedBefore = window.__sdrCombatPolishDebug.echoSmokeBlockedCount;
+      const attack = window.__sdrUseEchoKnife();
+      const inspect = window.__sdrInspectEchoKnife();
+      return {
+        attack,
+        inspect,
+        healthDelta: healthBefore - target.health,
+        revealTimer: target.echoRevealTimer ?? 0,
+        blockedDelta: window.__sdrCombatPolishDebug.echoSmokeBlockedCount - blockedBefore,
+        action: Boolean(player.echoKnifeAction),
+        inspectAction: Boolean(player.echoKnifeInspect),
+      };
+    });
 
     const poi = await page.evaluate(() => {
       const def = obstacleDefs.find(entry => entry.id === 'center-depot');
@@ -219,7 +265,7 @@ const { chromium } = require('playwright');
       visible: document.getElementById('combatExtractLabel')?.classList.contains('is-visible') ?? false,
     }));
 
-    console.log(JSON.stringify({ shot, hit, kill, rareLoot, echo, echoMarker, echoExpired, poi, poiHud, extractionHud, extractionHudAfter, errors }, null, 2));
+    console.log(JSON.stringify({ shot, hit, kill, rareLoot, echo, echoMarker, echoExpired, echoInspect, echoSmoke, poi, poiHud, extractionHud, extractionHudAfter, errors }, null, 2));
 
     const ok = Boolean(
       shot.ammoAfter === shot.ammoBefore - 1 &&
@@ -243,12 +289,17 @@ const { chromium } = require('playwright');
       /QA Legendary Core/.test(rareLoot.bannerText) &&
       rareLoot.version === '2026-09-19-combat-polish-v4' &&
       echo.actionStarted &&
-      echo.damage >= 80 && echo.damage <= 90 &&
+      echo.damage >= 199 && echo.damage <= 201 &&
       echo.revealTimer >= 4.99 && echo.revealTimer <= 5.01 &&
       echo.swingDelta === 1 &&
       echo.hitDelta === 1 &&
       echo.debugTarget?.reveal === 5 &&
-      echo.knifeMeshes >= 4 &&
+      echo.knifeMeshes >= 12 &&
+      echo.allTechBlue &&
+      echo.config?.range === 3 &&
+      echo.config?.damage === 200 &&
+      echo.config?.cooldown === 0.5 &&
+      echo.config?.revealDuration === 5 &&
       echoMarker.exists &&
       !echoMarker.hidden &&
       /回声|Echo|Hostile|敌人|Heavy|Hunter|无名|Nameless/.test(echoMarker.text) &&
@@ -257,6 +308,18 @@ const { chromium } = require('playwright');
       echoExpired.revealTimer === 0 &&
       echoExpired.actionEnded &&
       echoExpired.markerRemoved &&
+      echoInspect.started &&
+      echoInspect.meshCount >= 12 &&
+      Math.abs(echoInspect.rotationY) > 0.2 &&
+      echoInspect.ended &&
+      echoInspect.delta === 1 &&
+      echoSmoke.attack === false &&
+      echoSmoke.inspect === false &&
+      echoSmoke.healthDelta === 0 &&
+      echoSmoke.revealTimer === 0 &&
+      echoSmoke.blockedDelta === 2 &&
+      !echoSmoke.action &&
+      !echoSmoke.inspectAction &&
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
