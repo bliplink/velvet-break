@@ -13,7 +13,7 @@
 
     const originalGetPlayerMoveSpeed = getPlayerMoveSpeed;
     getPlayerMoveSpeed = function fasterPlayerMoveSpeed(player, sprinting = false) {
-      return originalGetPlayerMoveSpeed(player, sprinting) * 1.25;
+      return originalGetPlayerMoveSpeed(player, sprinting) * 1.4;
     };
 
     const renderSprintHint = () => {
