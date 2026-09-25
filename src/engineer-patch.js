@@ -87,11 +87,11 @@
       delete defs.quartermaster;
       Object.assign(defs.assault, {
         nameZh: '凯', nameEn: 'Kai',
-        passiveZh: '男 · 前线突击手，移动每秒消耗 5 点体力；控枪更稳、换弹更快，静止时恢复体力。',
-        passiveEn: 'Male · Frontline breacher. Movement costs 5 stamina/s; steadier aim, faster reloads, and stamina recovery while idle.',
+        passiveZh: '男 · 前线突击手，初始护甲耐久 200，护甲耐久消耗减半；移动每秒消耗 5 点体力，控枪更稳、换弹更快，静止时恢复体力。',
+        passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption. Movement costs 5 stamina/s; steadier aim, faster reloads, and stamina recovery while idle.',
         skillTextZh: '手动启动：35 秒内移速 x2、伤害翻倍；期间每击败一人延长 1.5 秒并恢复 90 生命。',
         skillTextEn: 'Manual: 35s of x2 speed and double damage. Each kill during it adds 1.5s and restores 90 HP.',
-        spreadMult: 0.70, recoilMult: 0.72, reloadMult: 0.72, startArmorBonus: 18,
+        spreadMult: 0.70, recoilMult: 0.72, reloadMult: 0.72, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
         abilityDuration: 35, speedBoostMult: 2, damageBoostMult: 2, killExtendSeconds: 1.5, killHeal: 90,
       });
       Object.assign(defs.medic, {
@@ -402,7 +402,15 @@
     applyDamageToPlayer = function engineerAndSupportProtection(amount) {
       const player = state.raid?.player;
       if ((player?.benjaminKillShieldTimer ?? 0) > 0) return;
-      return hurtBeforeEngineer(player?.operatorId === ENGINEER_ID && player.abilityActiveTimer > 0 ? amount * (2 / 3) : amount);
+      const armorBefore = Number(player?.armor ?? 0);
+      const result = hurtBeforeEngineer(player?.operatorId === ENGINEER_ID && player.abilityActiveTimer > 0 ? amount * (2 / 3) : amount);
+      if (player?.operatorId === 'assault' && armorBefore > Number(player.armor ?? 0)) {
+        const durabilityCostMult = getPlayerOperatorDef(player).armorDurabilityCostMult ?? 1;
+        const armorSpent = armorBefore - player.armor;
+        const refund = armorSpent * Math.max(0, 1 - durabilityCostMult);
+        player.armor = Math.min(player.maxArmor ?? armorBefore, player.armor + refund);
+      }
+      return result;
     };
 
     const killBeforeEngineer = killEnemy;
