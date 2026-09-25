@@ -322,6 +322,8 @@
       return true;
     };
 
+    resetSave = runProtectedDailyReset;
+
     if (refs.saveResetButton && !refs.saveResetButton.dataset.dailyResetProtected) {
       refs.saveResetButton.dataset.dailyResetProtected = 'true';
       refs.saveResetButton.addEventListener('click', (event) => {
