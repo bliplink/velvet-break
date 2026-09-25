@@ -7397,14 +7397,14 @@ function resetSave() {
     console.warn('Failed to read reset limiter.', error);
   }
   if (lastResetDay === dayKey) {
-    notify(L('今天已经重置过一次存档，请明天再试。', 'The save has already been reset once today. Try again tomorrow.'), 'warning');
+    notify(L('\u4eca\u5929\u5df2\u7ecf\u91cd\u7f6e\u8fc7\u4e00\u6b21\u5b58\u6863\uff0c\u8bf7\u660e\u5929\u518d\u8bd5\u3002', 'The save has already been reset once today. Try again tomorrow.'), 'warning');
     return false;
   }
 
-  const password = window.prompt(L('输入重置密码：', 'Enter reset password:'));
+  const password = window.prompt(L('\u8f93\u5165\u91cd\u7f6e\u5bc6\u7801\uff1a', 'Enter reset password:'));
   if (password == null) return false;
   if (password !== '20251001') {
-    notify(L('重置密码错误。', 'Incorrect reset password.'), 'danger');
+    notify(L('\u91cd\u7f6e\u5bc6\u7801\u9519\u8bef\u3002', 'Incorrect reset password.'), 'danger');
     return false;
   }
 
@@ -7416,7 +7416,7 @@ function resetSave() {
   }
   persistSave();
   renderBasePanel();
-  notify(L('本地存档已重置。今天不能再次重置。', 'Local save reset. Another reset is not allowed today.'), 'warning');
+  notify(L('\u672c\u5730\u5b58\u6863\u5df2\u91cd\u7f6e\u3002\u4eca\u5929\u4e0d\u80fd\u518d\u6b21\u91cd\u7f6e\u3002', 'Local save reset. Another reset is not allowed today.'), 'warning');
   return true;
 }
 
