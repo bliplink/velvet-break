@@ -283,9 +283,33 @@
     const originalRenderBasePanel = renderBasePanel;
     renderBasePanel = function renderProductionBasePanel() {
       const result = originalRenderBasePanel();
+      enhanceEchoLoadoutInfo();
       enhanceStashDirectory();
       return result;
     };
+
+    function enhanceEchoLoadoutInfo() {
+      if (state.mode !== 'base') return;
+      if (refs.loadoutPrep && !refs.loadoutPrep.querySelector('[data-echo-melee-loadout]')) {
+        refs.loadoutPrep.insertAdjacentHTML('beforeend', `
+          <div class="prep-row" data-echo-melee-loadout>
+            <span>${L('近战武器', 'Melee weapon')}</span>
+            <strong>${L('回声 · T · 命中暴露 5 秒', 'Echo · T · 5s exposure on hit')}</strong>
+          </div>
+        `);
+      }
+      if (refs.armoryPanel && !refs.armoryPanel.querySelector('[data-echo-melee-armory]')) {
+        refs.armoryPanel.insertAdjacentHTML('afterbegin', `
+          <article class="stash-row echo-melee-armory" data-echo-melee-armory>
+            <div>
+              <div class="item-title rarity-rare">${L('回声', 'Echo')}</div>
+              <div class="item-meta">${L('固定近战副武器 · T 挥刀 · 命中目标后暴露其位置 5 秒', 'Permanent melee sidearm · T to slash · exposes a hit target for 5 seconds')}</div>
+            </div>
+            <strong class="item-meta">${L('已装备', 'Equipped')}</strong>
+          </article>
+        `);
+      }
+    }
 
     function enhanceStashDirectory() {
       if (state.mode !== 'base' || !refs.stashList?.parentElement) return;
