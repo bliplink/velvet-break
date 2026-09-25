@@ -35,6 +35,8 @@
       lastRareFind: null,
       echoSwingCount: 0,
       echoHitCount: 0,
+      echoInspectCount: 0,
+      echoSmokeBlockedCount: 0,
       lastEchoTarget: null,
     };
     window.__sdrCombatPolishDebug = debug;
@@ -110,11 +112,21 @@
     const echoKnifeStatus = hud.querySelector('#echoKnifeStatus');
     const echoMarkers = new Map();
 
-    const ECHO_RANGE = 2.8;
-    const ECHO_DAMAGE = 85;
+    const ECHO_RANGE = 3;
+    const ECHO_DAMAGE = 200;
     const ECHO_REVEAL_DURATION = 5;
-    const ECHO_COOLDOWN = 0.62;
-    const ECHO_SWING_DURATION = 0.38;
+    const ECHO_COOLDOWN = 0.5;
+    const ECHO_SWING_DURATION = 0.34;
+    const ECHO_INSPECT_DURATION = 1.55;
+    const ECHO_SUPPORT_SMOKE_RADIUS = 20;
+
+    const isEchoBlockedBySmoke = (player = state.raid?.player) => Boolean(
+      player &&
+      (player.supportSmokeTimer ?? 0) > 0 &&
+      Number.isFinite(player.supportSmokeX) &&
+      Number.isFinite(player.supportSmokeZ) &&
+      Math.hypot(player.x - player.supportSmokeX, player.z - player.supportSmokeZ) <= ECHO_SUPPORT_SMOKE_RADIUS
+    );
 
     const retrigger = (el, ...classes) => {
       el.classList.remove(...classes);
@@ -258,45 +270,85 @@
       root.position.set(0.32, -0.28, 0.62);
       root.rotation.set(-0.08, -0.18, -0.08);
 
-      const steel = new BABYLON.StandardMaterial('echo-knife-steel', scene);
-      steel.diffuseColor = BABYLON.Color3.FromHexString('#c7d8de');
-      steel.emissiveColor = BABYLON.Color3.FromHexString('#39545e').scale(0.4);
-      steel.specularColor = BABYLON.Color3.FromHexString('#f4ffff').scale(0.75);
+      const shell = new BABYLON.StandardMaterial('echo-knife-shell-blue', scene);
+      shell.diffuseColor = BABYLON.Color3.FromHexString('#0c4aa8');
+      shell.emissiveColor = BABYLON.Color3.FromHexString('#0b65d9').scale(0.62);
+      shell.specularColor = BABYLON.Color3.FromHexString('#8fe9ff').scale(0.8);
 
-      const dark = new BABYLON.StandardMaterial('echo-knife-grip', scene);
-      dark.diffuseColor = BABYLON.Color3.FromHexString('#18262c');
-      dark.emissiveColor = BABYLON.Color3.FromHexString('#112027').scale(0.25);
+      const core = new BABYLON.StandardMaterial('echo-knife-core-blue', scene);
+      core.diffuseColor = BABYLON.Color3.FromHexString('#168dff');
+      core.emissiveColor = BABYLON.Color3.FromHexString('#159dff').scale(0.95);
+      core.specularColor = BABYLON.Color3.FromHexString('#d8f8ff');
 
-      const accent = new BABYLON.StandardMaterial('echo-knife-accent', scene);
-      accent.diffuseColor = BABYLON.Color3.FromHexString('#66c9e8');
-      accent.emissiveColor = BABYLON.Color3.FromHexString('#66c9e8').scale(0.75);
+      const line = new BABYLON.StandardMaterial('echo-knife-line-blue', scene);
+      line.diffuseColor = BABYLON.Color3.FromHexString('#7cecff');
+      line.emissiveColor = BABYLON.Color3.FromHexString('#42d7ff').scale(1.15);
+      line.specularColor = BABYLON.Color3.FromHexString('#efffff');
 
-      const blade = BABYLON.MeshBuilder.CreateBox('echo-knife-blade', { width: 0.07, height: 0.035, depth: 0.54 }, scene);
+      const blade = BABYLON.MeshBuilder.CreateBox('echo-knife-blade', { width: 0.082, height: 0.038, depth: 0.58 }, scene);
       blade.parent = root;
       blade.position.z = 0.17;
-      blade.material = steel;
-      blade.isPickable = false;
+      blade.material = shell;
 
-      const tip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-tip', { height: 0.16, diameterTop: 0, diameterBottom: 0.075, tessellation: 4 }, scene);
+      const centerChannel = BABYLON.MeshBuilder.CreateBox('echo-knife-center-line', { width: 0.018, height: 0.044, depth: 0.5 }, scene);
+      centerChannel.parent = root;
+      centerChannel.position.set(0, 0.003, 0.17);
+      centerChannel.material = line;
+
+      for (const side of [-1, 1]) {
+        const rail = BABYLON.MeshBuilder.CreateBox(`echo-knife-side-line-${side}`, { width: 0.014, height: 0.046, depth: 0.42 }, scene);
+        rail.parent = root;
+        rail.position.set(side * 0.034, 0.004, 0.14);
+        rail.material = core;
+
+        const vent = BABYLON.MeshBuilder.CreateBox(`echo-knife-tech-vent-${side}`, { width: 0.02, height: 0.052, depth: 0.11 }, scene);
+        vent.parent = root;
+        vent.position.set(side * 0.046, 0, -0.015);
+        vent.rotation.y = side * 0.12;
+        vent.material = line;
+      }
+
+      const tip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-tip', { height: 0.18, diameterTop: 0, diameterBottom: 0.084, tessellation: 4 }, scene);
       tip.parent = root;
-      tip.position.z = 0.515;
+      tip.position.z = 0.55;
       tip.rotation.x = Math.PI / 2;
-      tip.material = steel;
-      tip.isPickable = false;
+      tip.material = core;
 
-      const guard = BABYLON.MeshBuilder.CreateBox('echo-knife-guard', { width: 0.22, height: 0.045, depth: 0.055 }, scene);
+      const guard = BABYLON.MeshBuilder.CreateBox('echo-knife-guard', { width: 0.25, height: 0.052, depth: 0.065 }, scene);
       guard.parent = root;
-      guard.position.z = -0.11;
-      guard.material = accent;
-      guard.isPickable = false;
+      guard.position.z = -0.14;
+      guard.material = shell;
 
-      const grip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-handle', { height: 0.3, diameter: 0.075, tessellation: 12 }, scene);
+      const guardLine = BABYLON.MeshBuilder.CreateBox('echo-knife-guard-line', { width: 0.21, height: 0.058, depth: 0.018 }, scene);
+      guardLine.parent = root;
+      guardLine.position.set(0, 0.002, -0.137);
+      guardLine.material = line;
+
+      const grip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-handle', { height: 0.34, diameter: 0.082, tessellation: 14 }, scene);
       grip.parent = root;
-      grip.position.z = -0.28;
+      grip.position.z = -0.34;
       grip.rotation.x = Math.PI / 2;
-      grip.material = dark;
-      grip.isPickable = false;
+      grip.material = shell;
 
+      for (let i = 0; i < 4; i++) {
+        const ring = BABYLON.MeshBuilder.CreateTorus(`echo-knife-grip-ring-${i}`, { diameter: 0.09, thickness: 0.011, tessellation: 14 }, scene);
+        ring.parent = root;
+        ring.position.z = -0.23 - i * 0.075;
+        ring.rotation.x = Math.PI / 2;
+        ring.material = i % 2 ? core : line;
+      }
+
+      const pommel = BABYLON.MeshBuilder.CreateCylinder('echo-knife-pommel', { height: 0.07, diameter: 0.095, tessellation: 12 }, scene);
+      pommel.parent = root;
+      pommel.position.z = -0.535;
+      pommel.rotation.x = Math.PI / 2;
+      pommel.material = core;
+
+      for (const mesh of root.getChildMeshes()) {
+        mesh.isPickable = false;
+        mesh.metadata = { ...(mesh.metadata ?? {}), echoKnife: true, techBlue: true };
+      }
+      root.metadata = { echoKnife: true, inspectable: true, range: ECHO_RANGE, damage: ECHO_DAMAGE };
       return root;
     };
 
@@ -352,23 +404,62 @@
       if (
         state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
         (player.dropTimer ?? 0) > 0 || (player.echoKnifeCooldown ?? 0) > 0 ||
-        player.echoKnifeAction || player.executionLocked || player.utilityAction ||
+        player.echoKnifeAction || player.echoKnifeInspect || player.executionLocked || player.utilityAction ||
         player.incendiaryThrow || player.stunGrenadeThrow || player.useAction
       ) return false;
+      if (isEchoBlockedBySmoke(player)) {
+        debug.echoSmokeBlockedCount += 1;
+        notify(L('烟雾中无法使用回声。', 'Echo cannot be used inside smoke.'), 'warning');
+        return false;
+      }
       player.echoKnifeCooldown = ECHO_COOLDOWN;
       player.echoKnifeAction = { timer: 0, duration: ECHO_SWING_DURATION, applied: false, visual: makeEchoKnifeVisual() };
       state.input.fireHeld = false;
       debug.echoSwingCount += 1;
       return true;
     };
+
+    const beginEchoKnifeInspect = () => {
+      const player = state.raid?.player;
+      if (
+        state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
+        (player.dropTimer ?? 0) > 0 || player.echoKnifeAction || player.echoKnifeInspect ||
+        player.executionLocked || player.utilityAction || player.incendiaryThrow ||
+        player.stunGrenadeThrow || player.useAction
+      ) return false;
+      if (isEchoBlockedBySmoke(player)) {
+        debug.echoSmokeBlockedCount += 1;
+        notify(L('烟雾中无法检视回声。', 'Echo cannot be inspected inside smoke.'), 'warning');
+        return false;
+      }
+      player.echoKnifeInspect = { timer: 0, duration: ECHO_INSPECT_DURATION, visual: makeEchoKnifeVisual() };
+      state.input.fireHeld = false;
+      debug.echoInspectCount += 1;
+      return true;
+    };
+
     window.__sdrUseEchoKnife = beginEchoKnifeAttack;
+    window.__sdrInspectEchoKnife = beginEchoKnifeInspect;
+    window.__sdrEchoKnifeConfig = {
+      range: ECHO_RANGE,
+      damage: ECHO_DAMAGE,
+      revealDuration: ECHO_REVEAL_DURATION,
+      cooldown: ECHO_COOLDOWN,
+      inspectDuration: ECHO_INSPECT_DURATION,
+    };
 
     window.addEventListener('keydown', (event) => {
-      if ((event.code !== 'KeyT' && event.key?.toLowerCase?.() !== 't') || event.repeat) return;
-      if (state.mode !== 'raid' || state.overlay) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      beginEchoKnifeAttack();
+      const lower = event.key?.toLowerCase?.() ?? '';
+      if (event.repeat || state.mode !== 'raid' || state.overlay) return;
+      if (event.code === 'KeyT' || lower === 't') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        beginEchoKnifeAttack();
+      } else if (event.code === 'KeyH' || lower === 'h') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        beginEchoKnifeInspect();
+      }
     }, true);
 
     const animateBeforePolish = animateRaidEntities;
@@ -386,18 +477,36 @@
           const progress = Math.min(1, action.timer / action.duration);
           const wave = Math.sin(progress * Math.PI);
           if (action.visual) {
-            action.visual.position.set(0.32 - progress * 0.22, -0.28 + wave * 0.18, 0.62 - wave * 0.22);
-            action.visual.rotation.x = -0.08 - wave * 0.92;
-            action.visual.rotation.y = -0.18 + wave * 0.32;
-            action.visual.rotation.z = -0.08 - wave * 0.58;
+            action.visual.position.set(0.32 - progress * 0.24, -0.28 + wave * 0.21, 0.62 - wave * 0.25);
+            action.visual.rotation.x = -0.08 - wave * 1.08;
+            action.visual.rotation.y = -0.18 + wave * 0.38;
+            action.visual.rotation.z = -0.08 - wave * 0.72;
           }
-          if (!action.applied && progress >= 0.32) {
+          if (!action.applied && progress >= 0.3) {
             action.applied = true;
             applyEchoHit(player);
           }
           if (progress >= 1) {
             action.visual?.dispose(false, true);
             player.echoKnifeAction = null;
+          }
+        }
+
+        const inspect = player.echoKnifeInspect;
+        if (inspect) {
+          inspect.timer += dt;
+          const progress = Math.min(1, inspect.timer / inspect.duration);
+          const lift = Math.sin(progress * Math.PI);
+          const turn = Math.sin(progress * Math.PI * 0.5);
+          if (inspect.visual) {
+            inspect.visual.position.set(0.05 + lift * 0.08, -0.14 + lift * 0.13, 0.5 - lift * 0.08);
+            inspect.visual.rotation.x = -0.12 + Math.sin(progress * Math.PI * 2) * 0.18;
+            inspect.visual.rotation.y = -0.3 + turn * Math.PI * 1.75;
+            inspect.visual.rotation.z = -0.12 + Math.sin(progress * Math.PI) * 0.42;
+          }
+          if (progress >= 1) {
+            inspect.visual?.dispose(false, true);
+            player.echoKnifeInspect = null;
           }
         }
       }
@@ -419,6 +528,16 @@
         }
       }
       return result;
+    };
+
+    const clearBeforeEcho = clearRaid;
+    clearRaid = function clearEchoKnifeEffects() {
+      const player = state.raid?.player;
+      player?.echoKnifeAction?.visual?.dispose(false, true);
+      player?.echoKnifeInspect?.visual?.dispose(false, true);
+      for (const marker of echoMarkers.values()) marker.remove();
+      echoMarkers.clear();
+      return clearBeforeEcho();
     };
 
     const poiDefs = [
@@ -468,9 +587,13 @@
       echoKnifeStatus.classList.toggle('is-visible', inRaid);
       if (inRaid) {
         const cooldown = Math.max(0, player.echoKnifeCooldown ?? 0);
-        echoKnifeStatus.textContent = cooldown > 0
-          ? L(`回声 · T · ${cooldown.toFixed(1)}s`, `Echo · T · ${cooldown.toFixed(1)}s`)
-          : L('回声 · T 近战', 'Echo · T melee');
+        echoKnifeStatus.textContent = isEchoBlockedBySmoke(player)
+          ? L('回声 · 烟雾中禁用', 'Echo · disabled in smoke')
+          : player.echoKnifeInspect
+            ? L('回声 · 检视中', 'Echo · inspecting')
+            : cooldown > 0
+              ? L(`回声 · T · ${cooldown.toFixed(1)}s · H 检视`, `Echo · T · ${cooldown.toFixed(1)}s · H inspect`)
+              : L('回声 · T 近战 · H 检视', 'Echo · T melee · H inspect');
       }
 
       const activeIds = new Set();
