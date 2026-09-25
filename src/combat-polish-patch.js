@@ -108,7 +108,7 @@
     const echoExposureLayer = hud.querySelector('#echoExposureLayer');
     const echoMarkers = new Map();
 
-    const ECHO_RANGE = 4;
+    const ECHO_RANGE = 12;
     const ECHO_DAMAGE = 200;
     const ECHO_REVEAL_DURATION = 5;
     const ECHO_COOLDOWN = 0.5;
@@ -157,15 +157,15 @@
       const loadout = refs?.loadoutPrep?.querySelector?.('[data-echo-melee-loadout] strong');
       if (loadout) {
         loadout.textContent = L(
-          '回声 · 4 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视',
-          'Echo · 4m · 200 damage · 0.5s per slash · T attack · H inspect',
+          '回声 · 12 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视',
+          'Echo · 12m · 200 damage · 0.5s per slash · T attack · H inspect',
         );
       }
       const armoryMeta = refs?.armoryPanel?.querySelector?.('[data-echo-melee-armory] .item-meta');
       if (armoryMeta) {
         armoryMeta.textContent = L(
-          '蓝色科技近战副武器 · 4 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用',
-          'Blue-tech melee sidearm · 4m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke',
+          '蓝色科技近战副武器 · 12 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用',
+          'Blue-tech melee sidearm · 12m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke',
         );
       }
     };
