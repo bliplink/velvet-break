@@ -42,6 +42,8 @@
       lightGovernorMode: 'full',
       activeRealtimeStreetlights: 0,
       lightGovernorChanges: 0,
+      distantAiVisualSkips: 0,
+      distantAiVisualInterval: 0.12,
     };
     window.__sdrPerformanceV3Debug = debug;
 
@@ -156,6 +158,30 @@
       }
       return impactBefore.call(this, position, color, intensity, flavor);
     };
+
+    const animateBeforeDistanceBudget = typeof animateRaidEntities === 'function' ? animateRaidEntities : null;
+    if (animateBeforeDistanceBudget) {
+      let distantVisualAccumulator = 0;
+      animateRaidEntities = function distanceBudgetedAnimation(dt, ...args) {
+        const raid = state.raid;
+        const player = raid?.player;
+        if (!player || !raid?.enemies?.length) return animateBeforeDistanceBudget.call(this, dt, ...args);
+        distantVisualAccumulator += dt;
+        if (distantVisualAccumulator < 0.12) {
+          const original = raid.enemies;
+          const near = original.filter(enemy => enemy?.dead || enemy?.despawned || distanceFromPlayer(enemy) <= 48);
+          if (near.length !== original.length) {
+            raid.enemies = near;
+            debug.distantAiVisualSkips += original.length - near.length;
+            try { return animateBeforeDistanceBudget.call(this, dt, ...args); }
+            finally { raid.enemies = original; }
+          }
+          return animateBeforeDistanceBudget.call(this, dt, ...args);
+        }
+        distantVisualAccumulator = 0;
+        return animateBeforeDistanceBudget.call(this, dt, ...args);
+      };
+    }
 
     const updateEffectsBefore = updateEffects;
     updateEffects = function updateEffectsWithBudget(dt, ...args) {
