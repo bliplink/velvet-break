@@ -13176,8 +13176,8 @@ function getOperatorDefs() {
       passiveEn: 'Role: Recon (Female). Passive: high mobility with greatly reduced enemy detection.',
       skillNameZh: '\u5168\u57df\u626b\u63cf',
       skillNameEn: 'Global Scan',
-      skillTextZh: '\u5168\u5c40 4 \u6b21\uff0c\u65e0\u51b7\u5374\u3002\u4f7f\u5168\u56fe\u654c\u4eba\u505c\u6b62\u884c\u52a8 20 \u79d2\uff0c\u5e76\u6301\u7eed\u66b4\u9732\u4f4d\u7f6e 30 \u79d2\u3002',
-      skillTextEn: 'Four uses per raid with no cooldown. Freezes every enemy on the map for 20s and reveals their position for 30s.',
+      skillTextZh: '\u5168\u5c40 4 \u6b21\uff0c\u65e0\u51b7\u5374\u3002\u4f7f\u5168\u56fe\u654c\u4eba\u505c\u6b62\u884c\u52a8 20 \u79d2\uff0c\u6301\u7eed\u66b4\u9732\u4f4d\u7f6e 30 \u79d2\uff0c\u626b\u63cf\u671f\u95f4\u514b\u83b1\u5c14\u6b66\u5668\u4f24\u5bb3\u63d0\u5347\u81f3 2.5 \u500d\u3002',
+      skillTextEn: 'Four uses per raid with no cooldown. Freezes every enemy for 20s, reveals positions for 30s, and boosts Claire weapon damage to 2.5x while the scan is active.',
       itemNameZh: '\u7535\u5b50\u5e72\u6270\u5668',
       itemNameEn: 'Electronic Jammer',
       moveMult: 1.12,
@@ -13194,6 +13194,7 @@ function getOperatorDefs() {
       jammerMaxCharges: 4,
       jammerCooldown: 20,
       jammerInvisibleDuration: 10,
+      scanDamageMult: 2.5,
       abilityMoveMult: 1.4,
       pressureMoveMult: 1.8,
       abilityColor: '#72d9ff',
@@ -13764,7 +13765,10 @@ function attemptShoot() {
           const assaultDamageMult = operator.id === 'assault' && player.abilityActiveTimer > 0
             ? (operator.damageBoostMult ?? 2)
             : 1;
-          damageEnemy(enemy, baseDamage * assaultDamageMult);
+          const reconDamageMult = operator.id === 'recon' && player.abilityActiveTimer > 0
+            ? (operator.scanDamageMult ?? 2.5)
+            : 1;
+          damageEnemy(enemy, baseDamage * assaultDamageMult * reconDamageMult);
         }
       } else {
         spawnImpactBurst(end, '#8ad8ff', weapon.pellets > 1 ? 1 : 0.78, 'hard');
