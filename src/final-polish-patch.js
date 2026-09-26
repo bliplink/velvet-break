@@ -46,15 +46,13 @@
       return result;
     };
 
-    // Consume Echo's temporary purchase only when a raid actually starts.
-    const startRaidBeforeEchoPass = typeof startRaid === 'function' ? startRaid : null;
-    if (startRaidBeforeEchoPass) {
-      startRaid = function startRaidWithOneRaidEcho(...args) {
-        const carryEcho = Boolean(window.__sdrEchoRaidPass);
-        const result = startRaidBeforeEchoPass.apply(this, args);
-        if (carryEcho && state.raid?.player) {
+    // Echo is a permanent unlock: equip it automatically at the start of every raid.
+    const startRaidBeforeEchoUnlock = typeof startRaid === 'function' ? startRaid : null;
+    if (startRaidBeforeEchoUnlock) {
+      startRaid = function startRaidWithPermanentEcho(...args) {
+        const result = startRaidBeforeEchoUnlock.apply(this, args);
+        if (state.save?.echoUnlocked && state.raid?.player) {
           state.raid.player.echoKnifeEquipped = true;
-          window.__sdrEchoRaidPass = false;
         }
         return result;
       };
@@ -101,7 +99,9 @@
       }
     };
     forceOpaqueBuildingMeshes();
-    setInterval(forceOpaqueBuildingMeshes, 750);
+    // Structures finish booting asynchronously; one delayed correction is enough.
+    // Avoid rescanning the entire scene forever just to keep static building materials opaque.
+    setTimeout(forceOpaqueBuildingMeshes, 1600);
 
     // Lightweight danger readout: nearby living enemies only; no wallhack positions.
     const ensureDangerBadge = () => {
@@ -252,12 +252,12 @@
     }
 
     window.__sdrFinalPolishDebug = {
-      version: '20260926-final1',
+      version: '20260926-final5',
       nonSolidLoot: true,
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
       opaqueBuildings: true,
-      oneRaidEcho: true,
+      permanentEcho: true,
       singleStaminaHud: true,
       dangerReadout: true,
       reconRoleFeedback: true,
