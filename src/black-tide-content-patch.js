@@ -559,8 +559,44 @@
 
     const FROST_RADIUS = 10;
     const FROST_DURATION = 5;
-    const FROST_DPS = 50;
-    const FROST_SLOW_MULT = 0.45;
+    const disposeFrostField = (field) => {
+      field?.root?.dispose?.(false, true);
+      field?.ice?.dispose?.(false, true);
+      field?.canister?.dispose?.(false, true);
+    };
+    const createFrostField = (raid, x, z) => {
+      raid.lingshuangFrostFields ??= [];
+      const root = new BABYLON.TransformNode('lingshuang-frost-field', scene);
+      root.position.set(x, 0.03, z);
+
+      const ice = BABYLON.MeshBuilder.CreateCylinder('lingshuang-frost-ice', { diameter: FROST_RADIUS * 2, height: 0.055, tessellation: 48 }, scene);
+      ice.parent = root;
+      ice.isPickable = false;
+      const iceMat = new BABYLON.StandardMaterial('lingshuang-frost-ice-mat', scene);
+      iceMat.diffuseColor = BABYLON.Color3.FromHexString('#a8efff');
+      iceMat.emissiveColor = BABYLON.Color3.FromHexString('#57cfff').scale(0.5);
+      iceMat.specularColor = BABYLON.Color3.FromHexString('#ffffff');
+      iceMat.alpha = 0.52;
+      iceMat.backFaceCulling = false;
+      ice.material = iceMat;
+      ice.scaling.set(0.04, 1, 0.04);
+
+      const canister = BABYLON.MeshBuilder.CreateCylinder('lingshuang-frost-canister', { diameter: 0.34, height: 0.78, tessellation: 12 }, scene);
+      canister.parent = root;
+      canister.position.y = 0.42;
+      canister.rotation.z = Math.PI * 0.48;
+      canister.isPickable = false;
+      const canMat = new BABYLON.StandardMaterial('lingshuang-frost-canister-mat', scene);
+      canMat.diffuseColor = BABYLON.Color3.FromHexString('#1e5f86');
+      canMat.emissiveColor = BABYLON.Color3.FromHexString('#58dfff').scale(0.42);
+      canMat.specularColor = BABYLON.Color3.FromHexString('#dfffff');
+      canister.material = canMat;
+
+      const field = { x, z, timer: FROST_DURATION, age: 0, root, ice, canister };
+      raid.lingshuangFrostFields.push(field);
+      spawnPulse?.(new BABYLON.Vector3(x, 0.25, z), '#9eeeff', 0.42, 0.5);
+      return field;
+    };
     const useFrostCanister = () => {
       const raid = state.raid;
       const player = raid?.player;
@@ -570,18 +606,24 @@
         return false;
       }
       player.frostCanisters -= 1;
-      const x = player.x + Math.sin(player.yaw ?? 0) * 8;
-      const z = player.z + Math.cos(player.yaw ?? 0) * 8;
-      let hits = 0;
-      for (const enemy of raid.enemies ?? []) {
-        if (enemy.dead || enemy.despawned || distance2D(x, z, enemy.x, enemy.z) > FROST_RADIUS) continue;
-        enemy.lingshuangFrostTimer = FROST_DURATION;
-        enemy.lingshuangFrostTick = 1;
-        enemy.lingshuangFrostSlowMult = FROST_SLOW_MULT;
-        hits += 1;
-      }
-      spawnPulse?.(new BABYLON.Vector3(x, 0.5, z), '#9eeeff', 0.32, 0.38);
-      notify(Ls(`极寒冷罐爆发：10 米范围，命中 ${hits} 名敌人，减速并每秒造成 50 伤害，持续 5 秒。`, `Frost Canister: 10m radius, ${hits} targets slowed and taking 50 damage/s for 5s.`), hits ? 'success' : 'warning');
+      const startX = player.x;
+      const startZ = player.z;
+      const targetX = startX + Math.sin(player.yaw ?? 0) * 8;
+      const targetZ = startZ + Math.cos(player.yaw ?? 0) * 8;
+      const throwRoot = new BABYLON.TransformNode('lingshuang-frost-throw', scene);
+      const canister = BABYLON.MeshBuilder.CreateCylinder('lingshuang-frost-canister-flight', { diameter: 0.3, height: 0.72, tessellation: 12 }, scene);
+      canister.parent = throwRoot;
+      canister.rotation.z = Math.PI / 2;
+      canister.isPickable = false;
+      const mat = new BABYLON.StandardMaterial('lingshuang-frost-canister-flight-mat', scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString('#1d638b');
+      mat.emissiveColor = BABYLON.Color3.FromHexString('#63e6ff').scale(0.48);
+      mat.specularColor = BABYLON.Color3.FromHexString('#eaffff');
+      canister.material = mat;
+      throwRoot.position.set(startX, 1.35, startZ);
+      raid.lingshuangFrostThrows ??= [];
+      raid.lingshuangFrostThrows.push({ root: throwRoot, timer: 0.46, duration: 0.46, startX, startZ, targetX, targetZ });
+      notify(Ls('极寒冷罐已投出。', 'Frost Canister thrown.'), 'success');
       return true;
     };
     debug.useFrostCanister = useFrostCanister;
@@ -704,6 +746,31 @@
       return result;
     };
 
+    const updateEnemiesBeforeFrost = typeof updateEnemies === 'function' ? updateEnemies : null;
+    if (updateEnemiesBeforeFrost) {
+      updateEnemies = function updateEnemiesWithFrostFreeze(dt, ...args) {
+        const raid = state.raid;
+        const frozen = [];
+        for (const enemy of raid?.enemies ?? []) {
+          if (!enemy.lingshuangIceFrozen || enemy.dead || enemy.despawned) continue;
+          frozen.push([enemy, enemy.x, enemy.z]);
+        }
+        const result = updateEnemiesBeforeFrost.call(this, dt, ...args);
+        for (const [enemy, x, z] of frozen) {
+          if (!enemy.lingshuangIceFrozen || enemy.dead || enemy.despawned) continue;
+          enemy.x = x;
+          enemy.z = z;
+          enemy.velocityX = 0;
+          enemy.velocityZ = 0;
+          if (enemy.visual?.root) {
+            enemy.visual.root.position.x = x;
+            enemy.visual.root.position.z = z;
+          }
+        }
+        return result;
+      };
+    }
+
     const updateBeforeBlackTide = updateRaid;
     updateRaid = function updateBlackTideAndLingshuang(dt, ...args) {
       const result = updateBeforeBlackTide.call(this, dt, ...args);
@@ -722,15 +789,46 @@
             player.frostCanisterGainTimer = (player.frostCanisters ?? 0) >= 2 ? 0 : 12;
           }
         }
-        for (const enemy of raid.enemies ?? []) {
-          if ((enemy.lingshuangFrostTimer ?? 0) <= 0 || enemy.dead || enemy.despawned) continue;
-          enemy.lingshuangFrostTimer = Math.max(0, enemy.lingshuangFrostTimer - dt);
-          enemy.lingshuangFrostTick = Math.max(0, (enemy.lingshuangFrostTick ?? 1) - dt);
-          enemy.engineerSlowTimer = Math.max(enemy.engineerSlowTimer ?? 0, Math.min(0.25, enemy.lingshuangFrostTimer));
-          if (enemy.lingshuangFrostTick <= 0) {
-            enemy.lingshuangFrostTick += 1;
-            damageEnemy(enemy, FROST_DPS, { ignoreSmoke: true, utilityKind: 'frost-canister' });
+        if (raid.lingshuangFrostThrows?.length) {
+          for (const thrown of raid.lingshuangFrostThrows) {
+            thrown.timer = Math.max(0, thrown.timer - dt);
+            const progress = 1 - thrown.timer / thrown.duration;
+            const arc = Math.sin(Math.min(1, progress) * Math.PI) * 2.25;
+            thrown.root.position.x = thrown.startX + (thrown.targetX - thrown.startX) * progress;
+            thrown.root.position.z = thrown.startZ + (thrown.targetZ - thrown.startZ) * progress;
+            thrown.root.position.y = 0.16 + arc;
+            thrown.root.rotation.x += dt * 10;
+            thrown.root.rotation.z += dt * 7;
+            if (thrown.timer <= 0) {
+              thrown.root.dispose?.(false, true);
+              createFrostField(raid, thrown.targetX, thrown.targetZ);
+            }
           }
+          raid.lingshuangFrostThrows = raid.lingshuangFrostThrows.filter((thrown) => thrown.timer > 0);
+        }
+        if (raid.lingshuangFrostFields?.length) {
+          for (const field of raid.lingshuangFrostFields) {
+            field.timer = Math.max(0, field.timer - dt);
+            field.age += dt;
+            const grow = Math.min(1, field.age / 0.28);
+            field.ice?.scaling?.set(grow, 1, grow);
+            if (field.canister) {
+              field.canister.rotation.y += dt * 1.8;
+              field.canister.position.y = 0.38 + Math.sin(field.age * 8) * 0.025;
+            }
+            for (const enemy of raid.enemies ?? []) {
+              if (enemy.dead || enemy.despawned || distance2D(field.x, field.z, enemy.x, enemy.z) > FROST_RADIUS) continue;
+              enemy.lingshuangIceFrozen = true;
+              enemy.lingshuangIceX = enemy.x;
+              enemy.lingshuangIceZ = enemy.z;
+            }
+            if (field.timer <= 0) disposeFrostField(field);
+          }
+          raid.lingshuangFrostFields = raid.lingshuangFrostFields.filter((field) => field.timer > 0);
+        }
+        for (const enemy of raid.enemies ?? []) {
+          const onIce = (raid.lingshuangFrostFields ?? []).some((field) => field.timer > 0 && distance2D(field.x, field.z, enemy.x, enemy.z) <= FROST_RADIUS);
+          if (enemy.lingshuangIceFrozen && !onIce) enemy.lingshuangIceFrozen = false;
         }
         player.phaseBarrierTimer = Math.max(0, (player.phaseBarrierTimer ?? 0) - dt);
         if ((player.phaseBarrierTimer ?? 0) <= 0 && player.phaseBarrierVisual) {
