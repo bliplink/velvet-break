@@ -149,74 +149,42 @@
           disabled: false,
         },
       ];
-      const echoUnlocked = Boolean(state.save.echoUnlocked);
+      const echoUnlocked = Boolean(window.__sdrEchoRaidPass);
       const echoEntry = {
         id: 'echo_unlock',
-        kind: 'permanent',
+        kind: 'prep',
         name: L('回声', 'Echo'),
-        description: L('永久解锁回声近战武器：12 米攻击范围、200 伤害、0.5 秒一刀，命中暴露敌人 5 秒。', 'Permanently unlock Echo melee: 12m range, 200 damage, 0.5s slash, reveals hit enemies for 5s.'),
+        description: L('临时携带近战武器「回声」进入下一局：12 米攻击范围、200 伤害、0.5 秒一刀，命中使目标暴露 5 秒；该携带资格在本局结束后失效。', 'Carry Echo into the next raid: 12m range, 200 damage, 0.5s slash, reveals hit targets for 5s. The carry pass expires when the raid ends.'),
         price: 100000,
-        status: echoUnlocked ? L('已永久解锁', 'Permanently unlocked') : L('永久购买', 'Permanent purchase'),
+        status: echoUnlocked ? L('下一局已准备', 'Ready for next raid') : L('单局携带', 'One-raid carry'),
         disabled: echoUnlocked,
       };
-      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...(echoUnlocked && !existing.has('echo_smoke_upgrade') ? [{
-          id: 'echo_smoke_upgrade',
-          kind: 'permanent',
-          name: L('回声 · 烟雾适应', 'Echo · Smoke Adaptation'),
-          description: L('再支付 150,000，永久允许回声在烟雾中攻击和检视。', 'Pay another 150,000 to permanently use and inspect Echo inside smoke.'),
-          price: 150000,
-          status: state.save.echoSmokeUnlocked ? L('已永久解锁', 'Permanently unlocked') : L('永久升级', 'Permanent upgrade'),
-          disabled: Boolean(state.save.echoSmokeUnlocked),
-        }] : []), ...entries]
+      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...entries]
         .filter((entry) => entry.id !== 'emergency_funding');
     };
 
-    const echoUnlocked = () => Boolean(state.save.echoUnlocked);
+    state.save.echoUnlocked = false;
+    state.save.echoSmokeUnlocked = false;
+    persistSave();
+    window.__sdrEchoRaidPass = false;
+    const echoUnlocked = () => Boolean(window.__sdrEchoRaidPass);
 
     const basePanelEchoUnlockHandler = (event) => {
       const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
-      const smokeButton = event.target?.closest?.('[data-shop-id="echo_smoke_upgrade"]');
-      if (smokeButton) {
-        if (!echoUnlocked() || state.save.echoSmokeUnlocked) return;
-        if ((state.save.money ?? 0) < 150000) {
-          notify(L('资金不足：烟雾适应需要 150,000。', 'Not enough funds: Smoke Adaptation costs 150,000.'), 'danger');
-          return;
-        }
-        state.save.money -= 150000;
-        state.save.echoSmokeUnlocked = true;
-        persistSave();
-        renderBasePanel();
-        notify(L('回声烟雾适应已永久解锁。', 'Echo Smoke Adaptation permanently unlocked.'), 'success');
-        return;
-      }
-      if (!button || echoUnlocked()) return;
+       if (!button || echoUnlocked()) return;
       if ((state.save.money ?? 0) < 100000) {
         notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
         return;
       }
       state.save.money -= 100000;
-      state.save.echoUnlocked = true;
-      persistSave();
+      window.__sdrEchoRaidPass = true;
       renderBasePanel();
-      notify(L('回声已永久解锁。', 'Echo permanently unlocked.'), 'success');
+      notify(L('回声已准备：仅下一局有效。', 'Echo is ready for one raid only.'), 'success');
     };
     refs?.basePanel?.addEventListener?.('click', basePanelEchoUnlockHandler, true);
 
     const syncEchoBaseInfo = () => {
-      const loadout = refs?.loadoutPrep?.querySelector?.('[data-echo-melee-loadout] strong');
-      if (loadout) {
-        loadout.textContent = L(
-          '回声 · 12 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视',
-          'Echo · 12m · 200 damage · 0.5s per slash · T attack · H inspect',
-        );
-      }
-      const armoryMeta = refs?.armoryPanel?.querySelector?.('[data-echo-melee-armory] .item-meta');
-      if (armoryMeta) {
-        armoryMeta.textContent = L(
-          '蓝色科技近战副武器 · 12 米 · 200 伤害 · 0.5 秒一刀 · T 挥刀 · H 检视 · 命中暴露位置 5 秒 · 烟雾中无法使用',
-          'Blue-tech melee sidearm · 12m · 200 damage · 0.5s per slash · T attack · H inspect · exposes hit targets for 5s · disabled in smoke',
-        );
-      }
+      // Echo controls are intentionally not repeated in the in-raid/loadout hint area.
     };
 
     const renderBaseBeforeEchoRangeUpdate = renderBasePanel;
@@ -522,25 +490,21 @@
       debug.lastEchoTarget = { enemyId: target.id, reveal: target.echoRevealTimer, damage: dealt };
       if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(target.x, 1.1, target.z), '#72d9ff', 0.9, 'hard');
       if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(target.x, 1, target.z), 'hard');
-      notify(L(`回声命中：目标位置暴露 ${ECHO_REVEAL_DURATION} 秒。`, `Echo hit: target position exposed for ${ECHO_REVEAL_DURATION}s.`), 'success');
+      // No in-raid Echo text prompt; hit feedback stays visual/audio only.
       return target;
     };
 
     const beginEchoKnifeAttack = () => {
       const player = state.raid?.player;
-      if (!echoUnlocked()) {
-        notify(L('需要先在商店用 100,000 资金永久购买回声。', 'Purchase Echo permanently in the shop for 100,000 first.'), 'warning');
-        return false;
-      }
+      if (!echoUnlocked()) return false;
       if (
         state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
         (player.dropTimer ?? 0) > 0 || (player.echoKnifeCooldown ?? 0) > 0 ||
         player.echoKnifeAction || player.echoKnifeInspect || player.executionLocked || player.utilityAction ||
         player.incendiaryThrow || player.stunGrenadeThrow || player.useAction
       ) return false;
-      if (isEchoBlockedBySmoke(player) && !state.save.echoSmokeUnlocked) {
+      if (isEchoBlockedBySmoke(player)) {
         debug.echoSmokeBlockedCount += 1;
-        notify(L('烟雾中无法使用回声。', 'Echo cannot be used inside smoke.'), 'warning');
         return false;
       }
       player.echoKnifeCooldown = ECHO_COOLDOWN;
@@ -552,19 +516,15 @@
 
     const beginEchoKnifeInspect = () => {
       const player = state.raid?.player;
-      if (!echoUnlocked()) {
-        notify(L('需要先在商店用 100,000 资金永久购买回声。', 'Purchase Echo permanently in the shop for 100,000 first.'), 'warning');
-        return false;
-      }
+      if (!echoUnlocked()) return false;
       if (
         state.mode !== 'raid' || state.overlay || !player || player.health <= 0 ||
         (player.dropTimer ?? 0) > 0 || player.echoKnifeAction || player.echoKnifeInspect ||
         player.executionLocked || player.utilityAction || player.incendiaryThrow ||
         player.stunGrenadeThrow || player.useAction
       ) return false;
-      if (isEchoBlockedBySmoke(player) && !state.save.echoSmokeUnlocked) {
+      if (isEchoBlockedBySmoke(player)) {
         debug.echoSmokeBlockedCount += 1;
-        notify(L('烟雾中无法检视回声。', 'Echo cannot be inspected inside smoke.'), 'warning');
         return false;
       }
       player.echoKnifeInspect = { timer: 0, duration: ECHO_INSPECT_DURATION, visual: makeEchoKnifeVisual() };
@@ -679,6 +639,7 @@
       player?.echoKnifeInspect?.visual?.dispose(false, true);
       for (const marker of echoMarkers.values()) marker.remove();
       echoMarkers.clear();
+      window.__sdrEchoRaidPass = false;
       return clearBeforeEcho();
     };
 
