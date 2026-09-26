@@ -2003,6 +2003,15 @@
       if (door.open && exists) removeObstacleById(door.obstacle.id);
     };
 
+    const forceOpaqueStructureMaterial = (material) => {
+      if (!material) return material;
+      material.alpha = 1;
+      material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+      material.needDepthPrePass = false;
+      material.backFaceCulling = true;
+      return material;
+    };
+
     const createInteractiveBuildingShell = (source) => {
       const thickness = Math.min(1.0, Math.max(0.62, Math.min(source.w, source.d) * 0.035));
       const doorWidth = Math.min(5.2, Math.max(3.8, source.w * 0.16));
@@ -2022,7 +2031,7 @@
         obstacleDefs.push(wall);
         const mesh = BABYLON.MeshBuilder.CreateBox(wall.id, { width: wall.w, height: wall.h, depth: wall.d }, scene);
         mesh.position = new BABYLON.Vector3(wall.x, wall.h / 2, wall.z);
-        mesh.material = makeMaterial(`${wall.id}-mat`, source.color, shadeColor(source.color, -18));
+        mesh.material = forceOpaqueStructureMaterial(makeMaterial(`${wall.id}-mat`, source.color, shadeColor(source.color, -18)));
         mesh.metadata = { raycastTarget: 'obstacle', structureId: source.id };
         world.obstacleMeshes.push(mesh);
         buildingStructures.meshes.push(mesh);
@@ -2034,7 +2043,7 @@
         depth: source.d,
       }, scene);
       roof.position = new BABYLON.Vector3(source.x, source.h + 0.14, source.z);
-      roof.material = makeMaterial(`${source.id}-interactive-roof-mat`, shadeColor(source.color, 8), shadeColor(source.color, -20));
+      roof.material = forceOpaqueStructureMaterial(makeMaterial(`${source.id}-interactive-roof-mat`, shadeColor(source.color, 8), shadeColor(source.color, -20)));
       roof.metadata = { structureId: source.id };
       buildingStructures.meshes.push(roof);
 
@@ -2044,7 +2053,7 @@
         depth: source.d - thickness * 1.8,
       }, scene);
       floor.position = new BABYLON.Vector3(source.x, 0.06, source.z);
-      floor.material = makeMaterial(`${source.id}-interactive-floor-mat`, '#283238', '#151d21');
+      floor.material = forceOpaqueStructureMaterial(makeMaterial(`${source.id}-interactive-floor-mat`, '#283238', '#151d21'));
       buildingStructures.meshes.push(floor);
 
       const doorObstacle = {
@@ -2062,7 +2071,7 @@
         depth: Math.max(0.22, thickness * 0.55),
       }, scene);
       doorMesh.position = new BABYLON.Vector3(source.x, doorObstacle.h / 2, southZ);
-      doorMesh.material = makeMaterial(`${source.id}-interactive-door-mat`, '#51636c', '#1d292f');
+      doorMesh.material = forceOpaqueStructureMaterial(makeMaterial(`${source.id}-interactive-door-mat`, '#51636c', '#1d292f'));
       doorMesh.metadata = { structureId: source.id, interactiveDoor: true };
 
       const door = {
@@ -2089,7 +2098,7 @@
         obstacleDefs.push({ ...cover, color: '#34434a', structureId: source.id });
         const mesh = BABYLON.MeshBuilder.CreateBox(cover.id, { width: cover.w, height: cover.h, depth: cover.d }, scene);
         mesh.position = new BABYLON.Vector3(cover.x, cover.h / 2, cover.z);
-        mesh.material = makeMaterial(`${cover.id}-mat`, '#46575f', '#202b30');
+        mesh.material = forceOpaqueStructureMaterial(makeMaterial(`${cover.id}-mat`, '#46575f', '#202b30'));
         mesh.metadata = { raycastTarget: 'obstacle', structureId: source.id };
         world.obstacleMeshes.push(mesh);
         buildingStructures.meshes.push(mesh);
