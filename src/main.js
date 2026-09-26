@@ -2783,7 +2783,7 @@ function chooseRaidEnemySpawns(playerSpawn) {
   const fallbackSpawns = scored
     .filter(({ safeDistance }) => safeDistance < SPAWN_SAFE_RADIUS)
     .map(({ spawn }) => spawn);
-  return safeSpawns.concat(fallbackSpawns).slice(0, Math.min(enemySpawnDefs.length, 64));
+  return safeSpawns.concat(fallbackSpawns).slice(0, Math.min(enemySpawnDefs.length, 32));
 }
 
 function resetRaidLoadout(player) {
@@ -2939,6 +2939,9 @@ function createContainerVisual(container) {
   }, scene);
   base.parent = root;
   base.position.y = 0.55;
+  base.isPickable = false;
+  base.checkCollisions = false;
+  base.metadata = { ...(base.metadata ?? {}), nonSolidLootContainer: true };
   base.material = makeMaterial(`container-base-mat-${container.id}`, container.pool === 'med' ? '#5b7c75' : container.pool === 'valuable' ? '#82694e' : '#53636d', '#2a3439');
 
   const lid = BABYLON.MeshBuilder.CreateBox(`container-lid-${container.id}`, {
@@ -2948,6 +2951,9 @@ function createContainerVisual(container) {
   }, scene);
   lid.parent = root;
   lid.position.y = 1.16;
+  lid.isPickable = false;
+  lid.checkCollisions = false;
+  lid.metadata = { ...(lid.metadata ?? {}), nonSolidLootContainer: true };
   lid.material = makeMaterial(`container-lid-mat-${container.id}`, '#9eb3b8', '#51656c');
 
   const beacon = BABYLON.MeshBuilder.CreateCylinder(`container-beacon-${container.id}`, {
@@ -2958,6 +2964,9 @@ function createContainerVisual(container) {
   }, scene);
   beacon.parent = root;
   beacon.position.y = 1.9;
+  beacon.isPickable = false;
+  beacon.checkCollisions = false;
+  beacon.metadata = { ...(beacon.metadata ?? {}), nonSolidLootContainer: true };
   beacon.material = makeMaterial(`container-beacon-mat-${container.id}`, container.pool === 'valuable' ? '#f1c66d' : '#82d1bf', '#8ceadd');
   beacon.material.alpha = 0.52;
 
