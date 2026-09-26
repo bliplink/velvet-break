@@ -7,6 +7,7 @@ const client = resolve(dist, 'client');
 
 await rm(dist, { recursive: true, force: true });
 await mkdir(resolve(dist, 'server'), { recursive: true });
+await mkdir(client, { recursive: true });
 await cp(resolve(root, 'site-worker.js'), resolve(dist, 'server', 'index.js'));
 
 for (const name of ['index.html', 'src', 'styles', 'vendor', 'assets']) {
