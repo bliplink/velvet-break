@@ -302,7 +302,7 @@ const { chromium } = require('playwright');
       echo.debugTarget?.reveal === 5 &&
       echo.knifeMeshes >= 12 &&
       echo.allTechBlue &&
-      echo.config?.range === 4 &&
+      echo.config?.range === 12 &&
       echo.config?.damage === 200 &&
       echo.config?.cooldown === 0.5 &&
       echo.config?.revealDuration === 5 &&
