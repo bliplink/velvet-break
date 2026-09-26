@@ -7268,16 +7268,16 @@ function lookupLocalizedValue(group, key, fallback = key) {
 
 function canonicalCategory(category) {
   const aliases = {
-    å»ç: 'Medical',
-    æ¯æ´: 'Support',
-    çµå­: 'Tech',
-    ç¡¬ä»¶: 'Hardware',
-    æ°æ®: 'Data',
-    è´µéå: 'Valuable',
-    æç©: 'Relic',
-    å¼¹è¯: 'Ammo',
-    æªæ¢°é¶ä»¶: 'Gun Part',
-    æ­¦å¨: 'Weapon',
+    '医疗': 'Medical',
+    '支援': 'Support',
+    '电子': 'Tech',
+    '硬件': 'Hardware',
+    '数据': 'Data',
+    '贵重品': 'Valuable',
+    '文物': 'Relic',
+    '弹药': 'Ammo',
+    '枪械零件': 'Gun Part',
+    '武器': 'Weapon',
   };
   return aliases[category] ?? category;
 }
