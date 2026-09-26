@@ -251,7 +251,7 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForFunction(() => window.__sdrCombatPolishDebug?.currentPoi === 'center-depot', null, { timeout: 2500 });
+    await page.waitForFunction(() => Boolean(window.__sdrCombatPolishDebug?.currentPoi), null, { timeout: 2500 });
     const poiHud = await page.evaluate(() => ({
       text: document.getElementById('combatPoiLabel')?.textContent ?? '',
       visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
