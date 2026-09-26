@@ -1988,7 +1988,7 @@
 
 
     const INTERACTIVE_BUILDING_IDS = new Set(['center-depot', 'west-barracks', 'east-hangar', 'west-bunker', 'north-silo', 'south-yard-2']);
-    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], panels: [], alarms: [], meshes: [], initialized: false };
+    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], panels: [], alarms: [], secureDoors: [], meshes: [], initialized: false };
     window.__sdrInteractiveBuildingStructures = buildingStructures;
 
     const removeObstacleById = (id) => {
@@ -2126,6 +2126,29 @@
         mesh: alarmMesh,
       });
 
+      if (['center-depot', 'west-bunker', 'north-silo'].includes(source.id)) {
+        const secureX = source.x + source.w * 0.18;
+        const secureZ = source.z - source.d * 0.3;
+        const secureMesh = BABYLON.MeshBuilder.CreateBox(`${source.id}-secure-door`, { width: 2.8, height: 2.7, depth: 0.28 }, scene);
+        secureMesh.position = new BABYLON.Vector3(secureX, 1.35, secureZ);
+        secureMesh.material = makeMaterial(`${source.id}-secure-door-mat`, '#5d5040', '#2a211a');
+        secureMesh.metadata = { structureId: source.id, secureDoor: true };
+        buildingStructures.meshes.push(secureMesh);
+        const secureObstacle = { id: `${source.id}-secure-collision`, x: secureX, z: secureZ, w: 2.8, d: 0.5, h: 2.7, structureId: source.id };
+        obstacleDefs.push(secureObstacle);
+        buildingStructures.secureDoors.push({
+          id: `${source.id}-secure`,
+          buildingId: source.id,
+          x: secureX,
+          z: secureZ + 0.45,
+          unlocked: false,
+          open: false,
+          mesh: secureMesh,
+          obstacle: secureObstacle,
+          name: source.id === 'center-depot' ? '仓库安全门' : source.id === 'west-bunker' ? '地堡安全门' : '筒仓安全门',
+        });
+      }
+
       buildingStructures.panels.push({
         id: `${source.id}-power`,
         buildingId: source.id,
@@ -2178,6 +2201,16 @@
       if (nearestPanel && (!base || nearestPanelDistance < 2.0)) return { type: 'building-power', panel: nearestPanel };
       let nearestAlarm = null;
       let nearestAlarmDistance = Infinity;
+      if (state.raid?.player) state.raid.player.secureKeys = 1;
+      for (const secure of buildingStructures.secureDoors ?? []) {
+        secure.unlocked = false;
+        secure.open = false;
+        if (secure.mesh) {
+          secure.mesh.rotation.y = 0;
+          secure.mesh.position.x = secure.x;
+        }
+        if (!obstacleDefs.some((entry) => entry.id === secure.obstacle.id)) obstacleDefs.push(secure.obstacle);
+      }
       for (const alarm of buildingStructures.alarms ?? []) {
         const dist = distance2D(player.x, player.z, alarm.x, alarm.z);
         if (dist < 2.3 && dist < nearestAlarmDistance) {
@@ -2186,6 +2219,16 @@
         }
       }
       if (nearestAlarm && (!base || nearestAlarmDistance < 1.9)) return { type: 'building-alarm', alarm: nearestAlarm };
+      let nearestSecure = null;
+      let nearestSecureDistance = Infinity;
+      for (const secure of buildingStructures.secureDoors ?? []) {
+        const dist = distance2D(player.x, player.z, secure.x, secure.z);
+        if (dist < 2.4 && dist < nearestSecureDistance) {
+          nearestSecure = secure;
+          nearestSecureDistance = dist;
+        }
+      }
+      if (nearestSecure && (!base || nearestSecureDistance < 1.8)) return { type: 'building-secure', secure: nearestSecure };
       return base;
     };
 
@@ -2219,6 +2262,30 @@
           }
           spawnPulse(new BABYLON.Vector3(panel.x, 1.0, panel.z), panel.powered ? '#9deed2' : '#8c9ba0', 0.12, 0.22);
           notify(panel.powered ? `${panel.name} 已送电。` : `${panel.name} 已断电。`, panel.powered ? 'success' : 'warning');
+          state.input.interactHeld = false;
+          return;
+        }
+        if (interaction?.type === 'building-secure') {
+          const secure = interaction.secure;
+          if (!secure.unlocked) {
+            const player = state.raid.player;
+            if ((player.secureKeys ?? 0) <= 0) {
+              notify('需要安全区钥匙。钥匙可从建筑物资箱中搜到。', 'warning');
+              state.input.interactHeld = false;
+              return;
+            }
+            player.secureKeys -= 1;
+            secure.unlocked = true;
+            notify(`${secure.name} 已解锁，消耗 1 把安全区钥匙。`, 'success');
+          }
+          secure.open = !secure.open;
+          const idx = obstacleDefs.findIndex((entry) => entry.id === secure.obstacle.id);
+          if (secure.open && idx >= 0) obstacleDefs.splice(idx, 1);
+          if (!secure.open && idx < 0) obstacleDefs.push(secure.obstacle);
+          if (secure.mesh) {
+            secure.mesh.rotation.y = secure.open ? Math.PI / 2 : 0;
+            secure.mesh.position.x = secure.x + (secure.open ? 1.3 : 0);
+          }
           state.input.interactHeld = false;
           return;
         }
@@ -2312,6 +2379,9 @@
         state.raid.interactionText = buildingInteraction.panel.powered ? '按 E 关闭室内电源' : '按 E 开启室内电源';
       } else if (state.raid && buildingInteraction?.type === 'building-alarm') {
         state.raid.interactionText = buildingInteraction.alarm.active ? '按 E 关闭警报' : '按 E 触发建筑警报';
+      } else if (state.raid && buildingInteraction?.type === 'building-secure') {
+        const secure = buildingInteraction.secure;
+        state.raid.interactionText = !secure.unlocked ? '按 E 使用安全区钥匙解锁' : secure.open ? '按 E 关闭安全门' : '按 E 打开安全门';
       }
       const currentRaid = state.raid;
       const player = currentRaid?.player;
