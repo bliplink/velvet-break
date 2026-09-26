@@ -2783,7 +2783,23 @@ function chooseRaidEnemySpawns(playerSpawn) {
   const fallbackSpawns = scored
     .filter(({ safeDistance }) => safeDistance < SPAWN_SAFE_RADIUS)
     .map(({ spawn }) => spawn);
-  return safeSpawns.concat(fallbackSpawns).slice(0, Math.min(enemySpawnDefs.length, 32));
+  const candidates = safeSpawns.concat(fallbackSpawns);
+  const targetCount = Math.min(candidates.length, 28);
+  const selected = [];
+  const minSpacing = 11;
+  for (const spawn of candidates) {
+    if (selected.length >= targetCount) break;
+    if (selected.every((picked) => distance2D(spawn.x, spawn.z, picked.x, picked.z) >= minSpacing)) {
+      selected.push(spawn);
+    }
+  }
+  if (selected.length < targetCount) {
+    for (const spawn of candidates) {
+      if (selected.length >= targetCount) break;
+      if (!selected.includes(spawn)) selected.push(spawn);
+    }
+  }
+  return selected;
 }
 
 function resetRaidLoadout(player) {
