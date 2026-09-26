@@ -346,6 +346,9 @@ const containerSpawns = [
   { id: 'building-bunker-armory', name: 'Bunker Armory Locker', x: -104, z: -76, pool: 'weapon', tier: 3 },
   { id: 'building-hangar-crate', name: 'Hangar Equipment Cage', x: 105, z: 54, pool: 'weapon', tier: 2 },
   { id: 'building-yard-office', name: 'Yard Office Safe', x: -68, z: 112, pool: 'valuable', tier: 3 },
+  { id: 'building-bunker-secure', name: 'Bunker Secure Cabinet', x: -105, z: -63, pool: 'weapon', tier: 3 },
+  { id: 'building-silo-control', name: 'Silo Control Safe', x: 91, z: -97, pool: 'valuable', tier: 3 },
+  { id: 'building-south-office', name: 'Yard Office Records Safe', x: -64, z: 92, pool: 'valuable', tier: 3 },
 ];
 
 const extractionZones = [
