@@ -209,36 +209,36 @@ const refs = {
 
 /*
 const lootCatalog = [
-  { id: 'bandage', name: '止血绷带', category: '医疗', rarity: 'common', value: 650, weight: 0.4, pools: ['med'], spawnWeight: 20 },
-  { id: 'painkiller', name: '止痛针剂', category: '医疗', rarity: 'uncommon', value: 1500, weight: 0.5, pools: ['med'], spawnWeight: 14 },
-  { id: 'medinjector', name: '战地注射器', category: '医疗', rarity: 'rare', value: 3200, weight: 0.4, pools: ['med', 'valuable'], spawnWeight: 8 },
-  { id: 'circuit', name: '线路板', category: '电子', rarity: 'common', value: 900, weight: 0.6, pools: ['tech'], spawnWeight: 18 },
-  { id: 'sensor', name: '热感传感器', category: '电子', rarity: 'rare', value: 4100, weight: 0.9, pools: ['tech', 'valuable'], spawnWeight: 7 },
-  { id: 'dronecore', name: '无人机核心', category: '电子', rarity: 'epic', value: 7600, weight: 1.4, pools: ['tech', 'valuable'], spawnWeight: 4 },
-  { id: 'weaponparts', name: '枪机零件', category: '武备', rarity: 'common', value: 1100, weight: 1.0, pools: ['weapon'], spawnWeight: 18 },
-  { id: 'optics', name: '精密瞄具', category: '武备', rarity: 'rare', value: 4600, weight: 1.1, pools: ['weapon', 'valuable'], spawnWeight: 7 },
-  { id: 'armorplate', name: '陶瓷护甲板', category: '武备', rarity: 'uncommon', value: 2100, weight: 2.8, pools: ['weapon'], spawnWeight: 12 },
-  { id: 'intel', name: '情报存储卡', category: '情报', rarity: 'epic', value: 9800, weight: 0.3, pools: ['valuable'], spawnWeight: 4 },
-  { id: 'coin', name: '纪念金币', category: '贵重', rarity: 'rare', value: 3900, weight: 0.2, pools: ['valuable'], spawnWeight: 8 },
-  { id: 'watch', name: '战术腕表', category: '贵重', rarity: 'uncommon', value: 2400, weight: 0.5, pools: ['valuable'], spawnWeight: 12 },
-  { id: 'artifact', name: '辐照样品', category: '样品', rarity: 'legendary', value: 16800, weight: 2.2, pools: ['valuable'], spawnWeight: 2 },
+  { id: 'bandage', name: 'æ­¢è¡ç»·å¸¦', category: 'å»ç', rarity: 'common', value: 650, weight: 0.4, pools: ['med'], spawnWeight: 20 },
+  { id: 'painkiller', name: 'æ­¢çéå', category: 'å»ç', rarity: 'uncommon', value: 1500, weight: 0.5, pools: ['med'], spawnWeight: 14 },
+  { id: 'medinjector', name: 'æå°æ³¨å°å¨', category: 'å»ç', rarity: 'rare', value: 3200, weight: 0.4, pools: ['med', 'valuable'], spawnWeight: 8 },
+  { id: 'circuit', name: 'çº¿è·¯æ¿', category: 'çµå­', rarity: 'common', value: 900, weight: 0.6, pools: ['tech'], spawnWeight: 18 },
+  { id: 'sensor', name: 'ç­æä¼ æå¨', category: 'çµå­', rarity: 'rare', value: 4100, weight: 0.9, pools: ['tech', 'valuable'], spawnWeight: 7 },
+  { id: 'dronecore', name: 'æ äººæºæ ¸å¿', category: 'çµå­', rarity: 'epic', value: 7600, weight: 1.4, pools: ['tech', 'valuable'], spawnWeight: 4 },
+  { id: 'weaponparts', name: 'æªæºé¶ä»¶', category: 'æ­¦å¤', rarity: 'common', value: 1100, weight: 1.0, pools: ['weapon'], spawnWeight: 18 },
+  { id: 'optics', name: 'ç²¾å¯çå·', category: 'æ­¦å¤', rarity: 'rare', value: 4600, weight: 1.1, pools: ['weapon', 'valuable'], spawnWeight: 7 },
+  { id: 'armorplate', name: 'é¶ç·æ¤ç²æ¿', category: 'æ­¦å¤', rarity: 'uncommon', value: 2100, weight: 2.8, pools: ['weapon'], spawnWeight: 12 },
+  { id: 'intel', name: 'ææ¥å­å¨å¡', category: 'ææ¥', rarity: 'epic', value: 9800, weight: 0.3, pools: ['valuable'], spawnWeight: 4 },
+  { id: 'coin', name: 'çºªå¿µéå¸', category: 'è´µé', rarity: 'rare', value: 3900, weight: 0.2, pools: ['valuable'], spawnWeight: 8 },
+  { id: 'watch', name: 'ææ¯èè¡¨', category: 'è´µé', rarity: 'uncommon', value: 2400, weight: 0.5, pools: ['valuable'], spawnWeight: 12 },
+  { id: 'artifact', name: 'è¾ç§æ ·å', category: 'æ ·å', rarity: 'legendary', value: 16800, weight: 2.2, pools: ['valuable'], spawnWeight: 2 },
 ];
 
 const containerSpawns = [
-  { id: 'locker-a', name: '工具柜', x: -34, z: -18, pool: 'tech', tier: 1 },
-  { id: 'locker-b', name: '工具柜', x: -29, z: 16, pool: 'tech', tier: 1 },
-  { id: 'med-a', name: '医疗箱', x: -12, z: 31, pool: 'med', tier: 2 },
-  { id: 'med-b', name: '医疗箱', x: 16, z: 10, pool: 'med', tier: 2 },
-  { id: 'cache-a', name: '隐藏补给箱', x: 34, z: 25, pool: 'valuable', tier: 3 },
-  { id: 'cache-b', name: '隐藏补给箱', x: 22, z: -30, pool: 'valuable', tier: 3 },
-  { id: 'weapon-a', name: '武器箱', x: 8, z: -22, pool: 'weapon', tier: 2 },
-  { id: 'weapon-b', name: '武器箱', x: -42, z: 4, pool: 'weapon', tier: 2 },
-  { id: 'crate-a', name: '军需箱', x: 43, z: -8, pool: 'tech', tier: 2 },
-  { id: 'crate-b', name: '军需箱', x: -4, z: -40, pool: 'weapon', tier: 1 },
-  { id: 'crate-c', name: '军需箱', x: 4, z: 42, pool: 'med', tier: 1 },
-  { id: 'stash-a', name: '地下暗格', x: -48, z: -28, pool: 'valuable', tier: 3 },
-  { id: 'stash-b', name: '地下暗格', x: 50, z: 13, pool: 'valuable', tier: 3 },
-  { id: 'supply-a', name: '杂物箱', x: -18, z: -4, pool: 'tech', tier: 1 },
+  { id: 'locker-a', name: 'å·¥å·æ', x: -34, z: -18, pool: 'tech', tier: 1 },
+  { id: 'locker-b', name: 'å·¥å·æ', x: -29, z: 16, pool: 'tech', tier: 1 },
+  { id: 'med-a', name: 'å»çç®±', x: -12, z: 31, pool: 'med', tier: 2 },
+  { id: 'med-b', name: 'å»çç®±', x: 16, z: 10, pool: 'med', tier: 2 },
+  { id: 'cache-a', name: 'éèè¡¥ç»ç®±', x: 34, z: 25, pool: 'valuable', tier: 3 },
+  { id: 'cache-b', name: 'éèè¡¥ç»ç®±', x: 22, z: -30, pool: 'valuable', tier: 3 },
+  { id: 'weapon-a', name: 'æ­¦å¨ç®±', x: 8, z: -22, pool: 'weapon', tier: 2 },
+  { id: 'weapon-b', name: 'æ­¦å¨ç®±', x: -42, z: 4, pool: 'weapon', tier: 2 },
+  { id: 'crate-a', name: 'åéç®±', x: 43, z: -8, pool: 'tech', tier: 2 },
+  { id: 'crate-b', name: 'åéç®±', x: -4, z: -40, pool: 'weapon', tier: 1 },
+  { id: 'crate-c', name: 'åéç®±', x: 4, z: 42, pool: 'med', tier: 1 },
+  { id: 'stash-a', name: 'å°ä¸ææ ¼', x: -48, z: -28, pool: 'valuable', tier: 3 },
+  { id: 'stash-b', name: 'å°ä¸ææ ¼', x: 50, z: 13, pool: 'valuable', tier: 3 },
+  { id: 'supply-a', name: 'æç©ç®±', x: -18, z: -4, pool: 'tech', tier: 1 },
   { id: 'supply-b', name: 'Field Cache', x: -60, z: 22, pool: 'weapon', tier: 2 },
   { id: 'supply-c', name: 'Field Cache', x: 58, z: -24, pool: 'tech', tier: 2 },
   { id: 'med-c', name: 'Medical Case', x: 12, z: 56, pool: 'med', tier: 2 },
@@ -246,10 +246,10 @@ const containerSpawns = [
 ];
 
 const extractionZones = [
-  { id: 'north-gate', name: '北门闸口', x: 0, z: -52, radius: 4.5 },
-  { id: 'west-tunnel', name: '西侧隧道', x: -52, z: -8, radius: 4.5 },
-  { id: 'east-wire', name: '东侧铁丝网', x: 52, z: 10, radius: 4.5 },
-  { id: 'south-sewer', name: '南部下水道', x: -20, z: 52, radius: 4.5 },
+  { id: 'north-gate', name: 'åé¨é¸å£', x: 0, z: -52, radius: 4.5 },
+  { id: 'west-tunnel', name: 'è¥¿ä¾§é§é', x: -52, z: -8, radius: 4.5 },
+  { id: 'east-wire', name: 'ä¸ä¾§éä¸ç½', x: 52, z: 10, radius: 4.5 },
+  { id: 'south-sewer', name: 'åé¨ä¸æ°´é', x: -20, z: 52, radius: 4.5 },
 ];
 
 */
@@ -338,25 +338,33 @@ const containerSpawns = [
   { id: 'supply-d', name: 'Supply Case', x: 84, z: 102, pool: 'tech', tier: 1 },
   { id: 'cache-c', name: 'Hidden Supply Cache', x: 118, z: 58, pool: 'valuable', tier: 3 },
   { id: 'field-d', name: 'Field Cache', x: -18, z: 118, pool: 'weapon', tier: 2 },
+  { id: 'building-center-terminal', name: 'Depot Control Cabinet', x: 0, z: -38, pool: 'tech', tier: 2 },
+  { id: 'building-barracks-locker', name: 'Barracks Personal Locker', x: -56, z: 24, pool: 'valuable', tier: 2 },
+  { id: 'building-fuel-toolbox', name: 'Fuel Station Service Box', x: 56, z: 34, pool: 'tech', tier: 2 },
+  { id: 'building-freight-manifest', name: 'Freight Manifest Safe', x: 0, z: 76, pool: 'valuable', tier: 3 },
+  { id: 'building-silo-panel', name: 'Silo Maintenance Cabinet', x: 88, z: -112, pool: 'tech', tier: 2 },
+  { id: 'building-bunker-armory', name: 'Bunker Armory Locker', x: -104, z: -76, pool: 'weapon', tier: 3 },
+  { id: 'building-hangar-crate', name: 'Hangar Equipment Cage', x: 100, z: 72, pool: 'weapon', tier: 2 },
+  { id: 'building-yard-office', name: 'Yard Office Safe', x: -68, z: 112, pool: 'valuable', tier: 3 },
 ];
 
 const extractionZones = [
-  { id: 'north-gate', nameZh: '北闸口', nameEn: 'North Gate', x: 0, z: -126, radius: 5.6, kind: 'standard' },
-  { id: 'north-ridge', nameZh: '北岭撤离', nameEn: 'North Ridge', x: 74, z: -122, radius: 5.6, kind: 'standard' },
-  { id: 'west-tunnel', nameZh: '西侧隧道', nameEn: 'West Tunnel', x: -124, z: -16, radius: 5.8, kind: 'standard' },
-  { id: 'west-yard', nameZh: '西货场', nameEn: 'West Yard', x: -122, z: 82, radius: 5.8, kind: 'standard' },
-  { id: 'east-wire', nameZh: '东侧铁丝网', nameEn: 'East Wire', x: 124, z: 18, radius: 5.8, kind: 'standard' },
-  { id: 'east-depot', nameZh: '东仓转运口', nameEn: 'East Depot', x: 118, z: -84, radius: 5.6, kind: 'task' },
-  { id: 'north-relay', nameZh: '北中继站', nameEn: 'North Relay', x: -88, z: -122, radius: 5.6, kind: 'switch' },
-  { id: 'south-sewer', nameZh: '南部下水道', nameEn: 'South Sewer', x: -42, z: 122, radius: 5.8, kind: 'standard' },
-  { id: 'south-yard', nameZh: '南货运平台', nameEn: 'South Yard', x: 52, z: 124, radius: 5.8, kind: 'switch' },
+  { id: 'north-gate', nameZh: 'åé¸å£', nameEn: 'North Gate', x: 0, z: -126, radius: 5.6, kind: 'standard' },
+  { id: 'north-ridge', nameZh: 'åå²­æ¤ç¦»', nameEn: 'North Ridge', x: 74, z: -122, radius: 5.6, kind: 'standard' },
+  { id: 'west-tunnel', nameZh: 'è¥¿ä¾§é§é', nameEn: 'West Tunnel', x: -124, z: -16, radius: 5.8, kind: 'standard' },
+  { id: 'west-yard', nameZh: 'è¥¿è´§åº', nameEn: 'West Yard', x: -122, z: 82, radius: 5.8, kind: 'standard' },
+  { id: 'east-wire', nameZh: 'ä¸ä¾§éä¸ç½', nameEn: 'East Wire', x: 124, z: 18, radius: 5.8, kind: 'standard' },
+  { id: 'east-depot', nameZh: 'ä¸ä»è½¬è¿å£', nameEn: 'East Depot', x: 118, z: -84, radius: 5.6, kind: 'task' },
+  { id: 'north-relay', nameZh: 'åä¸­ç»§ç«', nameEn: 'North Relay', x: -88, z: -122, radius: 5.6, kind: 'switch' },
+  { id: 'south-sewer', nameZh: 'åé¨ä¸æ°´é', nameEn: 'South Sewer', x: -42, z: 122, radius: 5.8, kind: 'standard' },
+  { id: 'south-yard', nameZh: 'åè´§è¿å¹³å°', nameEn: 'South Yard', x: 52, z: 124, radius: 5.8, kind: 'switch' },
 ];
 
 const switchPointCandidates = [
-  { id: 'switch-west', nameZh: '西配电拉闸点', nameEn: 'West Power Lever', x: -86, z: 26, radius: 2.3 },
-  { id: 'switch-east', nameZh: '东配电拉闸点', nameEn: 'East Power Lever', x: 88, z: -34, radius: 2.3 },
-  { id: 'switch-south', nameZh: '南侧总闸', nameEn: 'South Grid Lever', x: 12, z: 92, radius: 2.3 },
-  { id: 'switch-north', nameZh: '北侧总闸', nameEn: 'North Grid Lever', x: -18, z: -94, radius: 2.3 },
+  { id: 'switch-west', nameZh: 'è¥¿éçµæé¸ç¹', nameEn: 'West Power Lever', x: -86, z: 26, radius: 2.3 },
+  { id: 'switch-east', nameZh: 'ä¸éçµæé¸ç¹', nameEn: 'East Power Lever', x: 88, z: -34, radius: 2.3 },
+  { id: 'switch-south', nameZh: 'åä¾§æ»é¸', nameEn: 'South Grid Lever', x: 12, z: 92, radius: 2.3 },
+  { id: 'switch-north', nameZh: 'åä¾§æ»é¸', nameEn: 'North Grid Lever', x: -18, z: -94, radius: 2.3 },
 ];
 
 const raidSpawnCandidates = [
@@ -1258,13 +1266,13 @@ function getLobbyModeDefs() {
   return {
     raid: {
       id: 'raid',
-      nameZh: '封锁突入',
+      nameZh: 'å°éçªå¥',
       nameEn: 'Lockdown Raid',
-      summaryZh: '经典搜打撤。普通撤离点直接开放，拉闸撤离仍需先启动拉闸点。',
+      summaryZh: 'ç»å¸æææ¤ãæ®éæ¤ç¦»ç¹ç´æ¥å¼æ¾ï¼æé¸æ¤ç¦»ä»éåå¯å¨æé¸ç¹ã',
       summaryEn: 'Classic extraction. Standard exit opens immediately, while the lever exit still needs its switch.',
-      detailZh: '10 分钟作战，双撤离结构，适合稳定搜刮与整备成长。',
+      detailZh: '10 åéä½æï¼åæ¤ç¦»ç»æï¼éåç¨³å®æå®ä¸æ´å¤æé¿ã',
       detailEn: '10-minute raid with two extraction routes, built for steady looting and progression.',
-      deployZh: '进入封锁区',
+      deployZh: 'è¿å¥å°éåº',
       deployEn: 'Enter Lockdown',
       duration: RAID_DURATION,
       bonusReward: 0,
@@ -1273,21 +1281,21 @@ function getLobbyModeDefs() {
         return chooseRaidExtractions(playerSpawn);
       },
       getStartInteractionText() {
-        return L('普通撤离点已开放，拉闸撤离需先拉闸。', 'Standard extraction is open. Pull the lever to use the gated exit.');
+        return L('æ®éæ¤ç¦»ç¹å·²å¼æ¾ï¼æé¸æ¤ç¦»éåæé¸ã', 'Standard extraction is open. Pull the lever to use the gated exit.');
       },
       getStartNotice() {
-        return L('已进入封锁区。普通撤离点已开放，拉闸撤离需先前往拉闸点。', 'Raid started. The standard exit is open, and the gated exit needs its lever first.');
+        return L('å·²è¿å¥å°éåºãæ®éæ¤ç¦»ç¹å·²å¼æ¾ï¼æé¸æ¤ç¦»éååå¾æé¸ç¹ã', 'Raid started. The standard exit is open, and the gated exit needs its lever first.');
       },
     },
     contract: {
       id: 'contract',
-      nameZh: '清剿合约',
+      nameZh: 'æ¸å¿åçº¦',
       nameEn: 'Purge Contract',
-      summaryZh: '目标玩法。先完成清剿目标，再从唯一撤离点带着战利品撤出。',
+      summaryZh: 'ç®æ ç©æ³ãåå®ææ¸å¿ç®æ ï¼åä»å¯ä¸æ¤ç¦»ç¹å¸¦çæå©åæ¤åºã',
       summaryEn: 'Objective mode. Finish the purge contract first, then escape through the only extraction point.',
-      detailZh: '7 分钟限时，击倒 10 名敌人并清掉 2 名猎手，成功撤离可额外获得奖金。',
+      detailZh: '7 åééæ¶ï¼å»å 10 åæäººå¹¶æ¸æ 2 åçæï¼æåæ¤ç¦»å¯é¢å¤è·å¾å¥éã',
       detailEn: '7-minute contract. Eliminate 10 enemies including 2 hunters. Successful extraction grants a direct bonus.',
-      deployZh: '接受清剿合约',
+      deployZh: 'æ¥åæ¸å¿åçº¦',
       deployEn: 'Accept Contract',
       duration: 7 * 60,
       bonusReward: 9600,
@@ -1314,10 +1322,10 @@ function getLobbyModeDefs() {
         };
       },
       getStartInteractionText() {
-        return L('清剿目标未完成前，唯一撤离点不会开放。', 'The only extraction stays locked until purge objectives are done.');
+        return L('æ¸å¿ç®æ æªå®æåï¼å¯ä¸æ¤ç¦»ç¹ä¸ä¼å¼æ¾ã', 'The only extraction stays locked until purge objectives are done.');
       },
       getStartNotice() {
-        return L('清剿合约开始。先完成目标，再前往唯一撤离点。', 'Purge contract started. Finish the objectives, then move to the only extraction.');
+        return L('æ¸å¿åçº¦å¼å§ãåå®æç®æ ï¼ååå¾å¯ä¸æ¤ç¦»ç¹ã', 'Purge contract started. Finish the objectives, then move to the only extraction.');
       },
     },
   };
@@ -1339,7 +1347,7 @@ function getLobbyModeDef(modeId = getSelectedLobbyModeId()) {
 function setSelectedLobbyMode(modeId) {
   const nextModeId = sanitizeLobbyModeId(modeId);
   if (state.mode !== 'base') {
-    notify(L('行动模式只能在局外切换。', 'Modes can only be changed in base.'), 'warning');
+    notify(L('è¡å¨æ¨¡å¼åªè½å¨å±å¤åæ¢ã', 'Modes can only be changed in base.'), 'warning');
     return;
   }
   if (nextModeId === getSelectedLobbyModeId()) {
@@ -1349,7 +1357,7 @@ function setSelectedLobbyMode(modeId) {
   persistSave();
   renderBasePanel();
   notify(
-    L(`已选择行动模式：${getLobbyModeDef(nextModeId).nameZh}。`, `Selected mode: ${getLobbyModeDef(nextModeId).nameEn}.`),
+    L(`å·²éæ©è¡å¨æ¨¡å¼ï¼${getLobbyModeDef(nextModeId).nameZh}ã`, `Selected mode: ${getLobbyModeDef(nextModeId).nameEn}.`),
     'success',
   );
 }
@@ -1359,10 +1367,10 @@ function renderLobbyPanel() {
   return Object.values(getLobbyModeDefs())
     .map((mode) => {
       const active = mode.id === selectedModeId;
-      const durationLabel = L(`${Math.round(mode.duration / 60)} 分钟`, `${Math.round(mode.duration / 60)} min`);
+      const durationLabel = L(`${Math.round(mode.duration / 60)} åé`, `${Math.round(mode.duration / 60)} min`);
       const bonusLabel = mode.bonusReward > 0
         ? formatMoney(mode.bonusReward)
-        : L('无额外奖金', 'No direct bonus');
+        : L('æ é¢å¤å¥é', 'No direct bonus');
       return `
         <article class="prep-row lobby-card ${active ? 'is-active' : ''}">
           <div class="lobby-copy">
@@ -1371,12 +1379,12 @@ function renderLobbyPanel() {
             <div class="item-meta">${L(mode.detailZh, mode.detailEn)}</div>
             <div class="inline-actions">
               <span class="mode-pill">${durationLabel}</span>
-              <span class="mode-pill ${mode.bonusReward > 0 ? 'is-hot' : ''}">${L('奖金 ', 'Bonus ')}${bonusLabel}</span>
+              <span class="mode-pill ${mode.bonusReward > 0 ? 'is-hot' : ''}">${L('å¥é ', 'Bonus ')}${bonusLabel}</span>
             </div>
           </div>
           <div class="stack-list">
             <button class="${active ? 'primary-button' : 'ghost-button'} small" type="button" data-mode-id="${mode.id}">
-              ${active ? L('当前模式', 'Active') : L('切换', 'Select')}
+              ${active ? L('å½åæ¨¡å¼', 'Active') : L('åæ¢', 'Select')}
             </button>
           </div>
         </article>
@@ -1478,11 +1486,11 @@ function resetSave() {
   state.save = defaultSave();
   persistSave();
   renderBasePanel();
-  notify('本地存档已重置。', 'warning');
+  notify('æ¬å°å­æ¡£å·²éç½®ã', 'warning');
 }
 
 function formatMoney(value) {
-  return `₿${Math.round(value).toLocaleString('zh-CN')}`;
+  return `â¿${Math.round(value).toLocaleString('zh-CN')}`;
 }
 
 function formatWeight(value) {
@@ -1677,48 +1685,48 @@ function getShopEntries() {
   return [
     {
       id: 'medkit',
-      name: '战地医疗包',
-      description: '下次出击时医疗包 +1',
+      name: 'æå°å»çå',
+      description: 'ä¸æ¬¡åºå»æ¶å»çå +1',
       price: 900,
       type: 'consumable',
       disabled: false,
-      status: `已备 ${state.save.prep.medkitBonus}`,
+      status: `å·²å¤ ${state.save.prep.medkitBonus}`,
     },
     {
       id: 'ammo',
-      name: '穿甲弹补给',
-      description: '下次出击时备弹 +60',
+      name: 'ç©¿ç²å¼¹è¡¥ç»',
+      description: 'ä¸æ¬¡åºå»æ¶å¤å¼¹ +60',
       price: 850,
       type: 'consumable',
       disabled: false,
-      status: `已备 +${state.save.prep.ammoBonus}`,
+      status: `å·²å¤ +${state.save.prep.ammoBonus}`,
     },
     {
       id: 'armor',
-      name: '复合护甲板',
-      description: '下次出击时初始护甲 +35',
+      name: 'å¤åæ¤ç²æ¿',
+      description: 'ä¸æ¬¡åºå»æ¶åå§æ¤ç² +35',
       price: 1200,
       type: 'consumable',
       disabled: false,
-      status: `已备 +${state.save.prep.armorBonus}`,
+      status: `å·²å¤ +${state.save.prep.armorBonus}`,
     },
     {
       id: 'bag',
-      name: '扩容背包',
-      description: '永久提升背包重量与格数',
+      name: 'æ©å®¹èå',
+      description: 'æ°¸ä¹æåèåééä¸æ ¼æ°',
       price: 4200 + state.save.upgrades.bagLevel * 2600,
       type: 'upgrade',
       disabled: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL,
-      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? '已满级' : `Lv.${state.save.upgrades.bagLevel}`,
+      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? 'å·²æ»¡çº§' : `Lv.${state.save.upgrades.bagLevel}`,
     },
     {
       id: 'weapon',
-      name: '枪机改装',
-      description: '永久提升步枪伤害',
+      name: 'æªæºæ¹è£',
+      description: 'æ°¸ä¹æåæ­¥æªä¼¤å®³',
       price: 3800 + state.save.upgrades.weaponLevel * 2400,
       type: 'upgrade',
       disabled: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL,
-      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? '已满级' : `Lv.${state.save.upgrades.weaponLevel}`,
+      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? 'å·²æ»¡çº§' : `Lv.${state.save.upgrades.weaponLevel}`,
     },
   ];
 }
@@ -1732,18 +1740,18 @@ function renderBasePanel() {
       : '--';
 
   refs.summaryStrip.innerHTML = [
-    summaryPill('资金', formatMoney(state.save.money)),
-    summaryPill('仓库', `${state.save.stash.length} 件`),
-    summaryPill('撤离率', survivalRate),
-    summaryPill('最佳 haul', formatMoney(state.save.stats.bestHaul)),
+    summaryPill('èµé', formatMoney(state.save.money)),
+    summaryPill('ä»åº', `${state.save.stash.length} ä»¶`),
+    summaryPill('æ¤ç¦»ç', survivalRate),
+    summaryPill('æä½³ haul', formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   refs.loadoutPrep.innerHTML = [
-    prepRow('初始医疗包', `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
-    prepRow('初始备弹', `${BASE_RESERVE_AMMO + state.save.prep.ammoBonus}`),
-    prepRow('初始护甲', `${BASE_ARMOR + state.save.prep.armorBonus}`),
-    prepRow('背包容量', `${getBagSlots()} 格 / ${formatWeight(getBagCapacity())}`),
-    prepRow('武器伤害', `${getWeaponDamage()}`),
+    prepRow('åå§å»çå', `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
+    prepRow('åå§å¤å¼¹', `${BASE_RESERVE_AMMO + state.save.prep.ammoBonus}`),
+    prepRow('åå§æ¤ç²', `${BASE_ARMOR + state.save.prep.armorBonus}`),
+    prepRow('èåå®¹é', `${getBagSlots()} æ ¼ / ${formatWeight(getBagCapacity())}`),
+    prepRow('æ­¦å¨ä¼¤å®³', `${getWeaponDamage()}`),
   ].join('');
 
   refs.shopList.innerHTML = getShopEntries()
@@ -1763,7 +1771,7 @@ function renderBasePanel() {
               data-shop-id="${entry.id}"
               ${afford ? '' : 'disabled'}
             >
-              ${entry.disabled ? '满级' : formatMoney(entry.price)}
+              ${entry.disabled ? 'æ»¡çº§' : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -1780,16 +1788,16 @@ function renderBasePanel() {
             <article class="stash-row">
               <div>
                 <div class="item-title rarity-${item.rarity}">${item.name}</div>
-                <div class="item-meta">${item.category} · ${formatWeight(item.weight)} · ${formatMoney(item.value)}</div>
+                <div class="item-meta">${item.category} Â· ${formatWeight(item.weight)} Â· ${formatMoney(item.value)}</div>
               </div>
               <button class="ghost-button small" type="button" data-sell-id="${item.uid}">
-                出售
+                åºå®
               </button>
             </article>
           `,
         )
         .join('')
-    : '<div class="item-meta">仓库还没有带出来的战利品。进入封锁区搜物资，成功撤离后会出现在这里。</div>';
+    : '<div class="item-meta">ä»åºè¿æ²¡æå¸¦åºæ¥çæå©åãè¿å¥å°éåºæç©èµï¼æåæ¤ç¦»åä¼åºç°å¨è¿éã</div>';
 }
 
 function summaryPill(label, value) {
@@ -1811,7 +1819,7 @@ function buyShopEntry(id) {
     return;
   }
   if (state.save.money < entry.price) {
-    notify('资金不足。', 'danger');
+    notify('èµéä¸è¶³ã', 'danger');
     return;
   }
 
@@ -1830,7 +1838,7 @@ function buyShopEntry(id) {
 
   persistSave();
   renderBasePanel();
-  notify(`已购买 ${entry.name}。`, 'success');
+  notify(`å·²è´­ä¹° ${entry.name}ã`, 'success');
 }
 
 function sellItem(uid) {
@@ -1842,12 +1850,12 @@ function sellItem(uid) {
   state.save.money += item.value;
   persistSave();
   renderBasePanel();
-  notify(`已出售 ${item.name}，获得 ${formatMoney(item.value)}。`, 'success');
+  notify(`å·²åºå® ${item.name}ï¼è·å¾ ${formatMoney(item.value)}ã`, 'success');
 }
 
 function sellAllStash() {
   if (!state.save.stash.length) {
-    notify('仓库里没有可出售的战利品。', 'warning');
+    notify('ä»åºéæ²¡æå¯åºå®çæå©åã', 'warning');
     return;
   }
   const total = state.save.stash.reduce((sum, item) => sum + item.value, 0);
@@ -1856,7 +1864,7 @@ function sellAllStash() {
   state.save.stash = [];
   persistSave();
   renderBasePanel();
-  notify(`已出售 ${count} 件战利品，获得 ${formatMoney(total)}。`, 'success');
+  notify(`å·²åºå® ${count} ä»¶æå©åï¼è·å¾ ${formatMoney(total)}ã`, 'success');
 }
 
 function createScene() {
@@ -2323,7 +2331,7 @@ function createEnemy(spawn, index) {
   const base = archetypes[index % archetypes.length];
   return {
     id: `enemy-${index}`,
-    name: base.type === 'scout' ? '侦察兵' : base.type === 'hunter' ? '猎手' : '重装兵',
+    name: base.type === 'scout' ? 'ä¾¦å¯åµ' : base.type === 'hunter' ? 'çæ' : 'éè£åµ',
     type: base.type,
     x: spawn.x,
     z: spawn.z,
@@ -2391,9 +2399,9 @@ function getRaidObjectiveStatus(raid = state.raid) {
   if (!objectives.length) {
     const switchZone = raid?.extractions?.find((zone) => zone.kind === 'switch');
     if (switchZone?.switchArmed && (switchZone.switchTimer ?? 0) > 0) {
-      return L('普通撤离已开放 | 拉闸撤离已开放', 'Standard exit open | Lever exit open');
+      return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å·²å¼æ¾', 'Standard exit open | Lever exit open');
     }
-    return L('普通撤离已开放 | 拉闸撤离待开启', 'Standard exit open | Lever exit locked');
+    return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å¾å¼å¯', 'Standard exit open | Lever exit locked');
   }
   return objectives
     .map((objective) => {
@@ -2424,13 +2432,13 @@ function advanceRaidObjective(objectiveId, amount = 1) {
   objective.progress = Math.min(objective.target, objective.progress + amount);
   if (!raid.tasksComplete && areRaidObjectivesComplete(raid)) {
     raid.tasksComplete = true;
-    notify(L('任务完成，任务撤离点已解锁。', 'Tasks complete. Task-locked extraction is now available.'), 'success');
+    notify(L('ä»»å¡å®æï¼ä»»å¡æ¤ç¦»ç¹å·²è§£éã', 'Tasks complete. Task-locked extraction is now available.'), 'success');
   }
 }
 
 function getSwitchPointLabel(point) {
   if (!point) {
-    return L('拉闸点', 'Lever Point');
+    return L('æé¸ç¹', 'Lever Point');
   }
   return getLanguage() === 'zh' ? (point.nameZh ?? point.nameEn ?? point.id) : (point.nameEn ?? point.nameZh ?? point.id);
 }
@@ -2455,22 +2463,22 @@ function getExtractionStatusLabel(zone, raid = state.raid) {
   }
   if (zone.kind === 'task') {
     return raid.tasksComplete
-      ? L('任务已解锁', 'Task unlocked')
-      : L(`需先完成任务：${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
+      ? L('ä»»å¡å·²è§£é', 'Task unlocked')
+      : L(`éåå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
   }
   if (zone.kind === 'switch') {
     if (zone.switchArmed && (zone.switchTimer ?? 0) > 0) {
-      return L(`闸门已开启 ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
+      return L(`é¸é¨å·²å¼å¯ ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
     }
     if (zone.switchExpired) {
-      return L('闸门已关闭', 'Gate expired');
+      return L('é¸é¨å·²å³é­', 'Gate expired');
     }
     const point = getSwitchPointById(raid, zone.switchPointId);
     return point
-      ? L(`需先前往 ${getSwitchPointLabel(point)} 拉闸`, `Pull ${getSwitchPointLabel(point)} first`)
-      : L('需先拉闸', 'Lever required');
+      ? L(`éååå¾ ${getSwitchPointLabel(point)} æé¸`, `Pull ${getSwitchPointLabel(point)} first`)
+      : L('éåæé¸', 'Lever required');
   }
-  return L('可撤离', 'Ready');
+  return L('å¯æ¤ç¦»', 'Ready');
 }
 
 function buildExtractionHeaderText(raid = state.raid) {
@@ -2478,19 +2486,19 @@ function buildExtractionHeaderText(raid = state.raid) {
     return '';
   }
   const readyCount = raid.extractions.filter((zone) => isExtractionCurrentlyAvailable(zone, raid)).length;
-  const parts = [L(`撤离 ${readyCount}/${raid.extractions.length}`, `Extract ${readyCount}/${raid.extractions.length}`)];
+  const parts = [L(`æ¤ç¦» ${readyCount}/${raid.extractions.length}`, `Extract ${readyCount}/${raid.extractions.length}`)];
   const switchZone = raid.extractions.find((zone) => zone.kind === 'switch');
   if (switchZone) {
     parts.push(
       switchZone.switchArmed && (switchZone.switchTimer ?? 0) > 0
-        ? L(`拉闸 ${Math.ceil(switchZone.switchTimer)}s`, `Lever ${Math.ceil(switchZone.switchTimer)}s`)
+        ? L(`æé¸ ${Math.ceil(switchZone.switchTimer)}s`, `Lever ${Math.ceil(switchZone.switchTimer)}s`)
         : switchZone.switchExpired
-          ? L('拉闸已失效', 'Lever expired')
-          : L('拉闸未启动', 'Lever idle'),
+          ? L('æé¸å·²å¤±æ', 'Lever expired')
+          : L('æé¸æªå¯å¨', 'Lever idle'),
     );
   }
   if (!raid.tasksComplete) {
-    parts.push(L(`任务 ${getRaidObjectiveStatus(raid)}`, `Tasks ${getRaidObjectiveStatus(raid)}`));
+    parts.push(L(`ä»»å¡ ${getRaidObjectiveStatus(raid)}`, `Tasks ${getRaidObjectiveStatus(raid)}`));
   }
   return parts.join(' / ');
 }
@@ -2524,21 +2532,21 @@ function getRaidThreatInfo(raid = state.raid) {
   const player = raid?.player;
 
   if (engaged >= 4 || (engaged >= 2 && (player?.health ?? 100) <= 40)) {
-    return { label: L('极高', 'Critical'), color: '#ff7a72' };
+    return { label: L('æé«', 'Critical'), color: '#ff7a72' };
   }
   if (engaged >= 2 || searching >= 5) {
-    return { label: L('高', 'High'), color: '#ffb36b' };
+    return { label: L('é«', 'High'), color: '#ffb36b' };
   }
   if (engaged >= 1 || searching >= 1) {
-    return { label: L('中', 'Medium'), color: '#f0c57d' };
+    return { label: L('ä¸­', 'Medium'), color: '#f0c57d' };
   }
-  return { label: L('低', 'Low'), color: '#8fd6b3' };
+  return { label: L('ä½', 'Low'), color: '#8fd6b3' };
 }
 
 function getRaidObjectiveDetailText(raid = state.raid) {
   const counts = getRaidEnemyStateCounts(raid);
   return L(
-    `巡逻 ${counts.patrol} | 搜索 ${counts.search + counts.alert} | 交火 ${counts.engage + counts.flank}`,
+    `å·¡é» ${counts.patrol} | æç´¢ ${counts.search + counts.alert} | äº¤ç« ${counts.engage + counts.flank}`,
     `Patrol ${counts.patrol} | Search ${counts.search + counts.alert} | Engage ${counts.engage + counts.flank}`,
   );
 }
@@ -2551,28 +2559,28 @@ function getRaidDefaultStatusText(raid = state.raid) {
   const hotContacts = counts.engage + counts.flank;
   const searching = counts.search + counts.alert;
   if (hotContacts > 0) {
-    return L(`交火中：${hotContacts} 名敌人正在压制你`, `${hotContacts} hostiles are actively engaging you.`);
+    return L(`äº¤ç«ä¸­ï¼${hotContacts} åæäººæ­£å¨åå¶ä½ `, `${hotContacts} hostiles are actively engaging you.`);
   }
   if (searching > 0) {
-    return L(`敌人已警戒：${searching} 名敌人正在搜索你`, `${searching} hostiles are searching for you.`);
+    return L(`æäººå·²è­¦æï¼${searching} åæäººæ­£å¨æç´¢ä½ `, `${searching} hostiles are searching for you.`);
   }
   if (!(raid.objectives?.length ?? 0)) {
     const switchZone = raid.extractions?.find((zone) => zone.kind === 'switch');
     if (switchZone?.switchArmed && (switchZone.switchTimer ?? 0) > 0) {
       return L(
-        `普通撤离已开放，拉闸撤离剩余 ${Math.ceil(switchZone.switchTimer)}s`,
+        `æ®éæ¤ç¦»å·²å¼æ¾ï¼æé¸æ¤ç¦»å©ä½ ${Math.ceil(switchZone.switchTimer)}s`,
         `Standard exit is open. Lever exit remains for ${Math.ceil(switchZone.switchTimer)}s.`,
       );
     }
     if (switchZone?.switchExpired) {
-      return L('普通撤离已开放，拉闸撤离已关闭。', 'Standard exit is open. Lever exit has closed.');
+      return L('æ®éæ¤ç¦»å·²å¼æ¾ï¼æé¸æ¤ç¦»å·²å³é­ã', 'Standard exit is open. Lever exit has closed.');
     }
-    return L('普通撤离已开放，拉闸撤离需先前往拉闸点。', 'Standard exit is open. Pull the lever to unlock the gated exit.');
+    return L('æ®éæ¤ç¦»å·²å¼æ¾ï¼æé¸æ¤ç¦»éååå¾æé¸ç¹ã', 'Standard exit is open. Pull the lever to unlock the gated exit.');
   }
   if (!raid.tasksComplete) {
-    return L(`当前任务：${getRaidObjectiveStatus(raid)}`, `Objectives: ${getRaidObjectiveStatus(raid)}`);
+    return L(`å½åä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Objectives: ${getRaidObjectiveStatus(raid)}`);
   }
-  return L('任务完成，前往已开放撤离点。', 'Objectives complete. Head to an open extraction.');
+  return L('ä»»å¡å®æï¼åå¾å·²å¼æ¾æ¤ç¦»ç¹ã', 'Objectives complete. Head to an open extraction.');
 }
 
 function broadcastEnemyAlert(sourceEnemy, raid = state.raid, player = raid?.player) {
@@ -3640,7 +3648,7 @@ function useMedkit() {
     return;
   }
   if (player.medkits <= 0) {
-    notify('没有医疗包。', 'warning');
+    notify('æ²¡æå»çåã', 'warning');
     return;
   }
   if (player.health >= player.maxHealth || player.healTimer > 0) {
@@ -3650,7 +3658,7 @@ function useMedkit() {
   player.health = Math.min(player.maxHealth, player.health + PLAYER_HEAL_AMOUNT);
   player.healTimer = PLAYER_HEAL_COOLDOWN;
   player.damageFlash = 0;
-  notify('已使用医疗包。', 'success');
+  notify('å·²ä½¿ç¨å»çåã', 'success');
 }
 
 function damageEnemy(enemy, damage, options = {}) {
@@ -3727,7 +3735,7 @@ function applyDamageToPlayer(amount) {
   player.nearHitPulse = Math.max(player.nearHitPulse ?? 0, 0.8);
   spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), '#ff7e68', 0.08, 0.08);
   playDamageAudio(Math.max(1, remaining), blocked);
-  notify(`受到 ${Math.max(1, remaining)} 点伤害。`, 'danger');
+  notify(`åå° ${Math.max(1, remaining)} ç¹ä¼¤å®³ã`, 'danger');
 }
 
 function updateEnemies(dt) {
@@ -4080,8 +4088,8 @@ function closeLootPanel() {
 }
 
 function renderLootPanel(container) {
-  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} 格`;
-  refs.lootMeta.textContent = `内容物 ${container.items.length} 件 · 当前背包 ${bagSpace} · 重量 ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`;
+  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} æ ¼`;
+  refs.lootMeta.textContent = `åå®¹ç© ${container.items.length} ä»¶ Â· å½åèå ${bagSpace} Â· éé ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`;
   refs.lootItems.innerHTML = container.items.length
     ? container.items
         .map(
@@ -4089,16 +4097,16 @@ function renderLootPanel(container) {
             <article class="loot-item">
               <div>
                 <div class="item-title rarity-${item.rarity}">${item.name}</div>
-                <div class="item-meta">${item.category} · ${formatWeight(item.weight)} · ${formatMoney(item.value)}</div>
+                <div class="item-meta">${item.category} Â· ${formatWeight(item.weight)} Â· ${formatMoney(item.value)}</div>
               </div>
               <button class="ghost-button small" type="button" data-take-id="${item.uid}">
-                拿走
+                æ¿èµ°
               </button>
             </article>
           `,
         )
         .join('')
-    : '<div class="item-meta">这个容器已经空了。</div>';
+    : '<div class="item-meta">è¿ä¸ªå®¹å¨å·²ç»ç©ºäºã</div>';
 }
 
 function takeLoot(containerId, itemId) {
@@ -4112,7 +4120,7 @@ function takeLoot(containerId, itemId) {
   }
   const item = container.items[index];
   if (!canCarry(item)) {
-    notify('背包空间或重量不足。', 'warning');
+    notify('èåç©ºé´æééä¸è¶³ã', 'warning');
     return;
   }
   container.items.splice(index, 1);
@@ -4122,7 +4130,7 @@ function takeLoot(containerId, itemId) {
   state.raid.bagWeight += item.weight;
   renderLootPanel(container);
   syncHud();
-  notify(`已拿取 ${item.name}。`, 'success');
+  notify(`å·²æ¿å ${item.name}ã`, 'success');
 }
 
 function takeAllCurrentContainer() {
@@ -4353,7 +4361,7 @@ function getEnemyMapBadge(enemy) {
     return '';
   }
   return getLanguage() === 'zh'
-    ? (enemy.type === 'scout' ? '侦' : enemy.type === 'hunter' ? '猎' : '重')
+    ? (enemy.type === 'scout' ? 'ä¾¦' : enemy.type === 'hunter' ? 'ç' : 'é')
     : (enemy.type === 'scout' ? 'S' : enemy.type === 'hunter' ? 'H' : 'B');
 }
 
@@ -4474,7 +4482,7 @@ function drawMapSwitchPoints(ctx, size, points, drawLabels = false) {
     ctx.closePath();
     ctx.fill();
     ctx.fillStyle = '#102028';
-    ctx.fillText(getLanguage() === 'zh' ? '闸' : 'L', mapPoint.x, mapPoint.y + 0.4);
+    ctx.fillText(getLanguage() === 'zh' ? 'é¸' : 'L', mapPoint.x, mapPoint.y + 0.4);
     if (drawLabels) {
       ctx.fillStyle = point.used ? '#caffdf' : '#a7d0ff';
       ctx.textAlign = 'left';
@@ -4821,7 +4829,7 @@ function beginSwitchSequence(point) {
   state.input.aimHeld = false;
   state.input.interactHeld = false;
   playSwitchAudio({ x: point.x, z: point.z }, false);
-  notify(L(`正在拉下 ${getSwitchPointLabel(point)}...`, `Pulling ${getSwitchPointLabel(point)}...`), 'warning');
+  notify(L(`æ­£å¨æä¸ ${getSwitchPointLabel(point)}...`, `Pulling ${getSwitchPointLabel(point)}...`), 'warning');
   return true;
 }
 
@@ -4845,7 +4853,7 @@ function finishSwitchSequence() {
   spawnPulse(new BABYLON.Vector3(zone.x, 0.8, zone.z), '#8fd6b3', zone.radius * 0.36, 1);
   playSwitchAudio({ x: point.x, z: point.z }, true);
   notify(
-    L(`${getZoneLabel(zone)} 已开启，${SWITCH_EXTRACTION_WINDOW} 秒后关闭。`, `${getZoneLabel(zone)} is open for ${SWITCH_EXTRACTION_WINDOW}s.`),
+    L(`${getZoneLabel(zone)} å·²å¼å¯ï¼${SWITCH_EXTRACTION_WINDOW} ç§åå³é­ã`, `${getZoneLabel(zone)} is open for ${SWITCH_EXTRACTION_WINDOW}s.`),
     'success',
   );
 }
@@ -5203,7 +5211,7 @@ function runDebugMode() {
       state.raid.bag.push(...sampleItems);
       state.raid.bagValue = sampleItems.reduce((sum, item) => sum + item.value, 0);
       state.raid.bagWeight = sampleItems.reduce((sum, item) => sum + item.weight, 0);
-      finishRaid(true, '调试模式撤离成功。', true);
+      finishRaid(true, 'è°è¯æ¨¡å¼æ¤ç¦»æåã', true);
     }
   }, 80);
 }
@@ -5393,7 +5401,7 @@ function syncRaidPanelCollapses() {
     }
     const collapsed = Boolean(state.ui.raidPanelCollapsed[targetId]);
     target.classList.toggle('is-collapsed', collapsed);
-    button.textContent = collapsed ? '展开' : '收起';
+    button.textContent = collapsed ? 'å±å¼' : 'æ¶èµ·';
     button.setAttribute('aria-expanded', String(!collapsed));
   }
 }
@@ -5417,7 +5425,7 @@ function getActivePartMapForWeapon(weaponId, player = null) {
 
 function getAmmoTierLabel(ammoId) {
   const ammo = AMMO_DEFS[ammoId];
-  return ammo ? `${ammo.name} · ${ammo.tierLabel}` : 'Unknown Ammo';
+  return ammo ? `${ammo.name} Â· ${ammo.tierLabel}` : 'Unknown Ammo';
 }
 
 function getCurrentAmmoInfo(player) {
@@ -5433,29 +5441,29 @@ function itemActionButtons(item, scope = 'raid') {
     return renderBaseItemActions(item);
   }
   if (item.itemType === 'usable') {
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="use" data-item-id="${item.uid}">使用</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="use" data-item-id="${item.uid}">ä½¿ç¨</button>`);
   }
   if (item.itemType === 'part' && item.partId && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid?.player?.weapon)) {
     const equipped = Object.values(state.raid?.player?.tempAttachments ?? {}).includes(item.partId);
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="${equipped ? 'unequip' : 'equip'}" data-item-id="${item.uid}">${equipped ? '卸下' : '装备'}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="${equipped ? 'unequip' : 'equip'}" data-item-id="${item.uid}">${equipped ? 'å¸ä¸' : 'è£å¤'}</button>`);
   }
   if (item.itemType === 'ammo') {
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="load-ammo" data-item-id="${item.uid}">装填库存</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="load-ammo" data-item-id="${item.uid}">è£å¡«åºå­</button>`);
   }
-  buttons.push(`<button class="ghost-button small" type="button" data-bag-action="drop" data-item-id="${item.uid}">丢弃</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-bag-action="drop" data-item-id="${item.uid}">ä¸¢å¼</button>`);
   return buttons.join('');
 }
 
 function renderBaseItemActions(item) {
   const buttons = [];
   if (item.itemType === 'ammo') {
-    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="stock-ammo" data-stash-id="${item.uid}">入弹药库</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="stock-ammo" data-stash-id="${item.uid}">å¥å¼¹è¯åº</button>`);
   }
   if (item.itemType === 'part' && item.partId && !state.save.armory.ownedParts.includes(item.partId)) {
-    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="learn-part" data-stash-id="${item.uid}">收入军械库</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="learn-part" data-stash-id="${item.uid}">æ¶å¥åæ¢°åº</button>`);
   }
-  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="discard" data-stash-id="${item.uid}">丢弃</button>`);
-  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="sell" data-stash-id="${item.uid}">出售</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="discard" data-stash-id="${item.uid}">ä¸¢å¼</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="sell" data-stash-id="${item.uid}">åºå®</button>`);
   return buttons.join('');
 }
 
@@ -5465,48 +5473,48 @@ function itemMetaLine(item) {
     details.push(describeUsableItem(item));
   }
   if (item.itemType === 'ammo' && item.ammoId) {
-    details.push(`${getAmmoTierLabel(item.ammoId)} · ${item.rounds} 发`);
+    details.push(`${getAmmoTierLabel(item.ammoId)} Â· ${item.rounds} å`);
   }
   if (item.itemType === 'part' && item.partId) {
     details.push(describePartBonus(PART_DEFS[item.partId]));
   }
-  return details.join(' · ');
+  return details.join(' Â· ');
 }
 
 function describeUsableItem(item) {
   if (item.useAction === 'heal') {
-    return `恢复 ${item.healAmount} 生命`;
+    return `æ¢å¤ ${item.healAmount} çå½`;
   }
   if (item.useAction === 'medkit') {
-    return `补充 ${item.medkitAmount} 医疗包`;
+    return `è¡¥å ${item.medkitAmount} å»çå`;
   }
   if (item.useAction === 'armor') {
-    return `恢复 ${item.armorAmount} 护甲`;
+    return `æ¢å¤ ${item.armorAmount} æ¤ç²`;
   }
-  return '可使用';
+  return 'å¯ä½¿ç¨';
 }
 
 function describePartBonus(part) {
   if (!part) {
-    return '零件';
+    return 'é¶ä»¶';
   }
   const stats = [];
   if (part.magBonus) {
-    stats.push(`弹匣 +${part.magBonus}`);
+    stats.push(`å¼¹å£ +${part.magBonus}`);
   }
   if (part.damageBonus) {
-    stats.push(`伤害 +${part.damageBonus}`);
+    stats.push(`ä¼¤å®³ +${part.damageBonus}`);
   }
   if (part.fireRateBonus) {
-    stats.push(`射速 +${part.fireRateBonus.toFixed(2)}`);
+    stats.push(`å°é +${part.fireRateBonus.toFixed(2)}`);
   }
   if (part.reloadMult) {
-    stats.push('更快换弹');
+    stats.push('æ´å¿«æ¢å¼¹');
   }
   if (part.spreadMult) {
-    stats.push('精度提升');
+    stats.push('ç²¾åº¦æå');
   }
-  return stats.join(' · ') || part.slot;
+  return stats.join(' Â· ') || part.slot;
 }
 
 function getShopEntries() {
@@ -5514,46 +5522,46 @@ function getShopEntries() {
     {
       id: 'prep_medkit',
       kind: 'prep',
-      name: '战地医疗包',
-      description: '下次出击时医疗包 +1',
+      name: 'æå°å»çå',
+      description: 'ä¸æ¬¡åºå»æ¶å»çå +1',
       price: 900,
-      status: `已备 ${state.save.prep.medkitBonus}`,
+      status: `å·²å¤ ${state.save.prep.medkitBonus}`,
       disabled: false,
     },
     {
       id: 'prep_surgical',
       kind: 'prep',
-      name: '手术包',
-      description: '下次出击时医疗包额外 +2',
+      name: 'ææ¯å',
+      description: 'ä¸æ¬¡åºå»æ¶å»çåé¢å¤ +2',
       price: 1700,
-      status: '重型医疗补给',
+      status: 'éåå»çè¡¥ç»',
       disabled: false,
     },
     {
       id: 'prep_armor',
       kind: 'prep',
-      name: '复合护甲板',
-      description: '下次出击时初始护甲 +35',
+      name: 'å¤åæ¤ç²æ¿',
+      description: 'ä¸æ¬¡åºå»æ¶åå§æ¤ç² +35',
       price: 1200,
-      status: `已备 +${state.save.prep.armorBonus}`,
+      status: `å·²å¤ +${state.save.prep.armorBonus}`,
       disabled: false,
     },
     {
       id: 'upgrade_bag',
       kind: 'upgrade',
-      name: '扩容背包',
-      description: '永久提升背包格数与承重',
+      name: 'æ©å®¹èå',
+      description: 'æ°¸ä¹æåèåæ ¼æ°ä¸æ¿é',
       price: 4200 + state.save.upgrades.bagLevel * 2600,
-      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? '已满级' : `Lv.${state.save.upgrades.bagLevel}`,
+      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? 'å·²æ»¡çº§' : `Lv.${state.save.upgrades.bagLevel}`,
       disabled: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL,
     },
     {
       id: 'upgrade_weapon',
       kind: 'upgrade',
-      name: '枪机改装',
-      description: '永久提升武器基础伤害',
+      name: 'æªæºæ¹è£',
+      description: 'æ°¸ä¹æåæ­¦å¨åºç¡ä¼¤å®³',
       price: 3800 + state.save.upgrades.weaponLevel * 2400,
-      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? '已满级' : `Lv.${state.save.upgrades.weaponLevel}`,
+      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? 'å·²æ»¡çº§' : `Lv.${state.save.upgrades.weaponLevel}`,
       disabled: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL,
     },
   ];
@@ -5566,11 +5574,11 @@ function getShopEntries() {
       kind: 'weapon',
       weaponId: weapon.id,
       name: weapon.name,
-      description: `${weapon.caliber} 武器 · ${weapon.magSize} 发弹匣 · ${weapon.fireRate.toFixed(1)} 发/秒`,
+      description: `${weapon.caliber} æ­¦å¨ Â· ${weapon.magSize} åå¼¹å£ Â· ${weapon.fireRate.toFixed(1)} å/ç§`,
       price: weapon.unlockPrice,
       status: state.save.armory.ownedWeapons.includes(weapon.id)
-        ? (getSelectedWeaponId() === weapon.id ? '已装备' : '已解锁')
-        : '未解锁',
+        ? (getSelectedWeaponId() === weapon.id ? 'å·²è£å¤' : 'å·²è§£é')
+        : 'æªè§£é',
       disabled: false,
     });
   }
@@ -5580,9 +5588,9 @@ function getShopEntries() {
       kind: 'ammo',
       ammoId: ammo.id,
       name: ammo.name,
-      description: `${ammo.caliber} · ${ammo.tierLabel} · ${ammo.packSize} 发`,
+      description: `${ammo.caliber} Â· ${ammo.tierLabel} Â· ${ammo.packSize} å`,
       price: ammo.price,
-      status: `库存 ${state.save.prepAmmo[ammo.id] ?? 0}`,
+      status: `åºå­ ${state.save.prepAmmo[ammo.id] ?? 0}`,
       disabled: false,
     });
   }
@@ -5592,9 +5600,9 @@ function getShopEntries() {
       kind: 'part',
       partId: part.id,
       name: part.name,
-      description: `${part.slot} · ${part.compatibleWeapons.map((id) => WEAPON_DEFS[id].name).join(' / ')}`,
+      description: `${part.slot} Â· ${part.compatibleWeapons.map((id) => WEAPON_DEFS[id].name).join(' / ')}`,
       price: part.price,
-      status: state.save.armory.ownedParts.includes(part.id) ? '已拥有' : '可购买',
+      status: state.save.armory.ownedParts.includes(part.id) ? 'å·²æ¥æ' : 'å¯è´­ä¹°',
       disabled: state.save.armory.ownedParts.includes(part.id),
     });
   }
@@ -5612,10 +5620,10 @@ function renderArmoryPanel(selectedWeaponId) {
         <article class="stash-row">
           <div>
             <div class="item-title ${weaponId === selectedWeaponId ? 'rarity-uncommon' : ''}">${weapon.name}</div>
-            <div class="item-meta">${weapon.caliber} · ${weapon.magSize} 发弹匣 · ${weapon.fireRate.toFixed(1)} 发/秒</div>
+            <div class="item-meta">${weapon.caliber} Â· ${weapon.magSize} åå¼¹å£ Â· ${weapon.fireRate.toFixed(1)} å/ç§</div>
           </div>
           <button class="ghost-button small" type="button" data-armory-action="select-weapon" data-weapon-id="${weaponId}">
-            ${weaponId === selectedWeaponId ? '已装备' : '装备'}
+            ${weaponId === selectedWeaponId ? 'å·²è£å¤' : 'è£å¤'}
           </button>
         </article>
       `;
@@ -5626,10 +5634,10 @@ function renderArmoryPanel(selectedWeaponId) {
       <article class="stash-row">
         <div>
           <div class="item-title ${ammo.id === selectedAmmoId ? 'rarity-uncommon' : ''}">${ammo.name}</div>
-          <div class="item-meta">${ammo.caliber} · ${ammo.tierLabel} · 库存 ${state.save.prepAmmo[ammo.id] ?? 0}</div>
+          <div class="item-meta">${ammo.caliber} Â· ${ammo.tierLabel} Â· åºå­ ${state.save.prepAmmo[ammo.id] ?? 0}</div>
         </div>
         <button class="ghost-button small" type="button" data-armory-action="select-ammo" data-weapon-id="${selectedWeaponId}" data-ammo-id="${ammo.id}">
-          ${ammo.id === selectedAmmoId ? '已选择' : '切换'}
+          ${ammo.id === selectedAmmoId ? 'å·²éæ©' : 'åæ¢'}
         </button>
       </article>
     `)
@@ -5643,17 +5651,17 @@ function renderArmoryPanel(selectedWeaponId) {
           <div class="item-meta">${describePartBonus(part)}</div>
         </div>
         <button class="ghost-button small" type="button" data-armory-action="${activeParts[part.slot] === part.id ? 'unequip-part' : 'equip-part'}" data-weapon-id="${selectedWeaponId}" data-part-id="${part.id}" data-part-slot="${part.slot}">
-          ${activeParts[part.slot] === part.id ? '卸下' : '安装'}
+          ${activeParts[part.slot] === part.id ? 'å¸ä¸' : 'å®è£'}
         </button>
       </article>
     `)
     .join('');
   return [
-    prepRow('当前主武器', `${stats.name} · ${stats.damage} 伤害`),
-    prepRow('当前子弹等级', getAmmoTierLabel(selectedAmmoId)),
-    `<div class="section-note">已拥有武器</div>${ownedWeapons}`,
-    `<div class="section-note">子弹切换</div>${ammoChoices}`,
-    `<div class="section-note">可用零件</div>${ownedParts || '<div class="item-meta">当前武器没有已拥有的零件。</div>'}`,
+    prepRow('å½åä¸»æ­¦å¨', `${stats.name} Â· ${stats.damage} ä¼¤å®³`),
+    prepRow('å½åå­å¼¹ç­çº§', getAmmoTierLabel(selectedAmmoId)),
+    `<div class="section-note">å·²æ¥ææ­¦å¨</div>${ownedWeapons}`,
+    `<div class="section-note">å­å¼¹åæ¢</div>${ammoChoices}`,
+    `<div class="section-note">å¯ç¨é¶ä»¶</div>${ownedParts || '<div class="item-meta">å½åæ­¦å¨æ²¡æå·²æ¥æçé¶ä»¶ã</div>'}`,
   ].join('');
 }
 
@@ -5668,10 +5676,10 @@ function renderBasePanel() {
   const selectedStats = getWeaponStats(selectedWeaponId, { ammoId: selectedAmmoId });
 
   refs.summaryStrip.innerHTML = [
-    summaryPill('资金', formatMoney(state.save.money)),
-    summaryPill('仓库', `${state.save.stash.length} 件`),
-    summaryPill('撤离率', survivalRate),
-    summaryPill('最佳 haul', formatMoney(state.save.stats.bestHaul)),
+    summaryPill('èµé', formatMoney(state.save.money)),
+    summaryPill('ä»åº', `${state.save.stash.length} ä»¶`),
+    summaryPill('æ¤ç¦»ç', survivalRate),
+    summaryPill('æä½³ haul', formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   if (refs.lobbyPanel) {
@@ -5682,12 +5690,12 @@ function renderBasePanel() {
   }
 
   refs.loadoutPrep.innerHTML = [
-    prepRow('出击武器', `${selectedStats.name} · ${selectedStats.caliber}`),
-    prepRow('首选子弹', `${getAmmoTierLabel(selectedAmmoId)} · 库存 ${state.save.prepAmmo[selectedAmmoId] ?? 0}`),
-    prepRow('初始医疗包', `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
-    prepRow('初始护甲', `${BASE_ARMOR + state.save.prep.armorBonus}`),
-    prepRow('背包容量', `${getBagSlots()} 格 / ${formatWeight(getBagCapacity())}`),
-    prepRow('武器伤害', `${selectedStats.damage}`),
+    prepRow('åºå»æ­¦å¨', `${selectedStats.name} Â· ${selectedStats.caliber}`),
+    prepRow('é¦éå­å¼¹', `${getAmmoTierLabel(selectedAmmoId)} Â· åºå­ ${state.save.prepAmmo[selectedAmmoId] ?? 0}`),
+    prepRow('åå§å»çå', `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
+    prepRow('åå§æ¤ç²', `${BASE_ARMOR + state.save.prep.armorBonus}`),
+    prepRow('èåå®¹é', `${getBagSlots()} æ ¼ / ${formatWeight(getBagCapacity())}`),
+    prepRow('æ­¦å¨ä¼¤å®³', `${selectedStats.damage}`),
   ].join('');
 
   if (refs.armoryPanel) {
@@ -5706,7 +5714,7 @@ function renderBasePanel() {
           </div>
           <div class="stack-list">
             <button class="primary-button small" type="button" data-shop-id="${entry.id}" ${afford ? '' : 'disabled'}>
-              ${entry.disabled ? '已拥有' : formatMoney(entry.price)}
+              ${entry.disabled ? 'å·²æ¥æ' : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -5730,7 +5738,7 @@ function renderBasePanel() {
           </article>
         `)
         .join('')
-    : '<div class="item-meta">仓库里还没有带出来的战利品。撤离成功后，物资、子弹和枪械零件都会出现在这里。</div>';
+    : '<div class="item-meta">ä»åºéè¿æ²¡æå¸¦åºæ¥çæå©åãæ¤ç¦»æååï¼ç©èµãå­å¼¹åæªæ¢°é¶ä»¶é½ä¼åºç°å¨è¿éã</div>';
 }
 
 function buyShopEntry(id) {
@@ -5739,7 +5747,7 @@ function buyShopEntry(id) {
     return;
   }
   if (state.save.money < entry.price) {
-    notify('资金不足。', 'danger');
+    notify('èµéä¸è¶³ã', 'danger');
     return;
   }
 
@@ -5770,7 +5778,7 @@ function buyShopEntry(id) {
 
   persistSave();
   renderBasePanel();
-  notify(`已购买 ${entry.name}。`, 'success');
+  notify(`å·²è´­ä¹° ${entry.name}ã`, 'success');
 }
 
 function sellItem(uid) {
@@ -5782,7 +5790,7 @@ function sellItem(uid) {
   state.save.money += item.value;
   persistSave();
   renderBasePanel();
-  notify(`已出售 ${item.name}，获得 ${formatMoney(item.value)}。`, 'success');
+  notify(`å·²åºå® ${item.name}ï¼è·å¾ ${formatMoney(item.value)}ã`, 'success');
 }
 
 function discardStashItem(uid) {
@@ -5793,7 +5801,7 @@ function discardStashItem(uid) {
   const [item] = state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(`已丢弃 ${item.name}。`, 'warning');
+  notify(`å·²ä¸¢å¼ ${item.name}ã`, 'warning');
 }
 
 function stockAmmoFromStash(uid) {
@@ -5809,7 +5817,7 @@ function stockAmmoFromStash(uid) {
   state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(`已将 ${item.name} 存入弹药库。`, 'success');
+  notify(`å·²å° ${item.name} å­å¥å¼¹è¯åºã`, 'success');
 }
 
 function learnPartFromStash(uid) {
@@ -5825,12 +5833,12 @@ function learnPartFromStash(uid) {
   state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(`已将 ${item.name} 收入军械库。`, 'success');
+  notify(`å·²å° ${item.name} æ¶å¥åæ¢°åºã`, 'success');
 }
 
 function sellAllStash() {
   if (!state.save.stash.length) {
-    notify('仓库里没有可出售的物品。', 'warning');
+    notify('ä»åºéæ²¡æå¯åºå®çç©åã', 'warning');
     return;
   }
   const total = state.save.stash.reduce((sum, item) => sum + item.value, 0);
@@ -5839,7 +5847,7 @@ function sellAllStash() {
   state.save.stash = [];
   persistSave();
   renderBasePanel();
-  notify(`已出售 ${count} 件物品，获得 ${formatMoney(total)}。`, 'success');
+  notify(`å·²åºå® ${count} ä»¶ç©åï¼è·å¾ ${formatMoney(total)}ã`, 'success');
 }
 
 function createLootInstance(item) {
@@ -5875,8 +5883,8 @@ function startRaid() {
 
   state.raid = {
     timeLeft: RAID_DURATION,
-    statusText: 'WASD 移动，鼠标转向，按 F 开火。',
-    interactionText: '先完成搜索和清敌任务，再去撤离点。',
+    statusText: 'WASD ç§»å¨ï¼é¼ æ è½¬åï¼æ F å¼ç«ã',
+    interactionText: 'åå®ææç´¢åæ¸æä»»å¡ï¼åå»æ¤ç¦»ç¹ã',
     bag: [],
     bagValue: 0,
     bagWeight: 0,
@@ -5962,7 +5970,7 @@ function startRaid() {
   refs.canvas.focus?.({ preventScroll: true });
   renderBasePanel();
   syncHud();
-  notify('已进入封锁区。完成任务后才能撤离。', 'success');
+  notify('å·²è¿å¥å°éåºãå®æä»»å¡åæè½æ¤ç¦»ã', 'success');
 }
 
 function resetRaidLoadout(player) {
@@ -6023,7 +6031,7 @@ function resetRaidLoadout(player) {
 
 function getReserveAmmoLabel(player) {
   const ammo = getCurrentAmmoInfo(player);
-  return `${player.ammoInMag} / ${getCurrentReserveAmmo(player)} · ${ammo?.name ?? 'Ammo'}`;
+  return `${player.ammoInMag} / ${getCurrentReserveAmmo(player)} Â· ${ammo?.name ?? 'Ammo'}`;
 }
 
 function renderRaidLoadoutMarkup() {
@@ -6036,10 +6044,10 @@ function renderRaidLoadoutMarkup() {
     .map((partId) => PART_DEFS[partId]?.name)
     .filter(Boolean);
   return [
-    prepRow('当前武器', `${stats.name} · ${stats.damage} 伤害`),
-    prepRow('当前子弹', getAmmoTierLabel(player.currentAmmoId)),
-    prepRow('弹匣 / 备弹', getReserveAmmoLabel(player)),
-    prepRow('枪械零件', partLines.length ? partLines.join(' / ') : '无'),
+    prepRow('å½åæ­¦å¨', `${stats.name} Â· ${stats.damage} ä¼¤å®³`),
+    prepRow('å½åå­å¼¹', getAmmoTierLabel(player.currentAmmoId)),
+    prepRow('å¼¹å£ / å¤å¼¹', getReserveAmmoLabel(player)),
+    prepRow('æªæ¢°é¶ä»¶', partLines.length ? partLines.join(' / ') : 'æ '),
   ].join('');
 }
 
@@ -6053,10 +6061,10 @@ function renderRaidAmmoMarkup() {
       <article class="stash-row">
         <div>
           <div class="item-title ${player.currentAmmoId === ammo.id ? 'rarity-uncommon' : ''}">${ammo.name}</div>
-          <div class="item-meta">${ammo.caliber} · ${ammo.tierLabel} · 库存 ${getCurrentReserveAmmo(player, ammo.id)} 发</div>
+          <div class="item-meta">${ammo.caliber} Â· ${ammo.tierLabel} Â· åºå­ ${getCurrentReserveAmmo(player, ammo.id)} å</div>
         </div>
         <button class="ghost-button small" type="button" data-raid-ammo="${ammo.id}">
-          ${player.currentAmmoId === ammo.id ? '正在使用' : '切换'}
+          ${player.currentAmmoId === ammo.id ? 'æ­£å¨ä½¿ç¨' : 'åæ¢'}
         </button>
       </article>
     `)
@@ -6091,14 +6099,14 @@ function syncHud() {
     : `Tasks: ${getRaidObjectiveStatus(raid)}`;
 
   let status = raid.tasksComplete
-    ? '鼠标转向，按住 E 撤离。'
-    : `先完成任务：${getRaidObjectiveStatus(raid)}`;
+    ? 'é¼ æ è½¬åï¼æä½ E æ¤ç¦»ã'
+    : `åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`;
   if (player.reloadTimer > 0) {
-    status = `换弹中 ${player.reloadTimer.toFixed(1)}s`;
+    status = `æ¢å¼¹ä¸­ ${player.reloadTimer.toFixed(1)}s`;
   } else if (player.healTimer > 0) {
-    status = `治疗中 ${player.healTimer.toFixed(1)}s`;
+    status = `æ²»çä¸­ ${player.healTimer.toFixed(1)}s`;
   } else if (player.extractionProgress > 0) {
-    status = `撤离读条 ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`;
+    status = `æ¤ç¦»è¯»æ¡ ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`;
   }
   refs.raidStatus.textContent = status;
   refs.interactionPrompt.textContent = raid.interactionText;
@@ -6155,11 +6163,11 @@ function updatePlayer(dt) {
   if (interaction?.type === 'extract' && state.input.interactHeld) {
     if (!raid.tasksComplete) {
       player.extractionProgress = 0;
-      raid.interactionText = `先完成任务：${getRaidObjectiveStatus(raid)}`;
+      raid.interactionText = `åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`;
     } else {
       player.extractionZoneId = interaction.zone.id;
       player.extractionProgress += dt;
-      raid.interactionText = `正在从 ${interaction.zone.name} 撤离 ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`;
+      raid.interactionText = `æ­£å¨ä» ${interaction.zone.name} æ¤ç¦» ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`;
       if (player.extractionProgress >= EXTRACTION_HOLD_TIME) {
         finishRaid(true, `Extracted from ${interaction.zone.name}.`, true);
         return;
@@ -6171,15 +6179,15 @@ function updatePlayer(dt) {
   }
 
   if (interaction?.type === 'container') {
-    raid.interactionText = `按 E 搜索 ${interaction.container.name}`;
+    raid.interactionText = `æ E æç´¢ ${interaction.container.name}`;
   } else if (interaction?.type === 'extract') {
     raid.interactionText = raid.tasksComplete
-      ? `按住 E 从 ${interaction.zone.name} 撤离`
-      : `先完成任务：${getRaidObjectiveStatus(raid)}`;
+      ? `æä½ E ä» ${interaction.zone.name} æ¤ç¦»`
+      : `åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`;
   } else {
     raid.interactionText = raid.tasksComplete
-      ? '可以继续搜索战利品，或者前往撤离点。'
-      : `当前任务：${getRaidObjectiveStatus(raid)}`;
+      ? 'å¯ä»¥ç»§ç»­æç´¢æå©åï¼æèåå¾æ¤ç¦»ç¹ã'
+      : `å½åä»»å¡ï¼${getRaidObjectiveStatus(raid)}`;
   }
 
   if (player.health <= 0) {
@@ -6201,7 +6209,7 @@ function attemptShoot() {
     if (getCurrentReserveAmmo(player) > 0) {
       reloadWeapon();
     } else {
-      notify('当前子弹已经打空。', 'danger');
+      notify('å½åå­å¼¹å·²ç»æç©ºã', 'danger');
     }
     return;
   }
@@ -6268,7 +6276,7 @@ function completeReload() {
   player.ammoInMag += loaded;
   player.ammoInventory[player.currentAmmoId] = reserve - loaded;
   playReloadAudio(getCurrentPlayerWeaponStats(player), true);
-  notify('换弹完成。', 'success');
+  notify('æ¢å¼¹å®æã', 'success');
 }
 
 function reloadWeapon() {
@@ -6286,7 +6294,7 @@ function useMedkit() {
     return;
   }
   if (player.medkits <= 0) {
-    notify('没有医疗包。', 'warning');
+    notify('æ²¡æå»çåã', 'warning');
     return;
   }
   if (player.health >= player.maxHealth || player.healTimer > 0) {
@@ -6296,7 +6304,7 @@ function useMedkit() {
   player.health = Math.min(player.maxHealth, player.health + PLAYER_HEAL_AMOUNT);
   player.healTimer = PLAYER_HEAL_COOLDOWN;
   player.damageFlash = 0;
-  notify('已使用医疗包。', 'success');
+  notify('å·²ä½¿ç¨å»çåã', 'success');
 }
 
 function addItemToBag(item) {
@@ -6352,12 +6360,12 @@ function applyUsableItemToPlayer(item) {
       return false;
     }
     player.health = Math.min(player.maxHealth, player.health + item.healAmount);
-    notify(`已使用 ${item.name}。`, 'success');
+    notify(`å·²ä½¿ç¨ ${item.name}ã`, 'success');
     return true;
   }
   if (item.useAction === 'medkit') {
     player.medkits += item.medkitAmount;
-    notify(`已补充 ${item.medkitAmount} 个医疗包。`, 'success');
+    notify(`å·²è¡¥å ${item.medkitAmount} ä¸ªå»çåã`, 'success');
     return true;
   }
   if (item.useAction === 'armor') {
@@ -6365,7 +6373,7 @@ function applyUsableItemToPlayer(item) {
       return false;
     }
     player.armor = Math.min(player.maxArmor, player.armor + item.armorAmount);
-    notify(`已修复 ${item.armorAmount} 点护甲。`, 'success');
+    notify(`å·²ä¿®å¤ ${item.armorAmount} ç¹æ¤ç²ã`, 'success');
     return true;
   }
   return false;
@@ -6377,7 +6385,7 @@ function loadAmmoItemToRaid(item) {
     return false;
   }
   player.ammoInventory[item.ammoId] = (player.ammoInventory[item.ammoId] ?? 0) + item.rounds;
-  notify(`已装填 ${item.rounds} 发 ${AMMO_DEFS[item.ammoId]?.name ?? 'Ammo'}。`, 'success');
+  notify(`å·²è£å¡« ${item.rounds} å ${AMMO_DEFS[item.ammoId]?.name ?? 'Ammo'}ã`, 'success');
   return true;
 }
 
@@ -6391,7 +6399,7 @@ function equipPartItemToRaid(item) {
   const stats = getCurrentPlayerWeaponStats(player);
   player.magSize = stats.magSize;
   player.ammoInMag = Math.min(player.ammoInMag, player.magSize);
-  notify(`已装备 ${part.name}。`, 'success');
+  notify(`å·²è£å¤ ${part.name}ã`, 'success');
   return true;
 }
 
@@ -6406,7 +6414,7 @@ function unequipPartItemFromRaid(item) {
     const stats = getCurrentPlayerWeaponStats(player);
     player.magSize = stats.magSize;
     player.ammoInMag = Math.min(player.ammoInMag, player.magSize);
-    notify(`已卸下 ${part.name}。`, 'warning');
+    notify(`å·²å¸ä¸ ${part.name}ã`, 'warning');
     return true;
   }
   return false;
@@ -6421,8 +6429,8 @@ function canCarry(item) {
 }
 
 function renderLootPanel(container) {
-  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} 格`;
-  refs.lootMeta.textContent = `内容物 ${container.items.length} 件 · 当前背包 ${bagSpace} · 重量 ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`;
+  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} æ ¼`;
+  refs.lootMeta.textContent = `åå®¹ç© ${container.items.length} ä»¶ Â· å½åèå ${bagSpace} Â· éé ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`;
   refs.lootItems.innerHTML = container.items.length
     ? container.items
         .map((item) => `
@@ -6432,15 +6440,15 @@ function renderLootPanel(container) {
               <div class="item-meta">${itemMetaLine(item)}</div>
             </div>
             <div class="inline-actions">
-              <button class="ghost-button small" type="button" data-loot-action="take" data-loot-id="${item.uid}">拿走</button>
-              ${item.itemType === 'usable' ? `<button class="ghost-button small" type="button" data-loot-action="use" data-loot-id="${item.uid}">直接使用</button>` : ''}
-              ${item.itemType === 'part' && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid.player.weapon) ? `<button class="ghost-button small" type="button" data-loot-action="equip" data-loot-id="${item.uid}">直接装备</button>` : ''}
-              ${item.itemType === 'ammo' ? `<button class="ghost-button small" type="button" data-loot-action="load" data-loot-id="${item.uid}">直接装填</button>` : ''}
+              <button class="ghost-button small" type="button" data-loot-action="take" data-loot-id="${item.uid}">æ¿èµ°</button>
+              ${item.itemType === 'usable' ? `<button class="ghost-button small" type="button" data-loot-action="use" data-loot-id="${item.uid}">ç´æ¥ä½¿ç¨</button>` : ''}
+              ${item.itemType === 'part' && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid.player.weapon) ? `<button class="ghost-button small" type="button" data-loot-action="equip" data-loot-id="${item.uid}">ç´æ¥è£å¤</button>` : ''}
+              ${item.itemType === 'ammo' ? `<button class="ghost-button small" type="button" data-loot-action="load" data-loot-id="${item.uid}">ç´æ¥è£å¡«</button>` : ''}
             </div>
           </article>
         `)
         .join('')
-    : '<div class="item-meta">这个容器已经空了。</div>';
+    : '<div class="item-meta">è¿ä¸ªå®¹å¨å·²ç»ç©ºäºã</div>';
 }
 
 function takeLoot(containerId, itemId) {
@@ -6454,7 +6462,7 @@ function takeLoot(containerId, itemId) {
   }
   const item = normalizeItemInstance(container.items[index]);
   if (!canCarry(item)) {
-    notify('背包空间或重量不足。', 'warning');
+    notify('èåç©ºé´æééä¸è¶³ã', 'warning');
     return;
   }
   container.items.splice(index, 1);
@@ -6462,7 +6470,7 @@ function takeLoot(containerId, itemId) {
   addItemToBag(item);
   renderLootPanel(container);
   syncHud();
-  notify(`已拿起 ${item.name}。`, 'success');
+  notify(`å·²æ¿èµ· ${item.name}ã`, 'success');
 }
 
 function useLootItem(containerId, itemId) {
@@ -6547,7 +6555,7 @@ function renderBagList() {
           </article>
         `)
         .join('')
-    : '<div class="item-meta">背包里还没有带走的物品。</div>';
+    : '<div class="item-meta">èåéè¿æ²¡æå¸¦èµ°çç©åã</div>';
   setMarkupIfChanged(refs.bagList, markup);
   setMarkupIfChanged(refs.raidBagList, markup);
 }
@@ -6560,8 +6568,8 @@ function renderBagGrid() {
     if (!item) {
       return `
         <article class="bag-slot empty">
-          <strong>空槽位</strong>
-          <span>可放物品</span>
+          <strong>ç©ºæ§½ä½</strong>
+          <span>å¯æ¾ç©å</span>
         </article>
       `;
     }
@@ -6589,7 +6597,7 @@ function renderMapExtractionList() {
         <article class="extract-row">
           <div>
             <div class="item-title ${zone.active && state.raid?.tasksComplete ? 'rarity-uncommon' : ''}">${zone.name}</div>
-            <div class="item-meta">${status} · ${distance.toFixed(0)}m</div>
+            <div class="item-meta">${status} Â· ${distance.toFixed(0)}m</div>
           </div>
         </article>
       `;
@@ -6663,7 +6671,7 @@ function dropBagItem(uid) {
   }
   spawnDroppedContainer([item], 'Dropped Gear');
   syncHud();
-  notify(`已丢弃 ${item.name}。`, 'warning');
+  notify(`å·²ä¸¢å¼ ${item.name}ã`, 'warning');
 }
 
 function selectRaidAmmo(ammoId) {
@@ -7015,48 +7023,48 @@ function getLocalizationData() {
     window.__ironExtractionLocalizationData = {
       staticText: {
         zh: {
-          'brand.name': '钢铁撤离',
-          'base.eyebrow': '撤离摸金原型',
-          'base.deploy': '进入封锁区',
-          'base.prepTitle': '出击准备',
-          'base.resetSave': '重置存档',
-          'base.armoryTitle': '军械库',
-          'base.armoryNote': '查看武器、子弹等级、枪械零件和当前配置',
-          'base.shopTitle': '商店',
-          'base.shopNote': '药品、枪械、子弹和配件都能在这里补齐',
-          'base.stashTitle': '仓库与战利品',
-          'base.sellAll': '全部出售',
-          'tips.move': 'WASD / 方向键移动',
-          'tips.look': '鼠标负责转动视野',
-          'tips.fire': 'F 开火，R 换弹',
-          'tips.action': 'Q 治疗，E 搜索 / 撤离，M 地图',
-          'hud.health': '生命',
-          'hud.weapon': '武器',
-          'hud.armor': '护甲',
-          'hud.ammo': '弹药',
-          'hud.medkits': '医疗包',
-          'hud.bag': '背包',
-          'hud.weight': '重量',
-          'hud.haul': '预估价值',
-          'hud.time': '剩余时间',
-          'raid.loadoutTitle': '局内装备',
-          'raid.ammoTitle': '子弹等级',
-          'raid.bagTitle': '局内背包',
-          'raid.mapTitle': '战术地图',
-          'raid.extractLoading': '撤离点载入中',
-          'raid.statusDefault': '鼠标转向，按 F 射击',
-          'raid.interactionDefault': '靠近物资箱或撤离点后按住 E',
-          'loot.eyebrow': '搜索',
-          'loot.takeAll': '全部拿走',
-          'map.eyebrow': '战术总览',
-          'map.title': '封锁区地图',
-          'map.currentLoadout': '当前装备',
-          'map.ammoGrades': '子弹分级',
-          'map.currentBag': '当前背包',
-          'map.extractionPoints': '撤离点',
-          'result.eyebrow': '战局报告',
-          'result.returnBase': '返回基地',
-          'common.close': '关闭',
+          'brand.name': 'é¢éæ¤ç¦»',
+          'base.eyebrow': 'æ¤ç¦»æ¸éåå',
+          'base.deploy': 'è¿å¥å°éåº',
+          'base.prepTitle': 'åºå»åå¤',
+          'base.resetSave': 'éç½®å­æ¡£',
+          'base.armoryTitle': 'åæ¢°åº',
+          'base.armoryNote': 'æ¥çæ­¦å¨ãå­å¼¹ç­çº§ãæªæ¢°é¶ä»¶åå½åéç½®',
+          'base.shopTitle': 'ååº',
+          'base.shopNote': 'è¯åãæªæ¢°ãå­å¼¹åéä»¶é½è½å¨è¿éè¡¥é½',
+          'base.stashTitle': 'ä»åºä¸æå©å',
+          'base.sellAll': 'å¨é¨åºå®',
+          'tips.move': 'WASD / æ¹åé®ç§»å¨',
+          'tips.look': 'é¼ æ è´è´£è½¬å¨è§é',
+          'tips.fire': 'F å¼ç«ï¼R æ¢å¼¹',
+          'tips.action': 'Q æ²»çï¼E æç´¢ / æ¤ç¦»ï¼M å°å¾',
+          'hud.health': 'çå½',
+          'hud.weapon': 'æ­¦å¨',
+          'hud.armor': 'æ¤ç²',
+          'hud.ammo': 'å¼¹è¯',
+          'hud.medkits': 'å»çå',
+          'hud.bag': 'èå',
+          'hud.weight': 'éé',
+          'hud.haul': 'é¢ä¼°ä»·å¼',
+          'hud.time': 'å©ä½æ¶é´',
+          'raid.loadoutTitle': 'å±åè£å¤',
+          'raid.ammoTitle': 'å­å¼¹ç­çº§',
+          'raid.bagTitle': 'å±åèå',
+          'raid.mapTitle': 'ææ¯å°å¾',
+          'raid.extractLoading': 'æ¤ç¦»ç¹è½½å¥ä¸­',
+          'raid.statusDefault': 'é¼ æ è½¬åï¼æ F å°å»',
+          'raid.interactionDefault': 'é è¿ç©èµç®±ææ¤ç¦»ç¹åæä½ E',
+          'loot.eyebrow': 'æç´¢',
+          'loot.takeAll': 'å¨é¨æ¿èµ°',
+          'map.eyebrow': 'ææ¯æ»è§',
+          'map.title': 'å°éåºå°å¾',
+          'map.currentLoadout': 'å½åè£å¤',
+          'map.ammoGrades': 'å­å¼¹åçº§',
+          'map.currentBag': 'å½åèå',
+          'map.extractionPoints': 'æ¤ç¦»ç¹',
+          'result.eyebrow': 'æå±æ¥å',
+          'result.returnBase': 'è¿ååºå°',
+          'common.close': 'å³é­',
         },
         en: {
           'brand.name': 'Iron Extraction',
@@ -7105,101 +7113,101 @@ function getLocalizationData() {
       },
       zh: {
         weapons: {
-          rifle: '游骑兵步枪',
-          smg: '蝰蛇冲锋枪',
-          shotgun: '破门霰弹枪',
-          dmr: '哨兵射手步枪',
+          rifle: 'æ¸¸éªåµæ­¥æª',
+          smg: 'è°èå²éæª',
+          shotgun: 'ç ´é¨é°å¼¹æª',
+          dmr: 'å¨åµå°ææ­¥æª',
         },
         ammo: {
           rifle_fmj: '5.56 FMJ I',
           rifle_ap: '5.56 AP II',
-          rifle_match: '5.56 精确弹 III',
-          smg_ball: '9mm 普通弹 I',
+          rifle_match: '5.56 ç²¾ç¡®å¼¹ III',
+          smg_ball: '9mm æ®éå¼¹ I',
           smg_plusp: '9mm +P II',
-          shotgun_buck: '12g 鹿弹 I',
-          shotgun_slug: '12g 独头弹 II',
+          shotgun_buck: '12g é¹¿å¼¹ I',
+          shotgun_slug: '12g ç¬å¤´å¼¹ II',
           dmr_fmj: '7.62 FMJ I',
           dmr_ap: '7.62 AP III',
         },
         parts: {
-          red_dot: '红点瞄具',
-          extended_mag: '扩容弹匣',
-          muzzle_brake: '制退器',
-          recoil_pad: '后坐缓冲垫',
-          laser_rail: '激光导轨',
-          tight_choke: '紧缩喉缩',
-          marksman_bipod: '射手两脚架',
+          red_dot: 'çº¢ç¹çå·',
+          extended_mag: 'æ©å®¹å¼¹å£',
+          muzzle_brake: 'å¶éå¨',
+          recoil_pad: 'ååç¼å²å«',
+          laser_rail: 'æ¿åå¯¼è½¨',
+          tight_choke: 'ç´§ç¼©åç¼©',
+          marksman_bipod: 'å°æä¸¤èæ¶',
         },
         loot: {
-          field_bandage: '战地绷带',
-          painkiller_kit: '止痛套件',
-          combat_stim: '战斗兴奋剂',
-          spare_medkit: '备用医疗包',
-          armor_patch: '护甲补片',
-          plate_bundle: '护板包',
-          circuit: '电路板',
-          sensor: '热成像传感器',
-          dronecore: '无人机核心',
-          weaponparts: '机匣零件',
-          intel: '情报硬盘',
-          coin: '收藏币',
-          watch: '战术腕表',
-          artifact: '档案文物',
-          bandage: '止血绷带',
-          painkiller: '止痛针剂',
-          medinjector: '战地注射器',
-          optics: '精密瞄具',
-          armorplate: '陶瓷护甲板',
+          field_bandage: 'æå°ç»·å¸¦',
+          painkiller_kit: 'æ­¢çå¥ä»¶',
+          combat_stim: 'ææå´å¥å',
+          spare_medkit: 'å¤ç¨å»çå',
+          armor_patch: 'æ¤ç²è¡¥ç',
+          plate_bundle: 'æ¤æ¿å',
+          circuit: 'çµè·¯æ¿',
+          sensor: 'ç­æåä¼ æå¨',
+          dronecore: 'æ äººæºæ ¸å¿',
+          weaponparts: 'æºå£é¶ä»¶',
+          intel: 'ææ¥ç¡¬ç',
+          coin: 'æ¶èå¸',
+          watch: 'ææ¯èè¡¨',
+          artifact: 'æ¡£æ¡æç©',
+          bandage: 'æ­¢è¡ç»·å¸¦',
+          painkiller: 'æ­¢çéå',
+          medinjector: 'æå°æ³¨å°å¨',
+          optics: 'ç²¾å¯çå·',
+          armorplate: 'é¶ç·æ¤ç²æ¿',
         },
         categories: {
-          Medical: '医疗',
-          Support: '支援',
-          Tech: '电子',
-          Hardware: '硬件',
-          Data: '数据',
-          Valuable: '贵重品',
-          Relic: '文物',
-          Ammo: '弹药',
-          'Gun Part': '枪械零件',
-          Weapon: '武器',
+          Medical: 'å»ç',
+          Support: 'æ¯æ´',
+          Tech: 'çµå­',
+          Hardware: 'ç¡¬ä»¶',
+          Data: 'æ°æ®',
+          Valuable: 'è´µéå',
+          Relic: 'æç©',
+          Ammo: 'å¼¹è¯',
+          'Gun Part': 'æªæ¢°é¶ä»¶',
+          Weapon: 'æ­¦å¨',
         },
         containers: {
-          'Tool Locker': '工具柜',
-          'Medical Case': '医疗箱',
-          'Hidden Supply Cache': '隐藏补给箱',
-          'Weapon Crate': '武器箱',
-          'Field Crate': '军需箱',
-          'Underground Stash': '地下暗格',
-          'Supply Case': '杂物箱',
-          'Field Cache': '野外补给箱',
-          'Secure Vault': '保险库',
-          'Battlefield Drop': '战场掉落',
-          'Dropped Gear': '丢弃物资',
+          'Tool Locker': 'å·¥å·æ',
+          'Medical Case': 'å»çç®±',
+          'Hidden Supply Cache': 'éèè¡¥ç»ç®±',
+          'Weapon Crate': 'æ­¦å¨ç®±',
+          'Field Crate': 'åéç®±',
+          'Underground Stash': 'å°ä¸ææ ¼',
+          'Supply Case': 'æç©ç®±',
+          'Field Cache': 'éå¤è¡¥ç»ç®±',
+          'Secure Vault': 'ä¿é©åº',
+          'Battlefield Drop': 'æåºæè½',
+          'Dropped Gear': 'ä¸¢å¼ç©èµ',
         },
         zones: {
-          'North Gate': '北门闸口',
-          'West Tunnel': '西侧隧道',
-          'East Wire': '东侧铁丝网',
-          'South Sewer': '南部下水道',
+          'North Gate': 'åé¨é¸å£',
+          'West Tunnel': 'è¥¿ä¾§é§é',
+          'East Wire': 'ä¸ä¾§éä¸ç½',
+          'South Sewer': 'åé¨ä¸æ°´é',
         },
         enemyTypes: {
-          scout: '侦察兵',
-          hunter: '猎手',
-          bruiser: '重装兵',
+          scout: 'ä¾¦å¯åµ',
+          hunter: 'çæ',
+          bruiser: 'éè£åµ',
         },
         slots: {
-          optic: '瞄具',
-          mag: '弹匣',
-          muzzle: '枪口',
-          stock: '枪托',
-          rail: '导轨',
-          shotgunMuzzle: '霰弹枪枪口',
-          dmrRail: '射手导轨',
+          optic: 'çå·',
+          mag: 'å¼¹å£',
+          muzzle: 'æªå£',
+          stock: 'æªæ',
+          rail: 'å¯¼è½¨',
+          shotgunMuzzle: 'é°å¼¹æªæªå£',
+          dmrRail: 'å°æå¯¼è½¨',
         },
         tiers: {
-          'Tier I': 'I级',
-          'Tier II': 'II级',
-          'Tier III': 'III级',
+          'Tier I': 'Içº§',
+          'Tier II': 'IIçº§',
+          'Tier III': 'IIIçº§',
         },
       },
       en: {
@@ -7240,22 +7248,22 @@ function lookupLocalizedValue(group, key, fallback = key) {
 
 function canonicalCategory(category) {
   const aliases = {
-    医疗: 'Medical',
-    支援: 'Support',
-    电子: 'Tech',
-    硬件: 'Hardware',
-    数据: 'Data',
-    贵重品: 'Valuable',
-    文物: 'Relic',
-    弹药: 'Ammo',
-    枪械零件: 'Gun Part',
-    武器: 'Weapon',
+    å»ç: 'Medical',
+    æ¯æ´: 'Support',
+    çµå­: 'Tech',
+    ç¡¬ä»¶: 'Hardware',
+    æ°æ®: 'Data',
+    è´µéå: 'Valuable',
+    æç©: 'Relic',
+    å¼¹è¯: 'Ammo',
+    æªæ¢°é¶ä»¶: 'Gun Part',
+    æ­¦å¨: 'Weapon',
   };
   return aliases[category] ?? category;
 }
 
 function formatItemCount(count) {
-  return L(`${count} 件`, `${count} item${count === 1 ? '' : 's'}`);
+  return L(`${count} ä»¶`, `${count} item${count === 1 ? '' : 's'}`);
 }
 
 function getWeaponLabel(weaponId) {
@@ -7298,7 +7306,7 @@ function getZoneLabel(zone) {
 }
 
 function getEnemyLabel(enemy) {
-  return lookupLocalizedValue('enemyTypes', enemy?.type, enemy?.name ?? L('敌人', 'Enemy'));
+  return lookupLocalizedValue('enemyTypes', enemy?.type, enemy?.name ?? L('æäºº', 'Enemy'));
 }
 
 function getItemLabel(item) {
@@ -7306,7 +7314,7 @@ function getItemLabel(item) {
     return '';
   }
   if (item.itemType === 'ammo' && item.ammoId) {
-    return L(`${getAmmoLabel(item.ammoId)} 子弹盒`, `${getAmmoLabel(item.ammoId)} Box`);
+    return L(`${getAmmoLabel(item.ammoId)} å­å¼¹ç`, `${getAmmoLabel(item.ammoId)} Box`);
   }
   if (item.itemType === 'part' && item.partId) {
     return getPartLabel(item.partId);
@@ -7315,7 +7323,7 @@ function getItemLabel(item) {
 }
 
 function formatMoney(value) {
-  return `¥${Math.round(value).toLocaleString(getLanguage() === 'zh' ? 'zh-CN' : 'en-US')}`;
+  return `Â¥${Math.round(value).toLocaleString(getLanguage() === 'zh' ? 'zh-CN' : 'en-US')}`;
 }
 
 function ensureExtendedRefs() {
@@ -7381,7 +7389,7 @@ function resetSave() {
   state.save = defaultSave();
   persistSave();
   renderBasePanel();
-  notify(L('本地存档已重置。', 'Local save was reset.'), 'warning');
+  notify(L('æ¬å°å­æ¡£å·²éç½®ã', 'Local save was reset.'), 'warning');
 }
 
 function syncRaidPanelCollapses() {
@@ -7398,20 +7406,20 @@ function syncRaidPanelCollapses() {
     }
     const collapsed = Boolean(state.ui.raidPanelCollapsed[targetId]);
     target.classList.toggle('is-collapsed', collapsed);
-    button.textContent = collapsed ? L('展开', 'Expand') : L('收起', 'Collapse');
+    button.textContent = collapsed ? L('å±å¼', 'Expand') : L('æ¶èµ·', 'Collapse');
     button.setAttribute('aria-expanded', String(!collapsed));
   }
 }
 
 function getAmmoTierLabel(ammoId) {
   const ammo = AMMO_DEFS[ammoId];
-  return ammo ? `${getAmmoLabel(ammoId)} · ${getTierLabel(ammo.tierLabel)}` : L('未知弹药', 'Unknown ammo');
+  return ammo ? `${getAmmoLabel(ammoId)} Â· ${getTierLabel(ammo.tierLabel)}` : L('æªç¥å¼¹è¯', 'Unknown ammo');
 }
 
 function describeWeaponLine(weapon) {
   return L(
-    `${weapon.caliber} · ${weapon.magSize} 发弹匣 · ${weapon.fireRate.toFixed(1)} 发/秒`,
-    `${weapon.caliber} · ${weapon.magSize}-round mag · ${weapon.fireRate.toFixed(1)} rps`,
+    `${weapon.caliber} Â· ${weapon.magSize} åå¼¹å£ Â· ${weapon.fireRate.toFixed(1)} å/ç§`,
+    `${weapon.caliber} Â· ${weapon.magSize}-round mag Â· ${weapon.fireRate.toFixed(1)} rps`,
   );
 }
 
@@ -7421,66 +7429,66 @@ function itemActionButtons(item, scope = 'raid') {
     return renderBaseItemActions(item);
   }
   if (item.itemType === 'usable') {
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="use" data-item-id="${item.uid}">${L('使用', 'Use')}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="use" data-item-id="${item.uid}">${L('ä½¿ç¨', 'Use')}</button>`);
   }
   if (item.itemType === 'part' && item.partId && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid?.player?.weapon)) {
     const equipped = Object.values(state.raid?.player?.tempAttachments ?? {}).includes(item.partId);
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="${equipped ? 'unequip' : 'equip'}" data-item-id="${item.uid}">${equipped ? L('卸下', 'Remove') : L('装备', 'Equip')}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="${equipped ? 'unequip' : 'equip'}" data-item-id="${item.uid}">${equipped ? L('å¸ä¸', 'Remove') : L('è£å¤', 'Equip')}</button>`);
   }
   if (item.itemType === 'ammo') {
-    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="load-ammo" data-item-id="${item.uid}">${L('装填库存', 'Load Reserve')}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-bag-action="load-ammo" data-item-id="${item.uid}">${L('è£å¡«åºå­', 'Load Reserve')}</button>`);
   }
-  buttons.push(`<button class="ghost-button small" type="button" data-bag-action="drop" data-item-id="${item.uid}">${L('丢弃', 'Drop')}</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-bag-action="drop" data-item-id="${item.uid}">${L('ä¸¢å¼', 'Drop')}</button>`);
   return buttons.join('');
 }
 
 function renderBaseItemActions(item) {
   const buttons = [];
   if (item.itemType === 'ammo') {
-    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="stock-ammo" data-stash-id="${item.uid}">${L('入弹药库', 'Stock Ammo')}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="stock-ammo" data-stash-id="${item.uid}">${L('å¥å¼¹è¯åº', 'Stock Ammo')}</button>`);
   }
   if (item.itemType === 'part' && item.partId && !state.save.armory.ownedParts.includes(item.partId)) {
-    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="learn-part" data-stash-id="${item.uid}">${L('收入军械库', 'Store Part')}</button>`);
+    buttons.push(`<button class="ghost-button small" type="button" data-stash-action="learn-part" data-stash-id="${item.uid}">${L('æ¶å¥åæ¢°åº', 'Store Part')}</button>`);
   }
-  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="discard" data-stash-id="${item.uid}">${L('丢弃', 'Discard')}</button>`);
-  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="sell" data-stash-id="${item.uid}">${L('出售', 'Sell')}</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="discard" data-stash-id="${item.uid}">${L('ä¸¢å¼', 'Discard')}</button>`);
+  buttons.push(`<button class="ghost-button small" type="button" data-stash-action="sell" data-stash-id="${item.uid}">${L('åºå®', 'Sell')}</button>`);
   return buttons.join('');
 }
 
 function describeUsableItem(item) {
   if (item.useAction === 'heal') {
-    return L(`恢复 ${item.healAmount} 点生命`, `Restore ${item.healAmount} health`);
+    return L(`æ¢å¤ ${item.healAmount} ç¹çå½`, `Restore ${item.healAmount} health`);
   }
   if (item.useAction === 'medkit') {
-    return L(`补充 ${item.medkitAmount} 个医疗包`, `Add ${item.medkitAmount} medkit${item.medkitAmount === 1 ? '' : 's'}`);
+    return L(`è¡¥å ${item.medkitAmount} ä¸ªå»çå`, `Add ${item.medkitAmount} medkit${item.medkitAmount === 1 ? '' : 's'}`);
   }
   if (item.useAction === 'armor') {
-    return L(`修复 ${item.armorAmount} 点护甲`, `Restore ${item.armorAmount} armor`);
+    return L(`ä¿®å¤ ${item.armorAmount} ç¹æ¤ç²`, `Restore ${item.armorAmount} armor`);
   }
-  return L('可使用', 'Usable');
+  return L('å¯ä½¿ç¨', 'Usable');
 }
 
 function describePartBonus(part) {
   if (!part) {
-    return L('零件', 'Part');
+    return L('é¶ä»¶', 'Part');
   }
   const stats = [];
   if (part.magBonus) {
-    stats.push(L(`弹匣 +${part.magBonus}`, `Magazine +${part.magBonus}`));
+    stats.push(L(`å¼¹å£ +${part.magBonus}`, `Magazine +${part.magBonus}`));
   }
   if (part.damageBonus) {
-    stats.push(L(`伤害 +${part.damageBonus}`, `Damage +${part.damageBonus}`));
+    stats.push(L(`ä¼¤å®³ +${part.damageBonus}`, `Damage +${part.damageBonus}`));
   }
   if (part.fireRateBonus) {
-    stats.push(L(`射速 +${part.fireRateBonus.toFixed(2)}`, `Fire rate +${part.fireRateBonus.toFixed(2)}`));
+    stats.push(L(`å°é +${part.fireRateBonus.toFixed(2)}`, `Fire rate +${part.fireRateBonus.toFixed(2)}`));
   }
   if (part.reloadMult) {
-    stats.push(L('更快换弹', 'Faster reload'));
+    stats.push(L('æ´å¿«æ¢å¼¹', 'Faster reload'));
   }
   if (part.spreadMult) {
-    stats.push(L('精度提升', 'Tighter spread'));
+    stats.push(L('ç²¾åº¦æå', 'Tighter spread'));
   }
-  return stats.join(' · ') || getPartSlotLabel(part.slot);
+  return stats.join(' Â· ') || getPartSlotLabel(part.slot);
 }
 
 function itemMetaLine(item) {
@@ -7489,12 +7497,12 @@ function itemMetaLine(item) {
     details.push(describeUsableItem(item));
   }
   if (item.itemType === 'ammo' && item.ammoId) {
-    details.push(L(`${getAmmoTierLabel(item.ammoId)} · ${item.rounds} 发`, `${getAmmoTierLabel(item.ammoId)} · ${item.rounds} rnd`));
+    details.push(L(`${getAmmoTierLabel(item.ammoId)} Â· ${item.rounds} å`, `${getAmmoTierLabel(item.ammoId)} Â· ${item.rounds} rnd`));
   }
   if (item.itemType === 'part' && item.partId) {
     details.push(describePartBonus(PART_DEFS[item.partId]));
   }
-  return details.join(' · ');
+  return details.join(' Â· ');
 }
 
 function getShopEntries() {
@@ -7502,46 +7510,46 @@ function getShopEntries() {
     {
       id: 'prep_medkit',
       kind: 'prep',
-      name: L('战地医疗包', 'Field Medkit'),
-      description: L('下次出击时医疗包 +1', 'Adds 1 medkit to the next raid'),
+      name: L('æå°å»çå', 'Field Medkit'),
+      description: L('ä¸æ¬¡åºå»æ¶å»çå +1', 'Adds 1 medkit to the next raid'),
       price: 900,
-      status: L(`已备 ${state.save.prep.medkitBonus}`, `Prepared ${state.save.prep.medkitBonus}`),
+      status: L(`å·²å¤ ${state.save.prep.medkitBonus}`, `Prepared ${state.save.prep.medkitBonus}`),
       disabled: false,
     },
     {
       id: 'prep_surgical',
       kind: 'prep',
-      name: L('手术包', 'Surgical Kit'),
-      description: L('下次出击时额外获得 2 个医疗包', 'Adds 2 more medkits to the next raid'),
+      name: L('ææ¯å', 'Surgical Kit'),
+      description: L('ä¸æ¬¡åºå»æ¶é¢å¤è·å¾ 2 ä¸ªå»çå', 'Adds 2 more medkits to the next raid'),
       price: 1700,
-      status: L('重型医疗补给', 'Heavy medical supply'),
+      status: L('éåå»çè¡¥ç»', 'Heavy medical supply'),
       disabled: false,
     },
     {
       id: 'prep_armor',
       kind: 'prep',
-      name: L('复合护甲板', 'Composite Plates'),
-      description: L('下次出击时初始护甲 +35', 'Adds 35 starting armor for the next raid'),
+      name: L('å¤åæ¤ç²æ¿', 'Composite Plates'),
+      description: L('ä¸æ¬¡åºå»æ¶åå§æ¤ç² +35', 'Adds 35 starting armor for the next raid'),
       price: 1200,
-      status: L(`已备 +${state.save.prep.armorBonus}`, `Prepared +${state.save.prep.armorBonus}`),
+      status: L(`å·²å¤ +${state.save.prep.armorBonus}`, `Prepared +${state.save.prep.armorBonus}`),
       disabled: false,
     },
     {
       id: 'upgrade_bag',
       kind: 'upgrade',
-      name: L('扩容背包', 'Expanded Bag'),
-      description: L('永久提升背包格数与承重', 'Permanently increases bag slots and carry weight'),
+      name: L('æ©å®¹èå', 'Expanded Bag'),
+      description: L('æ°¸ä¹æåèåæ ¼æ°ä¸æ¿é', 'Permanently increases bag slots and carry weight'),
       price: 4200 + state.save.upgrades.bagLevel * 2600,
-      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? L('已满级', 'Maxed') : `Lv.${state.save.upgrades.bagLevel}`,
+      status: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL ? L('å·²æ»¡çº§', 'Maxed') : `Lv.${state.save.upgrades.bagLevel}`,
       disabled: state.save.upgrades.bagLevel >= MAX_BAG_LEVEL,
     },
     {
       id: 'upgrade_weapon',
       kind: 'upgrade',
-      name: L('枪机改装', 'Weapon Tuning'),
-      description: L('永久提升武器基础伤害', 'Permanently increases base weapon damage'),
+      name: L('æªæºæ¹è£', 'Weapon Tuning'),
+      description: L('æ°¸ä¹æåæ­¦å¨åºç¡ä¼¤å®³', 'Permanently increases base weapon damage'),
       price: 3800 + state.save.upgrades.weaponLevel * 2400,
-      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? L('已满级', 'Maxed') : `Lv.${state.save.upgrades.weaponLevel}`,
+      status: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL ? L('å·²æ»¡çº§', 'Maxed') : `Lv.${state.save.upgrades.weaponLevel}`,
       disabled: state.save.upgrades.weaponLevel >= MAX_WEAPON_LEVEL,
     },
   ];
@@ -7558,8 +7566,8 @@ function getShopEntries() {
       description: describeWeaponLine(weapon),
       price: weapon.unlockPrice,
       status: state.save.armory.ownedWeapons.includes(weapon.id)
-        ? (getSelectedWeaponId() === weapon.id ? L('已装备', 'Equipped') : L('已解锁', 'Unlocked'))
-        : L('未解锁', 'Locked'),
+        ? (getSelectedWeaponId() === weapon.id ? L('å·²è£å¤', 'Equipped') : L('å·²è§£é', 'Unlocked'))
+        : L('æªè§£é', 'Locked'),
       disabled: false,
     });
   }
@@ -7571,11 +7579,11 @@ function getShopEntries() {
       ammoId: ammo.id,
       name: getAmmoLabel(ammo.id),
       description: L(
-        `${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · ${ammo.packSize} 发`,
-        `${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · ${ammo.packSize} rounds`,
+        `${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· ${ammo.packSize} å`,
+        `${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· ${ammo.packSize} rounds`,
       ),
       price: ammo.price,
-      status: L(`库存 ${state.save.prepAmmo[ammo.id] ?? 0}`, `Stock ${state.save.prepAmmo[ammo.id] ?? 0}`),
+      status: L(`åºå­ ${state.save.prepAmmo[ammo.id] ?? 0}`, `Stock ${state.save.prepAmmo[ammo.id] ?? 0}`),
       disabled: false,
     });
   }
@@ -7586,9 +7594,9 @@ function getShopEntries() {
       kind: 'part',
       partId: part.id,
       name: getPartLabel(part.id),
-      description: `${getPartSlotLabel(part.slot)} · ${part.compatibleWeapons.map((id) => getWeaponLabel(id)).join(' / ')}`,
+      description: `${getPartSlotLabel(part.slot)} Â· ${part.compatibleWeapons.map((id) => getWeaponLabel(id)).join(' / ')}`,
       price: part.price,
-      status: state.save.armory.ownedParts.includes(part.id) ? L('已拥有', 'Owned') : L('可购买', 'Available'),
+      status: state.save.armory.ownedParts.includes(part.id) ? L('å·²æ¥æ', 'Owned') : L('å¯è´­ä¹°', 'Available'),
       disabled: state.save.armory.ownedParts.includes(part.id),
     });
   }
@@ -7610,7 +7618,7 @@ function renderArmoryPanel(selectedWeaponId) {
             <div class="item-meta">${describeWeaponLine(weapon)}</div>
           </div>
           <button class="ghost-button small" type="button" data-armory-action="select-weapon" data-weapon-id="${weaponId}">
-            ${weaponId === selectedWeaponId ? L('已装备', 'Equipped') : L('装备', 'Equip')}
+            ${weaponId === selectedWeaponId ? L('å·²è£å¤', 'Equipped') : L('è£å¤', 'Equip')}
           </button>
         </article>
       `;
@@ -7622,10 +7630,10 @@ function renderArmoryPanel(selectedWeaponId) {
       <article class="stash-row">
         <div>
           <div class="item-title ${ammo.id === selectedAmmoId ? 'rarity-uncommon' : ''}">${getAmmoLabel(ammo.id)}</div>
-          <div class="item-meta">${L(`${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · 库存 ${state.save.prepAmmo[ammo.id] ?? 0}`, `${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · stock ${state.save.prepAmmo[ammo.id] ?? 0}`)}</div>
+          <div class="item-meta">${L(`${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· åºå­ ${state.save.prepAmmo[ammo.id] ?? 0}`, `${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· stock ${state.save.prepAmmo[ammo.id] ?? 0}`)}</div>
         </div>
         <button class="ghost-button small" type="button" data-armory-action="select-ammo" data-weapon-id="${selectedWeaponId}" data-ammo-id="${ammo.id}">
-          ${ammo.id === selectedAmmoId ? L('已选择', 'Selected') : L('切换', 'Switch')}
+          ${ammo.id === selectedAmmoId ? L('å·²éæ©', 'Selected') : L('åæ¢', 'Switch')}
         </button>
       </article>
     `)
@@ -7640,18 +7648,18 @@ function renderArmoryPanel(selectedWeaponId) {
           <div class="item-meta">${describePartBonus(part)}</div>
         </div>
         <button class="ghost-button small" type="button" data-armory-action="${activeParts[part.slot] === part.id ? 'unequip-part' : 'equip-part'}" data-weapon-id="${selectedWeaponId}" data-part-id="${part.id}" data-part-slot="${part.slot}">
-          ${activeParts[part.slot] === part.id ? L('卸下', 'Remove') : L('安装', 'Install')}
+          ${activeParts[part.slot] === part.id ? L('å¸ä¸', 'Remove') : L('å®è£', 'Install')}
         </button>
       </article>
     `)
     .join('');
 
   return [
-    prepRow(L('当前主武器', 'Current Weapon'), `${getWeaponLabel(selectedWeaponId)} · ${stats.damage} ${L('伤害', 'damage')}`),
-    prepRow(L('当前子弹等级', 'Current Ammo Tier'), getAmmoTierLabel(selectedAmmoId)),
-    `<div class="section-note">${L('已拥有武器', 'Owned Weapons')}</div>${ownedWeapons}`,
-    `<div class="section-note">${L('子弹切换', 'Ammo Switching')}</div>${ammoChoices}`,
-    `<div class="section-note">${L('可用零件', 'Available Parts')}</div>${ownedParts || `<div class="item-meta">${L('当前武器没有可用的已拥有零件。', 'No owned parts match the current weapon.')}</div>`}`,
+    prepRow(L('å½åä¸»æ­¦å¨', 'Current Weapon'), `${getWeaponLabel(selectedWeaponId)} Â· ${stats.damage} ${L('ä¼¤å®³', 'damage')}`),
+    prepRow(L('å½åå­å¼¹ç­çº§', 'Current Ammo Tier'), getAmmoTierLabel(selectedAmmoId)),
+    `<div class="section-note">${L('å·²æ¥ææ­¦å¨', 'Owned Weapons')}</div>${ownedWeapons}`,
+    `<div class="section-note">${L('å­å¼¹åæ¢', 'Ammo Switching')}</div>${ammoChoices}`,
+    `<div class="section-note">${L('å¯ç¨é¶ä»¶', 'Available Parts')}</div>${ownedParts || `<div class="item-meta">${L('å½åæ­¦å¨æ²¡æå¯ç¨çå·²æ¥æé¶ä»¶ã', 'No owned parts match the current weapon.')}</div>`}`,
   ].join('');
 }
 
@@ -7666,19 +7674,19 @@ function renderBasePanel() {
   const selectedStats = getWeaponStats(selectedWeaponId, { ammoId: selectedAmmoId });
 
   refs.summaryStrip.innerHTML = [
-    summaryPill(L('资金', 'Funds'), formatMoney(state.save.money)),
-    summaryPill(L('仓库', 'Stash'), formatItemCount(state.save.stash.length)),
-    summaryPill(L('撤离率', 'Survival'), survivalRate),
-    summaryPill(L('最高带出', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
+    summaryPill(L('èµé', 'Funds'), formatMoney(state.save.money)),
+    summaryPill(L('ä»åº', 'Stash'), formatItemCount(state.save.stash.length)),
+    summaryPill(L('æ¤ç¦»ç', 'Survival'), survivalRate),
+    summaryPill(L('æé«å¸¦åº', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   refs.loadoutPrep.innerHTML = [
-    prepRow(L('出击武器', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} · ${selectedStats.caliber}`),
-    prepRow(L('首选子弹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} · 库存 ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} · stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
-    prepRow(L('初始医疗包', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
-    prepRow(L('初始护甲', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus}`),
-    prepRow(L('背包容量', 'Bag Capacity'), `${getBagSlots()} ${L('格', 'slots')} / ${formatWeight(getBagCapacity())}`),
-    prepRow(L('武器伤害', 'Weapon Damage'), `${selectedStats.damage}`),
+    prepRow(L('åºå»æ­¦å¨', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} Â· ${selectedStats.caliber}`),
+    prepRow(L('é¦éå­å¼¹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} Â· åºå­ ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} Â· stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
+    prepRow(L('åå§å»çå', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus}`),
+    prepRow(L('åå§æ¤ç²', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus}`),
+    prepRow(L('èåå®¹é', 'Bag Capacity'), `${getBagSlots()} ${L('æ ¼', 'slots')} / ${formatWeight(getBagCapacity())}`),
+    prepRow(L('æ­¦å¨ä¼¤å®³', 'Weapon Damage'), `${selectedStats.damage}`),
   ].join('');
 
   if (refs.armoryPanel) {
@@ -7697,7 +7705,7 @@ function renderBasePanel() {
           </div>
           <div class="stack-list">
             <button class="primary-button small" type="button" data-shop-id="${entry.id}" ${afford ? '' : 'disabled'}>
-              ${entry.disabled ? L('已拥有', 'Owned') : formatMoney(entry.price)}
+              ${entry.disabled ? L('å·²æ¥æ', 'Owned') : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -7721,7 +7729,7 @@ function renderBasePanel() {
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('仓库里还没有带出来的战利品。撤离成功后，物资、子弹和枪械零件都会出现在这里。', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
+    : `<div class="item-meta">${L('ä»åºéè¿æ²¡æå¸¦åºæ¥çæå©åãæ¤ç¦»æååï¼ç©èµãå­å¼¹åæªæ¢°é¶ä»¶é½ä¼åºç°å¨è¿éã', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
 }
 
 function buyShopEntry(id) {
@@ -7730,7 +7738,7 @@ function buyShopEntry(id) {
     return;
   }
   if (state.save.money < entry.price) {
-    notify(L('资金不足。', 'Not enough funds.'), 'danger');
+    notify(L('èµéä¸è¶³ã', 'Not enough funds.'), 'danger');
     return;
   }
 
@@ -7761,7 +7769,7 @@ function buyShopEntry(id) {
 
   persistSave();
   renderBasePanel();
-  notify(L(`已购买 ${entry.name}。`, `Purchased ${entry.name}.`), 'success');
+  notify(L(`å·²è´­ä¹° ${entry.name}ã`, `Purchased ${entry.name}.`), 'success');
 }
 
 function sellItem(uid) {
@@ -7773,7 +7781,7 @@ function sellItem(uid) {
   state.save.money += item.value;
   persistSave();
   renderBasePanel();
-  notify(L(`已出售 ${getItemLabel(item)}，获得 ${formatMoney(item.value)}。`, `Sold ${getItemLabel(item)} for ${formatMoney(item.value)}.`), 'success');
+  notify(L(`å·²åºå® ${getItemLabel(item)}ï¼è·å¾ ${formatMoney(item.value)}ã`, `Sold ${getItemLabel(item)} for ${formatMoney(item.value)}.`), 'success');
 }
 
 function discardStashItem(uid) {
@@ -7784,7 +7792,7 @@ function discardStashItem(uid) {
   const [item] = state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(L(`已丢弃 ${getItemLabel(item)}。`, `Discarded ${getItemLabel(item)}.`), 'warning');
+  notify(L(`å·²ä¸¢å¼ ${getItemLabel(item)}ã`, `Discarded ${getItemLabel(item)}.`), 'warning');
 }
 
 function stockAmmoFromStash(uid) {
@@ -7800,7 +7808,7 @@ function stockAmmoFromStash(uid) {
   state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(L(`已将 ${getItemLabel(item)} 存入弹药库。`, `Moved ${getItemLabel(item)} into ammo storage.`), 'success');
+  notify(L(`å·²å° ${getItemLabel(item)} å­å¥å¼¹è¯åºã`, `Moved ${getItemLabel(item)} into ammo storage.`), 'success');
 }
 
 function learnPartFromStash(uid) {
@@ -7816,12 +7824,12 @@ function learnPartFromStash(uid) {
   state.save.stash.splice(index, 1);
   persistSave();
   renderBasePanel();
-  notify(L(`已将 ${getItemLabel(item)} 收入军械库。`, `Stored ${getItemLabel(item)} in the armory.`), 'success');
+  notify(L(`å·²å° ${getItemLabel(item)} æ¶å¥åæ¢°åºã`, `Stored ${getItemLabel(item)} in the armory.`), 'success');
 }
 
 function sellAllStash() {
   if (!state.save.stash.length) {
-    notify(L('仓库里没有可出售的物品。', 'There is nothing in the stash to sell.'), 'warning');
+    notify(L('ä»åºéæ²¡æå¯åºå®çç©åã', 'There is nothing in the stash to sell.'), 'warning');
     return;
   }
   const total = state.save.stash.reduce((sum, item) => sum + item.value, 0);
@@ -7830,7 +7838,7 @@ function sellAllStash() {
   state.save.stash = [];
   persistSave();
   renderBasePanel();
-  notify(L(`已出售 ${count} 件物品，获得 ${formatMoney(total)}。`, `Sold ${formatItemCount(count)} for ${formatMoney(total)}.`), 'success');
+  notify(L(`å·²åºå® ${count} ä»¶ç©åï¼è·å¾ ${formatMoney(total)}ã`, `Sold ${formatItemCount(count)} for ${formatMoney(total)}.`), 'success');
 }
 
 function getRaidObjectiveStatus(raid = state.raid) {
@@ -7839,18 +7847,18 @@ function getRaidObjectiveStatus(raid = state.raid) {
     const standardZone = raid?.extractions?.find((zone) => zone.kind === 'standard');
     const switchZone = raid?.extractions?.find((zone) => zone.kind === 'switch');
     const standardText = standardZone && isExtractionCurrentlyAvailable(standardZone, raid)
-      ? L('普通撤离开放', 'Standard open')
-      : L('普通撤离关闭', 'Standard closed');
-    let switchText = L('拉闸撤离待开启', 'Lever exit idle');
+      ? L('æ®éæ¤ç¦»å¼æ¾', 'Standard open')
+      : L('æ®éæ¤ç¦»å³é­', 'Standard closed');
+    let switchText = L('æé¸æ¤ç¦»å¾å¼å¯', 'Lever exit idle');
     if (switchZone?.switchArmed && (switchZone.switchTimer ?? 0) > 0) {
-      switchText = L(`拉闸撤离 ${Math.ceil(switchZone.switchTimer)}s`, `Lever exit ${Math.ceil(switchZone.switchTimer)}s`);
+      switchText = L(`æé¸æ¤ç¦» ${Math.ceil(switchZone.switchTimer)}s`, `Lever exit ${Math.ceil(switchZone.switchTimer)}s`);
     } else if (switchZone?.switchExpired) {
-      switchText = L('拉闸撤离关闭', 'Lever exit closed');
+      switchText = L('æé¸æ¤ç¦»å³é­', 'Lever exit closed');
     }
     return `${standardText} | ${switchText}`;
   }
   return objectives
-    .map((objective) => `${objective.id === 'search' ? L('搜索', 'Search') : L('清敌', 'Clear')} ${objective.progress}/${objective.target}`)
+    .map((objective) => `${objective.id === 'search' ? L('æç´¢', 'Search') : L('æ¸æ', 'Clear')} ${objective.progress}/${objective.target}`)
     .join(' | ');
 }
 
@@ -7866,7 +7874,7 @@ function advanceRaidObjective(objectiveId, amount = 1) {
   objective.progress = Math.min(objective.target, objective.progress + amount);
   if (!raid.tasksComplete && areRaidObjectivesComplete(raid)) {
     raid.tasksComplete = true;
-    notify(L('任务完成，撤离已解锁。', 'Tasks complete. Extraction unlocked.'), 'success');
+    notify(L('ä»»å¡å®æï¼æ¤ç¦»å·²è§£éã', 'Tasks complete. Extraction unlocked.'), 'success');
   }
 }
 
@@ -7895,8 +7903,8 @@ function startRaid() {
 
   state.raid = {
     timeLeft: RAID_DURATION,
-    statusText: L('WASD 移动，鼠标转向，按 F 开火。', 'WASD to move, mouse to look, press F to fire.'),
-    interactionText: L('先完成搜索和清敌任务，再去撤离点。', 'Finish the search and kill tasks before heading to extraction.'),
+    statusText: L('WASD ç§»å¨ï¼é¼ æ è½¬åï¼æ F å¼ç«ã', 'WASD to move, mouse to look, press F to fire.'),
+    interactionText: L('åå®ææç´¢åæ¸æä»»å¡ï¼åå»æ¤ç¦»ç¹ã', 'Finish the search and kill tasks before heading to extraction.'),
     bag: [],
     bagValue: 0,
     bagWeight: 0,
@@ -7982,7 +7990,7 @@ function startRaid() {
   refs.canvas.focus?.({ preventScroll: true });
   renderBasePanel();
   syncHud();
-  notify(L('已进入封锁区。完成任务后才能撤离。', 'Raid started. Finish the tasks to unlock extraction.'), 'success');
+  notify(L('å·²è¿å¥å°éåºãå®æä»»å¡åæè½æ¤ç¦»ã', 'Raid started. Finish the tasks to unlock extraction.'), 'success');
 }
 
 function updateRaid(dt) {
@@ -8032,7 +8040,7 @@ function updateRaid(dt) {
 
 function getReserveAmmoLabel(player) {
   const ammo = getCurrentAmmoInfo(player);
-  return `${player.ammoInMag} / ${getCurrentReserveAmmo(player)} · ${ammo ? getAmmoLabel(ammo.id) : L('未知弹药', 'Unknown ammo')}`;
+  return `${player.ammoInMag} / ${getCurrentReserveAmmo(player)} Â· ${ammo ? getAmmoLabel(ammo.id) : L('æªç¥å¼¹è¯', 'Unknown ammo')}`;
 }
 
 function renderRaidLoadoutMarkup() {
@@ -8045,10 +8053,10 @@ function renderRaidLoadoutMarkup() {
     .map((partId) => getPartLabel(partId))
     .filter(Boolean);
   return [
-    prepRow(L('当前武器', 'Current Weapon'), `${getWeaponLabel(player.weapon)} · ${stats.damage} ${L('伤害', 'damage')}`),
-    prepRow(L('当前子弹', 'Current Ammo'), getAmmoTierLabel(player.currentAmmoId)),
-    prepRow(L('弹匣 / 备弹', 'Mag / Reserve'), getReserveAmmoLabel(player)),
-    prepRow(L('枪械零件', 'Weapon Parts'), partLines.length ? partLines.join(' / ') : L('无', 'None')),
+    prepRow(L('å½åæ­¦å¨', 'Current Weapon'), `${getWeaponLabel(player.weapon)} Â· ${stats.damage} ${L('ä¼¤å®³', 'damage')}`),
+    prepRow(L('å½åå­å¼¹', 'Current Ammo'), getAmmoTierLabel(player.currentAmmoId)),
+    prepRow(L('å¼¹å£ / å¤å¼¹', 'Mag / Reserve'), getReserveAmmoLabel(player)),
+    prepRow(L('æªæ¢°é¶ä»¶', 'Weapon Parts'), partLines.length ? partLines.join(' / ') : L('æ ', 'None')),
   ].join('');
 }
 
@@ -8062,10 +8070,10 @@ function renderRaidAmmoMarkup() {
       <article class="stash-row">
         <div>
           <div class="item-title ${player.currentAmmoId === ammo.id ? 'rarity-uncommon' : ''}">${getAmmoLabel(ammo.id)}</div>
-          <div class="item-meta">${L(`${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · 库存 ${getCurrentReserveAmmo(player, ammo.id)} 发`, `${ammo.caliber} · ${getTierLabel(ammo.tierLabel)} · reserve ${getCurrentReserveAmmo(player, ammo.id)} rounds`)}</div>
+          <div class="item-meta">${L(`${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· åºå­ ${getCurrentReserveAmmo(player, ammo.id)} å`, `${ammo.caliber} Â· ${getTierLabel(ammo.tierLabel)} Â· reserve ${getCurrentReserveAmmo(player, ammo.id)} rounds`)}</div>
         </div>
         <button class="ghost-button small" type="button" data-raid-ammo="${ammo.id}">
-          ${player.currentAmmoId === ammo.id ? L('正在使用', 'In Use') : L('切换', 'Switch')}
+          ${player.currentAmmoId === ammo.id ? L('æ­£å¨ä½¿ç¨', 'In Use') : L('åæ¢', 'Switch')}
         </button>
       </article>
     `)
@@ -8193,12 +8201,12 @@ function updatePlayer(dt) {
   if (interaction?.type === 'extract' && state.input.interactHeld) {
     if (!raid.tasksComplete) {
       player.extractionProgress = 0;
-      raid.interactionText = L(`先完成任务：${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
+      raid.interactionText = L(`åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
     } else {
       player.extractionZoneId = interaction.zone.id;
       player.extractionProgress += dt;
       raid.interactionText = L(
-        `正在从 ${getZoneLabel(interaction.zone)} 撤离 ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
+        `æ­£å¨ä» ${getZoneLabel(interaction.zone)} æ¤ç¦» ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
         `Extracting at ${getZoneLabel(interaction.zone)} ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
       );
       if (player.extractionProgress >= EXTRACTION_HOLD_TIME) {
@@ -8212,15 +8220,15 @@ function updatePlayer(dt) {
   }
 
   if (interaction?.type === 'container') {
-    raid.interactionText = L(`按 E 搜索 ${getContainerLabel(interaction.container)}`, `Press E to search ${getContainerLabel(interaction.container)}`);
+    raid.interactionText = L(`æ E æç´¢ ${getContainerLabel(interaction.container)}`, `Press E to search ${getContainerLabel(interaction.container)}`);
   } else if (interaction?.type === 'extract') {
     raid.interactionText = raid.tasksComplete
-      ? L(`按住 E 从 ${getZoneLabel(interaction.zone)} 撤离`, `Hold E to extract from ${getZoneLabel(interaction.zone)}`)
-      : L(`先完成任务：${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
+      ? L(`æä½ E ä» ${getZoneLabel(interaction.zone)} æ¤ç¦»`, `Hold E to extract from ${getZoneLabel(interaction.zone)}`)
+      : L(`åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
   } else {
     raid.interactionText = raid.tasksComplete
-      ? L('可以继续搜索战利品，或者前往撤离点。', 'Search for loot or head to an extraction point.')
-      : L(`当前任务：${getRaidObjectiveStatus(raid)}`, `Current tasks: ${getRaidObjectiveStatus(raid)}`);
+      ? L('å¯ä»¥ç»§ç»­æç´¢æå©åï¼æèåå¾æ¤ç¦»ç¹ã', 'Search for loot or head to an extraction point.')
+      : L(`å½åä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Current tasks: ${getRaidObjectiveStatus(raid)}`);
   }
 
   if (player.health <= 0) {
@@ -8241,7 +8249,7 @@ function attemptShoot() {
     if (getCurrentReserveAmmo(player) > 0) {
       reloadWeapon();
     } else {
-      notify(L('当前子弹已经打空。', 'The current ammo is empty.'), 'danger');
+      notify(L('å½åå­å¼¹å·²ç»æç©ºã', 'The current ammo is empty.'), 'danger');
     }
     return;
   }
@@ -8308,7 +8316,7 @@ function completeReload() {
   player.ammoInMag += loaded;
   player.ammoInventory[player.currentAmmoId] = reserve - loaded;
   playReloadAudio(getCurrentPlayerWeaponStats(player), true);
-  notify(L('换弹完成。', 'Reload complete.'), 'success');
+  notify(L('æ¢å¼¹å®æã', 'Reload complete.'), 'success');
 }
 
 function useMedkit() {
@@ -8317,7 +8325,7 @@ function useMedkit() {
     return;
   }
   if (player.medkits <= 0) {
-    notify(L('没有医疗包。', 'No medkits available.'), 'warning');
+    notify(L('æ²¡æå»çåã', 'No medkits available.'), 'warning');
     return;
   }
   if (player.health >= player.maxHealth || player.healTimer > 0) {
@@ -8327,7 +8335,7 @@ function useMedkit() {
   player.health = Math.min(player.maxHealth, player.health + PLAYER_HEAL_AMOUNT);
   player.healTimer = PLAYER_HEAL_COOLDOWN;
   player.damageFlash = 0;
-  notify(L('已使用医疗包。', 'Medkit used.'), 'success');
+  notify(L('å·²ä½¿ç¨å»çåã', 'Medkit used.'), 'success');
 }
 
 function getUsableItemDuration(item, player = state.raid?.player) {
@@ -8455,7 +8463,7 @@ function loadAmmoItemToRaid(item) {
     return false;
   }
   player.ammoInventory[item.ammoId] = (player.ammoInventory[item.ammoId] ?? 0) + item.rounds;
-  notify(L(`已装填 ${item.rounds} 发 ${getAmmoLabel(item.ammoId)}。`, `Loaded ${item.rounds} rounds of ${getAmmoLabel(item.ammoId)}.`), 'success');
+  notify(L(`å·²è£å¡« ${item.rounds} å ${getAmmoLabel(item.ammoId)}ã`, `Loaded ${item.rounds} rounds of ${getAmmoLabel(item.ammoId)}.`), 'success');
   return true;
 }
 
@@ -8469,7 +8477,7 @@ function equipPartItemToRaid(item) {
   const stats = getCurrentPlayerWeaponStats(player);
   player.magSize = stats.magSize;
   player.ammoInMag = Math.min(player.ammoInMag, player.magSize);
-  notify(L(`已装备 ${getPartLabel(part.id)}。`, `Equipped ${getPartLabel(part.id)}.`), 'success');
+  notify(L(`å·²è£å¤ ${getPartLabel(part.id)}ã`, `Equipped ${getPartLabel(part.id)}.`), 'success');
   return true;
 }
 
@@ -8484,7 +8492,7 @@ function unequipPartItemFromRaid(item) {
     const stats = getCurrentPlayerWeaponStats(player);
     player.magSize = stats.magSize;
     player.ammoInMag = Math.min(player.ammoInMag, player.magSize);
-    notify(L(`已卸下 ${getPartLabel(part.id)}。`, `Removed ${getPartLabel(part.id)}.`), 'warning');
+    notify(L(`å·²å¸ä¸ ${getPartLabel(part.id)}ã`, `Removed ${getPartLabel(part.id)}.`), 'warning');
     return true;
   }
   return false;
@@ -8513,11 +8521,11 @@ function openLootPanel(container) {
 }
 
 function renderLootPanel(container) {
-  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} ${L('格', 'slots')}`;
+  const bagSpace = `${state.raid.bag.length}/${getBagSlots()} ${L('æ ¼', 'slots')}`;
   refs.lootTitle.textContent = getContainerLabel(container);
   refs.lootMeta.textContent = L(
-    `内容物 ${container.items.length} 件 · 当前背包 ${bagSpace} · 重量 ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`,
-    `${container.items.length} items · bag ${bagSpace} · weight ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`,
+    `åå®¹ç© ${container.items.length} ä»¶ Â· å½åèå ${bagSpace} Â· éé ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`,
+    `${container.items.length} items Â· bag ${bagSpace} Â· weight ${formatWeight(state.raid.bagWeight)} / ${formatWeight(getBagCapacity())}`,
   );
   refs.lootItems.innerHTML = container.items.length
     ? container.items
@@ -8528,15 +8536,15 @@ function renderLootPanel(container) {
               <div class="item-meta">${itemMetaLine(item)}</div>
             </div>
             <div class="inline-actions">
-              <button class="ghost-button small" type="button" data-loot-action="take" data-loot-id="${item.uid}">${L('拿走', 'Take')}</button>
-              ${item.itemType === 'usable' ? `<button class="ghost-button small" type="button" data-loot-action="use" data-loot-id="${item.uid}">${L('直接使用', 'Use now')}</button>` : ''}
-              ${item.itemType === 'part' && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid.player.weapon) ? `<button class="ghost-button small" type="button" data-loot-action="equip" data-loot-id="${item.uid}">${L('直接装备', 'Equip now')}</button>` : ''}
-              ${item.itemType === 'ammo' ? `<button class="ghost-button small" type="button" data-loot-action="load" data-loot-id="${item.uid}">${L('直接装填', 'Load now')}</button>` : ''}
+              <button class="ghost-button small" type="button" data-loot-action="take" data-loot-id="${item.uid}">${L('æ¿èµ°', 'Take')}</button>
+              ${item.itemType === 'usable' ? `<button class="ghost-button small" type="button" data-loot-action="use" data-loot-id="${item.uid}">${L('ç´æ¥ä½¿ç¨', 'Use now')}</button>` : ''}
+              ${item.itemType === 'part' && PART_DEFS[item.partId]?.compatibleWeapons.includes(state.raid.player.weapon) ? `<button class="ghost-button small" type="button" data-loot-action="equip" data-loot-id="${item.uid}">${L('ç´æ¥è£å¤', 'Equip now')}</button>` : ''}
+              ${item.itemType === 'ammo' ? `<button class="ghost-button small" type="button" data-loot-action="load" data-loot-id="${item.uid}">${L('ç´æ¥è£å¡«', 'Load now')}</button>` : ''}
             </div>
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('这个容器已经空了。', 'This container is empty.')}</div>`;
+    : `<div class="item-meta">${L('è¿ä¸ªå®¹å¨å·²ç»ç©ºäºã', 'This container is empty.')}</div>`;
 }
 
 function takeLoot(containerId, itemId) {
@@ -8550,7 +8558,7 @@ function takeLoot(containerId, itemId) {
   }
   const item = normalizeItemInstance(container.items[index]);
   if (!canCarry(item)) {
-    notify(L('背包空间或重量不足。', 'Not enough bag space or carry weight.'), 'warning');
+    notify(L('èåç©ºé´æééä¸è¶³ã', 'Not enough bag space or carry weight.'), 'warning');
     return;
   }
   container.items.splice(index, 1);
@@ -8558,7 +8566,7 @@ function takeLoot(containerId, itemId) {
   addItemToBag(item);
   renderLootPanel(container);
   syncHud();
-  notify(L(`已拿起 ${getItemLabel(item)}。`, `Picked up ${getItemLabel(item)}.`), 'success');
+  notify(L(`å·²æ¿èµ· ${getItemLabel(item)}ã`, `Picked up ${getItemLabel(item)}.`), 'success');
 }
 
 function renderBagList() {
@@ -8579,7 +8587,7 @@ function renderBagList() {
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('背包里还没有带走的物品。', 'The bag is still empty.')}</div>`;
+    : `<div class="item-meta">${L('èåéè¿æ²¡æå¸¦èµ°çç©åã', 'The bag is still empty.')}</div>`;
   setMarkupIfChanged(refs.bagList, markup);
   setMarkupIfChanged(refs.raidBagList, markup);
 }
@@ -8592,8 +8600,8 @@ function renderBagGrid() {
     if (!item) {
       return `
         <article class="bag-slot empty">
-          <strong>${L('空槽位', 'Empty Slot')}</strong>
-          <span>${L('可放物品', 'Available')}</span>
+          <strong>${L('ç©ºæ§½ä½', 'Empty Slot')}</strong>
+          <span>${L('å¯æ¾ç©å', 'Available')}</span>
         </article>
       `;
     }
@@ -8660,7 +8668,7 @@ function beginExtractionSequence(zone) {
   spawnPulse(new BABYLON.Vector3(zone.x, 1.1, zone.z), '#d8fff0', zone.radius * 0.22, 0.9);
   playExtractionAudio({ x: zone.x, z: zone.z });
   notify(
-    L(`正在从 ${getZoneLabel(zone)} 撤离……`, `Extracting from ${getZoneLabel(zone)}...`),
+    L(`æ­£å¨ä» ${getZoneLabel(zone)} æ¤ç¦»â¦â¦`, `Extracting from ${getZoneLabel(zone)}...`),
     'success',
   );
 }
@@ -8687,7 +8695,7 @@ function drawMapSearchZones(ctx, size, containers, radius) {
     ctx.restore();
 
     ctx.fillStyle = '#122127';
-    ctx.fillText(getLanguage() === 'zh' ? '搜' : 'S', point.x, point.y + 0.5);
+    ctx.fillText(getLanguage() === 'zh' ? 'æ' : 'S', point.x, point.y + 0.5);
   }
   ctx.restore();
 }
@@ -8741,12 +8749,12 @@ function killEnemy(enemy) {
   state.save.stats.kills += 1;
   advanceRaidObjective('kill', 1);
   persistSave();
-  notify(L(`目标已击倒：${getEnemyLabel(enemy)}。`, `Target down: ${getEnemyLabel(enemy)}.`), 'success');
+  notify(L(`ç®æ å·²å»åï¼${getEnemyLabel(enemy)}ã`, `Target down: ${getEnemyLabel(enemy)}.`), 'success');
 
   if (Math.random() < 0.35) {
     const bonusPool = lootCatalog.filter((item) => item.pools.includes('valuable') || item.pools.includes('weapon'));
     const dropped = createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight));
-    const dropName = L('战场掉落', 'Battlefield Drop');
+    const dropName = L('æåºæè½', 'Battlefield Drop');
     const container = {
       id: `drop-${enemy.id}`,
       name: dropName,
@@ -8784,10 +8792,10 @@ function applyDamageToPlayer(amount) {
   player.nearHitPulse = Math.max(player.nearHitPulse ?? 0, 0.8);
   spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), '#ff7e68', 0.08, 0.08);
   playDamageAudio(Math.max(1, remaining), blocked);
-  notify(L(`受到 ${Math.max(1, remaining)} 点伤害。`, `Took ${Math.max(1, remaining)} damage.`), 'danger');
+  notify(L(`åå° ${Math.max(1, remaining)} ç¹ä¼¤å®³ã`, `Took ${Math.max(1, remaining)} damage.`), 'danger');
 }
 
-function spawnDroppedContainer(items, label = L('丢弃物资', 'Dropped Gear')) {
+function spawnDroppedContainer(items, label = L('ä¸¢å¼ç©èµ', 'Dropped Gear')) {
   const player = state.raid?.player;
   if (!player || !items.length) {
     return;
@@ -8819,26 +8827,26 @@ function dropBagItem(uid) {
   if (item.itemType === 'part') {
     unequipPartItemFromRaid(item);
   }
-  spawnDroppedContainer([item], L('丢弃物资', 'Dropped Gear'));
+  spawnDroppedContainer([item], L('ä¸¢å¼ç©èµ', 'Dropped Gear'));
   syncHud();
-  notify(L(`已丢弃 ${getItemLabel(item)}。`, `Dropped ${getItemLabel(item)}.`), 'warning');
+  notify(L(`å·²ä¸¢å¼ ${getItemLabel(item)}ã`, `Dropped ${getItemLabel(item)}.`), 'warning');
 }
 
 function localizeRaidReason(reason) {
   if (reason === 'time_expired' || reason === 'Time expired. You were killed in the raid.') {
-    return L('时间结束，你已阵亡。', 'Time expired. You were killed in the raid.');
+    return L('æ¶é´ç»æï¼ä½ å·²éµäº¡ã', 'Time expired. You were killed in the raid.');
   }
   if (reason === 'player_killed' || reason === 'You were killed in the raid. Current loot was lost.') {
-    return L('你在封锁区中阵亡，当前战利品已丢失。', 'You were killed in the raid. Current loot was lost.');
+    return L('ä½ å¨å°éåºä¸­éµäº¡ï¼å½åæå©åå·²ä¸¢å¤±ã', 'You were killed in the raid. Current loot was lost.');
   }
-  if (reason === '调试模式撤离成功。' || reason === 'debug_success') {
-    return L('调试模式撤离成功。', 'Debug extraction successful.');
+  if (reason === 'è°è¯æ¨¡å¼æ¤ç¦»æåã' || reason === 'debug_success') {
+    return L('è°è¯æ¨¡å¼æ¤ç¦»æåã', 'Debug extraction successful.');
   }
   if (typeof reason === 'string' && reason.startsWith('extract:')) {
     const zoneId = reason.slice('extract:'.length);
     const zone = extractionZones.find((entry) => entry.id === zoneId) ?? state.raid?.extractions?.find((entry) => entry.id === zoneId);
     const zoneName = zone ? getZoneLabel(zone) : zoneId;
-    return L(`已从 ${zoneName} 撤离。`, `Extracted from ${zoneName}.`);
+    return L(`å·²ä» ${zoneName} æ¤ç¦»ã`, `Extracted from ${zoneName}.`);
   }
   return reason;
 }
@@ -8848,14 +8856,14 @@ function renderRaidResultOverlay(result) {
   if (!raid || !result) {
     return;
   }
-  refs.resultTitle.textContent = result.survived ? L('撤离成功', 'Extraction Success') : L('行动失败', 'Killed in Raid');
+  refs.resultTitle.textContent = result.survived ? L('æ¤ç¦»æå', 'Extraction Success') : L('è¡å¨å¤±è´¥', 'Killed in Raid');
   refs.resultSummary.innerHTML = [
-    resultItem(L('结果', 'Result'), localizeRaidReason(result.reason)),
-    resultItem(L('带出物资', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
-    resultItem(L('战利品价值', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
-    resultItem(L('击倒敌人', 'Enemies Down'), `${raid.killCount}`),
-    resultItem(L('剩余时间', 'Time Left'), formatTime(raid.timeLeft)),
-    resultItem(L('仓库总数', 'Stash Total'), formatItemCount(state.save.stash.length)),
+    resultItem(L('ç»æ', 'Result'), localizeRaidReason(result.reason)),
+    resultItem(L('å¸¦åºç©èµ', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
+    resultItem(L('æå©åä»·å¼', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
+    resultItem(L('å»åæäºº', 'Enemies Down'), `${raid.killCount}`),
+    resultItem(L('å©ä½æ¶é´', 'Time Left'), formatTime(raid.timeLeft)),
+    resultItem(L('ä»åºæ»æ°', 'Stash Total'), formatItemCount(state.save.stash.length)),
   ].join('');
 }
 
@@ -8899,8 +8907,8 @@ function finishRaid(success, reason, extracted) {
   refs.resultOverlay.classList.remove('hidden');
   notify(
     survived
-      ? L('撤离完成，战利品已带回基地。', 'Extraction complete. Loot returned to base.')
-      : L('行动失败，当前战利品和临时装备已重置。', 'Raid failed. Current loot and temporary gear were reset.'),
+      ? L('æ¤ç¦»å®æï¼æå©åå·²å¸¦ååºå°ã', 'Extraction complete. Loot returned to base.')
+      : L('è¡å¨å¤±è´¥ï¼å½åæå©ååä¸´æ¶è£å¤å·²éç½®ã', 'Raid failed. Current loot and temporary gear were reset.'),
     survived ? 'success' : 'danger',
   );
 }
@@ -9231,15 +9239,15 @@ function getOperatorDefs() {
   return {
     assault: {
       id: 'assault',
-      nameZh: '突击兵',
+      nameZh: 'çªå»åµ',
       nameEn: 'Assault',
-      passiveZh: '被动：装甲更厚，后坐与换弹更稳。',
+      passiveZh: 'è¢«å¨ï¼è£ç²æ´åï¼ååä¸æ¢å¼¹æ´ç¨³ã',
       passiveEn: 'Passive: extra armor with steadier recoil and reloads.',
-      skillNameZh: '过载突进',
+      skillNameZh: 'è¿è½½çªè¿',
       skillNameEn: 'Overdrive',
-      skillTextZh: '短时间提升移速、控枪和冲刺压制力。',
+      skillTextZh: 'ç­æ¶é´æåç§»éãæ§æªåå²åºåå¶åã',
       skillTextEn: 'A short burst of speed, control, and aggressive pressure.',
-      itemNameZh: '过载注射器',
+      itemNameZh: 'è¿è½½æ³¨å°å¨',
       itemNameEn: 'Overdrive Injector',
       moveMult: 1,
       spreadMult: 0.92,
@@ -9256,15 +9264,15 @@ function getOperatorDefs() {
     },
     recon: {
       id: 'recon',
-      nameZh: '侦察兵',
+      nameZh: 'ä¾¦å¯åµ',
       nameEn: 'Recon',
-      passiveZh: '被动：移动更快，更难被敌人提前发现。',
+      passiveZh: 'è¢«å¨ï¼ç§»å¨æ´å¿«ï¼æ´é¾è¢«æäººæååç°ã',
       passiveEn: 'Passive: faster movement and lower enemy detection.',
-      skillNameZh: '脉冲扫描',
+      skillNameZh: 'èå²æ«æ',
       skillNameEn: 'Pulse Scan',
-      skillTextZh: '扫描附近敌人并高亮显示，但不会标记到小地图。',
+      skillTextZh: 'æ«æéè¿æäººå¹¶é«äº®æ¾ç¤ºï¼ä½ä¸ä¼æ è®°å°å°å°å¾ã',
       skillTextEn: 'Scans nearby enemies and highlights them without minimap markers.',
-      itemNameZh: '脉冲扫描器',
+      itemNameZh: 'èå²æ«æå¨',
       itemNameEn: 'Pulse Scanner',
       moveMult: 1.06,
       spreadMult: 0.96,
@@ -9282,15 +9290,15 @@ function getOperatorDefs() {
     },
     medic: {
       id: 'medic',
-      nameZh: '医疗兵',
+      nameZh: 'å»çåµ',
       nameEn: 'Medic',
-      passiveZh: '被动：额外携带医疗包，治疗更高效。',
+      passiveZh: 'è¢«å¨ï¼é¢å¤æºå¸¦å»çåï¼æ²»çæ´é«æã',
       passiveEn: 'Passive: extra medkits with stronger, faster healing.',
-      skillNameZh: '应急治疗',
+      skillNameZh: 'åºæ¥æ²»ç',
       skillNameEn: 'Rapid Triage',
-      skillTextZh: '立刻恢复生命与护甲，并触发绿色治疗脉冲。',
+      skillTextZh: 'ç«å»æ¢å¤çå½ä¸æ¤ç²ï¼å¹¶è§¦åç»¿è²æ²»çèå²ã',
       skillTextEn: 'Instantly restores health and armor with a healing pulse.',
-      itemNameZh: '急救泡沫剂',
+      itemNameZh: 'æ¥ææ³¡æ²«å',
       itemNameEn: 'Trauma Foam',
       moveMult: 0.98,
       spreadMult: 1,
@@ -9363,7 +9371,7 @@ function getOperatorItemName(operatorId = getSelectedOperatorId()) {
 function setSelectedOperator(operatorId) {
   const nextOperatorId = sanitizeOperatorId(operatorId);
   if (state.mode !== 'base') {
-    notify(L('兵种只能在局外切换。', 'Operators can only be changed in base.'), 'warning');
+    notify(L('åµç§åªè½å¨å±å¤åæ¢ã', 'Operators can only be changed in base.'), 'warning');
     return;
   }
   if (nextOperatorId === getSelectedOperatorId()) {
@@ -9372,7 +9380,7 @@ function setSelectedOperator(operatorId) {
   state.save.selectedOperatorId = nextOperatorId;
   persistSave();
   renderBasePanel();
-  notify(L(`已选择兵种：${getOperatorName(nextOperatorId)}。`, `Selected operator: ${getOperatorName(nextOperatorId)}.`), 'success');
+  notify(L(`å·²éæ©åµç§ï¼${getOperatorName(nextOperatorId)}ã`, `Selected operator: ${getOperatorName(nextOperatorId)}.`), 'success');
 }
 
 function defaultSave() {
@@ -9522,32 +9530,32 @@ function applyStaticLanguage() {
     }
   }
   if (refs.brandTitle) {
-    refs.brandTitle.textContent = '搜打撤';
+    refs.brandTitle.textContent = 'æææ¤';
   }
-  document.title = '搜打撤';
+  document.title = 'æææ¤';
   if (refs.operatorTitle) {
-    refs.operatorTitle.textContent = L('兵种', 'Operators');
+    refs.operatorTitle.textContent = L('åµç§', 'Operators');
   }
   if (refs.operatorNote) {
-    refs.operatorNote.textContent = L('仅能在局外选择，不同兵种拥有独特技能、特效和专属道具', 'Choose operators only in base. Each one has a unique skill, effect, and signature item.');
+    refs.operatorNote.textContent = L('ä»è½å¨å±å¤éæ©ï¼ä¸ååµç§æ¥æç¬ç¹æè½ãç¹æåä¸å±éå·', 'Choose operators only in base. Each one has a unique skill, effect, and signature item.');
   }
   if (refs.tipMove) {
-    refs.tipMove.textContent = L('WASD / 方向键移动', 'WASD / Arrow keys move');
+    refs.tipMove.textContent = L('WASD / æ¹åé®ç§»å¨', 'WASD / Arrow keys move');
   }
   if (refs.tipLook) {
-    refs.tipLook.textContent = L('鼠标转向，右键瞄准', 'Mouse looks, right mouse aims');
+    refs.tipLook.textContent = L('é¼ æ è½¬åï¼å³é®çå', 'Mouse looks, right mouse aims');
   }
   if (refs.tipFire) {
-    refs.tipFire.textContent = L('左键 / F 开火，R 换弹', 'Left mouse / F fires, R reloads');
+    refs.tipFire.textContent = L('å·¦é® / F å¼ç«ï¼R æ¢å¼¹', 'Left mouse / F fires, R reloads');
   }
   if (refs.tipAction) {
-    refs.tipAction.textContent = L('Q 治疗，E 搜索 / 撤离，M 地图，C 技能', 'Q heal, E search / extract, M map, C skill');
+    refs.tipAction.textContent = L('Q æ²»çï¼E æç´¢ / æ¤ç¦»ï¼M å°å¾ï¼C æè½', 'Q heal, E search / extract, M map, C skill');
   }
   if (refs.aimActionButton) {
-    refs.aimActionButton.textContent = L('瞄准', 'Aim');
+    refs.aimActionButton.textContent = L('çå', 'Aim');
   }
   if (refs.skillActionButton) {
-    refs.skillActionButton.textContent = L('技能', 'Skill');
+    refs.skillActionButton.textContent = L('æè½', 'Skill');
   }
   refs.langZhButton?.classList.toggle('is-active', getLanguage() === 'zh');
   refs.langEnButton?.classList.toggle('is-active', getLanguage() === 'en');
@@ -9565,12 +9573,12 @@ function renderOperatorPanel() {
           <div>
             <div class="item-title">${getOperatorName(operatorId)}</div>
             <div class="item-meta">${getOperatorPassiveText(operatorId)}</div>
-            <div class="item-meta">${L(`技能：${getOperatorSkillName(operatorId)} · ${getOperatorSkillText(operatorId)}`, `Skill: ${getOperatorSkillName(operatorId)} · ${getOperatorSkillText(operatorId)}`)}</div>
-            <div class="item-meta">${L(`专属道具：${getOperatorItemName(operatorId)} x${operator.utilityCharges}`, `Signature item: ${getOperatorItemName(operatorId)} x${operator.utilityCharges}`)}</div>
+            <div class="item-meta">${L(`æè½ï¼${getOperatorSkillName(operatorId)} Â· ${getOperatorSkillText(operatorId)}`, `Skill: ${getOperatorSkillName(operatorId)} Â· ${getOperatorSkillText(operatorId)}`)}</div>
+            <div class="item-meta">${L(`ä¸å±éå·ï¼${getOperatorItemName(operatorId)} x${operator.utilityCharges}`, `Signature item: ${getOperatorItemName(operatorId)} x${operator.utilityCharges}`)}</div>
           </div>
           <div class="stack-list">
             <button class="ghost-button small" type="button" data-operator-id="${operatorId}">
-              ${isActive ? L('已选择', 'Selected') : L('选择', 'Select')}
+              ${isActive ? L('å·²éæ©', 'Selected') : L('éæ©', 'Select')}
             </button>
           </div>
         </article>
@@ -9770,13 +9778,13 @@ function getOperatorAbilitySummary(player = state.raid?.player) {
     return '';
   }
   if ((player.abilityActiveTimer ?? 0) > 0) {
-    return L(`激活中 ${player.abilityActiveTimer.toFixed(1)}s`, `Active ${player.abilityActiveTimer.toFixed(1)}s`);
+    return L(`æ¿æ´»ä¸­ ${player.abilityActiveTimer.toFixed(1)}s`, `Active ${player.abilityActiveTimer.toFixed(1)}s`);
   }
   if ((player.abilityCooldown ?? 0) > 0) {
-    return L(`冷却 ${player.abilityCooldown.toFixed(1)}s`, `Cooldown ${player.abilityCooldown.toFixed(1)}s`);
+    return L(`å·å´ ${player.abilityCooldown.toFixed(1)}s`, `Cooldown ${player.abilityCooldown.toFixed(1)}s`);
   }
   const charges = Math.max(0, Number(player.abilityCharges ?? 0));
-  return L(`就绪 · ${charges} 次`, `Ready · ${charges} charge${charges === 1 ? '' : 's'}`);
+  return L(`å°±ç»ª Â· ${charges} æ¬¡`, `Ready Â· ${charges} charge${charges === 1 ? '' : 's'}`);
 }
 
 function getOperatorAbilityUiState(player = state.raid?.player) {
@@ -9796,15 +9804,15 @@ function getOperatorAbilityUiState(player = state.raid?.player) {
   if ((player.abilityActiveTimer ?? 0) > 0) {
     return {
       summary: getOperatorAbilitySummary(player),
-      detail: L(`持续 ${Math.ceil(activeDuration)}s，结束后冷却 ${Math.ceil(cooldownDuration)}s`, `Active ${Math.ceil(activeDuration)}s, then ${Math.ceil(cooldownDuration)}s cooldown`),
+      detail: L(`æç»­ ${Math.ceil(activeDuration)}sï¼ç»æåå·å´ ${Math.ceil(cooldownDuration)}s`, `Active ${Math.ceil(activeDuration)}s, then ${Math.ceil(cooldownDuration)}s cooldown`),
       fill: clamp((player.abilityActiveTimer ?? 0) / activeDuration, 0, 1),
       color: operator.abilityColor ?? '#8fd6b3',
     };
   }
   if ((player.abilityCooldownPending ?? false) && charges <= 0) {
     return {
-      summary: L('效果结束中', 'Effect ending'),
-      detail: L(`结束后进入 ${Math.ceil(cooldownDuration)}s 冷却`, `A ${Math.ceil(cooldownDuration)}s cooldown starts after the effect ends`),
+      summary: L('ææç»æä¸­', 'Effect ending'),
+      detail: L(`ç»æåè¿å¥ ${Math.ceil(cooldownDuration)}s å·å´`, `A ${Math.ceil(cooldownDuration)}s cooldown starts after the effect ends`),
       fill: 0.08,
       color: '#d1b46f',
     };
@@ -9812,14 +9820,14 @@ function getOperatorAbilityUiState(player = state.raid?.player) {
   if ((player.abilityCooldown ?? 0) > 0) {
     return {
       summary: getOperatorAbilitySummary(player),
-      detail: L(`剩余充能 ${charges}，冷却后恢复`, `${charges} charge${charges === 1 ? '' : 's'} left, returns after cooldown`),
+      detail: L(`å©ä½åè½ ${charges}ï¼å·å´åæ¢å¤`, `${charges} charge${charges === 1 ? '' : 's'} left, returns after cooldown`),
       fill: clamp((player.abilityCooldown ?? 0) / cooldownDuration, 0, 1),
       color: '#d1b46f',
     };
   }
   return {
     summary: getOperatorAbilitySummary(player),
-    detail: L(`持续 ${Math.ceil(activeDuration)}s / 冷却 ${Math.ceil(cooldownDuration)}s`, `${Math.ceil(activeDuration)}s active / ${Math.ceil(cooldownDuration)}s cooldown`),
+    detail: L(`æç»­ ${Math.ceil(activeDuration)}s / å·å´ ${Math.ceil(cooldownDuration)}s`, `${Math.ceil(activeDuration)}s active / ${Math.ceil(cooldownDuration)}s cooldown`),
     fill: charges > 0 ? 1 : 0.12,
     color: charges > 0 ? '#8fd6b3' : '#8c98a4',
   };
@@ -9850,19 +9858,19 @@ function buildSupportPromptText(raid = state.raid) {
   }
   const parts = [];
   if ((raid.spawnSafeTimer ?? 0) > 0) {
-    parts.push(L(`落地保护 ${raid.spawnSafeTimer.toFixed(1)}s`, `Spawn shield ${raid.spawnSafeTimer.toFixed(1)}s`));
+    parts.push(L(`è½å°ä¿æ¤ ${raid.spawnSafeTimer.toFixed(1)}s`, `Spawn shield ${raid.spawnSafeTimer.toFixed(1)}s`));
   }
   const nearestReady = getNearestRaidZone(raid, (zone) => isExtractionCurrentlyAvailable(zone, raid));
   if (nearestReady) {
-    parts.push(L(`最近撤离 ${getZoneLabel(nearestReady.zone)} ${nearestReady.distance.toFixed(0)}m`, `Nearest extract ${getZoneLabel(nearestReady.zone)} ${nearestReady.distance.toFixed(0)}m`));
+    parts.push(L(`æè¿æ¤ç¦» ${getZoneLabel(nearestReady.zone)} ${nearestReady.distance.toFixed(0)}m`, `Nearest extract ${getZoneLabel(nearestReady.zone)} ${nearestReady.distance.toFixed(0)}m`));
   } else {
     const nearestSwitch = getNearestRaidZone(raid, (zone) => zone.kind === 'switch');
     if (nearestSwitch) {
-      parts.push(L(`${getZoneLabel(nearestSwitch.zone)}：${getExtractionStatusLabel(nearestSwitch.zone, raid)}`, `${getZoneLabel(nearestSwitch.zone)}: ${getExtractionStatusLabel(nearestSwitch.zone, raid)}`));
+      parts.push(L(`${getZoneLabel(nearestSwitch.zone)}ï¼${getExtractionStatusLabel(nearestSwitch.zone, raid)}`, `${getZoneLabel(nearestSwitch.zone)}: ${getExtractionStatusLabel(nearestSwitch.zone, raid)}`));
     }
   }
   if (!parts.length) {
-    return L('继续搜索并准备撤离。', 'Keep looting and prepare to extract.');
+    return L('ç»§ç»­æç´¢å¹¶åå¤æ¤ç¦»ã', 'Keep looting and prepare to extract.');
   }
   return parts.join(' | ');
 }
@@ -9875,16 +9883,16 @@ function useOperatorAbility() {
   }
   const operator = getPlayerOperatorDef(player);
   if ((player.abilityCharges ?? 0) <= 0) {
-    notify(L(`没有可用的 ${getOperatorItemName(player.operatorId)}。`, `No ${getOperatorItemName(player.operatorId)} charges left.`), 'warning');
+    notify(L(`æ²¡æå¯ç¨ç ${getOperatorItemName(player.operatorId)}ã`, `No ${getOperatorItemName(player.operatorId)} charges left.`), 'warning');
     return;
   }
   if ((player.abilityCooldown ?? 0) > 0) {
-    notify(L(`技能冷却中 ${player.abilityCooldown.toFixed(1)}s。`, `Ability is cooling down for ${player.abilityCooldown.toFixed(1)}s.`), 'warning');
+    notify(L(`æè½å·å´ä¸­ ${player.abilityCooldown.toFixed(1)}sã`, `Ability is cooling down for ${player.abilityCooldown.toFixed(1)}s.`), 'warning');
     return;
   }
 
   if (operator.id === 'medic' && player.health >= player.maxHealth && player.armor >= player.maxArmor) {
-    notify(L('生命与护甲都处于满值。', 'Health and armor are already full.'), 'warning');
+    notify(L('çå½ä¸æ¤ç²é½å¤äºæ»¡å¼ã', 'Health and armor are already full.'), 'warning');
     return;
   }
 
@@ -9895,7 +9903,7 @@ function useOperatorAbility() {
 
   if (operator.id === 'assault') {
     spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), operator.abilityColor, 0.1, 0.12);
-    notify(L(`已激活 ${getOperatorSkillName(player.operatorId)}。`, `Activated ${getOperatorSkillName(player.operatorId)}.`), 'success');
+    notify(L(`å·²æ¿æ´» ${getOperatorSkillName(player.operatorId)}ã`, `Activated ${getOperatorSkillName(player.operatorId)}.`), 'success');
   } else if (operator.id === 'recon') {
     const radius = operator.scanRadius ?? 30;
     let revealedCount = 0;
@@ -9911,7 +9919,7 @@ function useOperatorAbility() {
     player.operatorEffectTimer = Math.max(player.operatorEffectTimer ?? 0, 1.4);
     spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), operator.abilityColor, 0.14, 0.14);
     notify(
-      L(`脉冲扫描已启动，发现 ${revealedCount} 名敌人。`, `Pulse scan activated. ${revealedCount} enemies revealed.`),
+      L(`èå²æ«æå·²å¯å¨ï¼åç° ${revealedCount} åæäººã`, `Pulse scan activated. ${revealedCount} enemies revealed.`),
       'success',
     );
   } else if (operator.id === 'medic') {
@@ -9921,7 +9929,7 @@ function useOperatorAbility() {
     player.healTimer = 0;
     player.operatorEffectTimer = Math.max(player.operatorEffectTimer ?? 0, 1.5);
     spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), operator.abilityColor, 0.12, 0.16);
-    notify(L(`已使用 ${getOperatorSkillName(player.operatorId)}。`, `Used ${getOperatorSkillName(player.operatorId)}.`), 'success');
+    notify(L(`å·²ä½¿ç¨ ${getOperatorSkillName(player.operatorId)}ã`, `Used ${getOperatorSkillName(player.operatorId)}.`), 'success');
   }
 
   syncHud();
@@ -9940,21 +9948,21 @@ function renderBasePanel() {
   const selectedMode = getLobbyModeDef();
 
   refs.summaryStrip.innerHTML = [
-    summaryPill(L('资金', 'Funds'), formatMoney(state.save.money)),
-    summaryPill(L('仓库', 'Stash'), formatItemCount(state.save.stash.length)),
-    summaryPill(L('撤离率', 'Survival'), survivalRate),
-    summaryPill(L('最高带出', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
+    summaryPill(L('èµé', 'Funds'), formatMoney(state.save.money)),
+    summaryPill(L('ä»åº', 'Stash'), formatItemCount(state.save.stash.length)),
+    summaryPill(L('æ¤ç¦»ç', 'Survival'), survivalRate),
+    summaryPill(L('æé«å¸¦åº', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   refs.loadoutPrep.innerHTML = [
-    prepRow(L('兵种', 'Operator'), `${getOperatorName(selectedOperatorId)} · ${getOperatorSkillName(selectedOperatorId)}`),
-    prepRow(L('专属道具', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
-    prepRow(L('出击武器', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} · ${selectedStats.caliber}`),
-    prepRow(L('首选子弹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} · 库存 ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} · stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
-    prepRow(L('初始医疗包', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
-    prepRow(L('初始护甲', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
-    prepRow(L('背包容量', 'Bag Capacity'), `${getBagSlots()} ${L('格', 'slots')} / ${formatWeight(getBagCapacity())}`),
-    prepRow(L('武器伤害', 'Weapon Damage'), `${selectedStats.damage}`),
+    prepRow(L('åµç§', 'Operator'), `${getOperatorName(selectedOperatorId)} Â· ${getOperatorSkillName(selectedOperatorId)}`),
+    prepRow(L('ä¸å±éå·', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
+    prepRow(L('åºå»æ­¦å¨', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} Â· ${selectedStats.caliber}`),
+    prepRow(L('é¦éå­å¼¹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} Â· åºå­ ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} Â· stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
+    prepRow(L('åå§å»çå', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
+    prepRow(L('åå§æ¤ç²', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
+    prepRow(L('èåå®¹é', 'Bag Capacity'), `${getBagSlots()} ${L('æ ¼', 'slots')} / ${formatWeight(getBagCapacity())}`),
+    prepRow(L('æ­¦å¨ä¼¤å®³', 'Weapon Damage'), `${selectedStats.damage}`),
   ].join('');
 
   if (refs.operatorPanel) {
@@ -9977,7 +9985,7 @@ function renderBasePanel() {
           </div>
           <div class="stack-list">
             <button class="primary-button small" type="button" data-shop-id="${entry.id}" ${afford ? '' : 'disabled'}>
-              ${entry.disabled ? L('已拥有', 'Owned') : formatMoney(entry.price)}
+              ${entry.disabled ? L('å·²æ¥æ', 'Owned') : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -10001,7 +10009,7 @@ function renderBasePanel() {
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('仓库里还没有带出来的战利品。撤离成功后，物资、子弹和枪械零件都会出现在这里。', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
+    : `<div class="item-meta">${L('ä»åºéè¿æ²¡æå¸¦åºæ¥çæå©åãæ¤ç¦»æååï¼ç©èµãå­å¼¹åæªæ¢°é¶ä»¶é½ä¼åºç°å¨è¿éã', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
 }
 
 function startRaid() {
@@ -10031,8 +10039,8 @@ function startRaid() {
 
   state.raid = {
     timeLeft: RAID_DURATION,
-    statusText: L('WASD 移动，鼠标转向，左键 / F 开火。', 'WASD to move, mouse to look, left mouse / F to fire.'),
-    interactionText: L('先完成搜索和清敌任务，再去撤离点。', 'Finish the search and kill tasks before heading to extraction.'),
+    statusText: L('WASD ç§»å¨ï¼é¼ æ è½¬åï¼å·¦é® / F å¼ç«ã', 'WASD to move, mouse to look, left mouse / F to fire.'),
+    interactionText: L('åå®ææç´¢åæ¸æä»»å¡ï¼åå»æ¤ç¦»ç¹ã', 'Finish the search and kill tasks before heading to extraction.'),
     bag: [],
     bagValue: 0,
     bagWeight: 0,
@@ -10126,7 +10134,7 @@ function startRaid() {
   refs.canvas.focus?.({ preventScroll: true });
   renderBasePanel();
   syncHud();
-  notify(L('已进入封锁区。完成任务后才能撤离。', 'Raid started. Finish the tasks to unlock extraction.'), 'success');
+  notify(L('å·²è¿å¥å°éåºãå®æä»»å¡åæè½æ¤ç¦»ã', 'Raid started. Finish the tasks to unlock extraction.'), 'success');
 }
 
 function updateRaid(dt) {
@@ -10227,12 +10235,12 @@ function updatePlayer(dt) {
   if (interaction?.type === 'extract' && state.input.interactHeld) {
     if (!raid.tasksComplete) {
       player.extractionProgress = 0;
-      raid.interactionText = L(`先完成任务：${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
+      raid.interactionText = L(`åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
     } else {
       player.extractionZoneId = interaction.zone.id;
       player.extractionProgress += dt;
       raid.interactionText = L(
-        `正在从 ${getZoneLabel(interaction.zone)} 撤离 ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
+        `æ­£å¨ä» ${getZoneLabel(interaction.zone)} æ¤ç¦» ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
         `Extracting at ${getZoneLabel(interaction.zone)} ${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME}s`,
       );
       if (player.extractionProgress >= EXTRACTION_HOLD_TIME) {
@@ -10246,15 +10254,15 @@ function updatePlayer(dt) {
   }
 
   if (interaction?.type === 'container') {
-    raid.interactionText = L(`按 E 搜索 ${getContainerLabel(interaction.container)}`, `Press E to search ${getContainerLabel(interaction.container)}`);
+    raid.interactionText = L(`æ E æç´¢ ${getContainerLabel(interaction.container)}`, `Press E to search ${getContainerLabel(interaction.container)}`);
   } else if (interaction?.type === 'extract') {
     raid.interactionText = raid.tasksComplete
-      ? L(`按住 E 从 ${getZoneLabel(interaction.zone)} 撤离`, `Hold E to extract from ${getZoneLabel(interaction.zone)}`)
-      : L(`先完成任务：${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
+      ? L(`æä½ E ä» ${getZoneLabel(interaction.zone)} æ¤ç¦»`, `Hold E to extract from ${getZoneLabel(interaction.zone)}`)
+      : L(`åå®æä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Finish tasks first: ${getRaidObjectiveStatus(raid)}`);
   } else {
     raid.interactionText = raid.tasksComplete
-      ? L('可以继续搜索战利品，或者前往撤离点。', 'Search for loot or head to an extraction point.')
-      : L(`当前任务：${getRaidObjectiveStatus(raid)}`, `Current tasks: ${getRaidObjectiveStatus(raid)}`);
+      ? L('å¯ä»¥ç»§ç»­æç´¢æå©åï¼æèåå¾æ¤ç¦»ç¹ã', 'Search for loot or head to an extraction point.')
+      : L(`å½åä»»å¡ï¼${getRaidObjectiveStatus(raid)}`, `Current tasks: ${getRaidObjectiveStatus(raid)}`);
   }
 
   if (player.health <= 0) {
@@ -10272,13 +10280,13 @@ function renderRaidLoadoutMarkup() {
     .map((partId) => getPartLabel(partId))
     .filter(Boolean);
   return [
-    prepRow(L('兵种', 'Operator'), getOperatorName(player.operatorId)),
-    prepRow(L('技能', 'Ability'), `${getOperatorSkillName(player.operatorId)} · ${getOperatorAbilitySummary(player)}`),
-    prepRow(L('专属道具', 'Signature Item'), `${getOperatorItemName(player.operatorId)} × ${Math.max(0, Number(player.abilityCharges ?? 0))}`),
-    prepRow(L('当前武器', 'Current Weapon'), `${getWeaponLabel(player.weapon)} · ${stats.damage} ${L('伤害', 'damage')}`),
-    prepRow(L('当前子弹', 'Current Ammo'), getAmmoTierLabel(player.currentAmmoId)),
-    prepRow(L('弹匣 / 备弹', 'Mag / Reserve'), getReserveAmmoLabel(player)),
-    prepRow(L('枪械零件', 'Weapon Parts'), partLines.length ? partLines.join(' / ') : L('无', 'None')),
+    prepRow(L('åµç§', 'Operator'), getOperatorName(player.operatorId)),
+    prepRow(L('æè½', 'Ability'), `${getOperatorSkillName(player.operatorId)} Â· ${getOperatorAbilitySummary(player)}`),
+    prepRow(L('ä¸å±éå·', 'Signature Item'), `${getOperatorItemName(player.operatorId)} Ã ${Math.max(0, Number(player.abilityCharges ?? 0))}`),
+    prepRow(L('å½åæ­¦å¨', 'Current Weapon'), `${getWeaponLabel(player.weapon)} Â· ${stats.damage} ${L('ä¼¤å®³', 'damage')}`),
+    prepRow(L('å½åå­å¼¹', 'Current Ammo'), getAmmoTierLabel(player.currentAmmoId)),
+    prepRow(L('å¼¹å£ / å¤å¼¹', 'Mag / Reserve'), getReserveAmmoLabel(player)),
+    prepRow(L('æªæ¢°é¶ä»¶', 'Weapon Parts'), partLines.length ? partLines.join(' / ') : L('æ ', 'None')),
   ].join('');
 }
 
@@ -10296,7 +10304,7 @@ function attemptShoot() {
     if (getCurrentReserveAmmo(player) > 0) {
       reloadWeapon();
     } else {
-      notify(L('当前子弹已经打空。', 'The current ammo is empty.'), 'danger');
+      notify(L('å½åå­å¼¹å·²ç»æç©ºã', 'The current ammo is empty.'), 'danger');
     }
     return;
   }
@@ -11286,7 +11294,7 @@ window.__sdrPatchedStartRaid = function patchedStartRaid() {
     modeId: modeDef.id,
     bonusReward: modeDef.bonusReward ?? 0,
     timeLeft: modeDef.duration,
-    statusText: L('WASD 移动，鼠标转向，F 开火。', 'WASD to move, mouse to look, F to fire.'),
+    statusText: L('WASD ç§»å¨ï¼é¼ æ è½¬åï¼F å¼ç«ã', 'WASD to move, mouse to look, F to fire.'),
     interactionText: modeDef.getStartInteractionText(),
     bag: [],
     bagValue: 0,
@@ -11440,7 +11448,7 @@ killEnemy = function patchedKillEnemy(enemy) {
     const recovered = Math.max(0, Math.round(player.health - previousHealth));
     notify(
       L(
-        '过载延长 +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '，恢复 ' + recovered + ' 生命。' : '。'),
+        'è¿è½½å»¶é¿ +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? 'ï¼æ¢å¤ ' + recovered + ' çå½ã' : 'ã'),
         'Overdrive extended by +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? ` and restored ${recovered} HP.` : '.'),
       ),
       'success',
@@ -11450,7 +11458,7 @@ killEnemy = function patchedKillEnemy(enemy) {
   enemy.dropPending = Math.random() < 0.42;
   enemy.dropItem = enemy.dropPending ? createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight)) : null;
   persistSave();
-  notify(L('已击倒 ' + getEnemyLabel(enemy) + '。', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
+  notify(L('å·²å»å ' + getEnemyLabel(enemy) + 'ã', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
 };
 
 if (refs.deployButton && !refs.deployButton.dataset.boundPatchedRaid) {
@@ -11467,13 +11475,13 @@ function getRaidObjectiveLabel(objective) {
     return '';
   }
   if (objective.id === 'search') {
-    return L('搜索', 'Search');
+    return L('æç´¢', 'Search');
   }
   if (objective.id === 'kill') {
-    return L('清敌', 'Clear');
+    return L('æ¸æ', 'Clear');
   }
   if (objective.id === 'hunter') {
-    return L('猎手', 'Hunters');
+    return L('çæ', 'Hunters');
   }
   return objective.labelZh
     ? L(objective.labelZh, objective.labelEn ?? objective.labelZh)
@@ -11485,9 +11493,9 @@ function getRaidObjectiveStatus(raid = state.raid) {
   if (!objectives.length) {
     const switchZone = raid?.extractions?.find((zone) => zone.kind === 'switch');
     if (switchZone?.switchArmed && (switchZone.switchTimer ?? 0) > 0) {
-      return L('普通撤离已开放 | 拉闸撤离已开放', 'Standard exit open | Lever exit open');
+      return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å·²å¼æ¾', 'Standard exit open | Lever exit open');
     }
-    return L('普通撤离已开放 | 拉闸撤离待开启', 'Standard exit open | Lever exit locked');
+    return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å¾å¼å¯', 'Standard exit open | Lever exit locked');
   }
   return objectives
     .map((objective) => `${getRaidObjectiveLabel(objective)} ${objective.progress}/${objective.target}`)
@@ -11506,7 +11514,7 @@ function advanceRaidObjective(objectiveId, amount = 1) {
   objective.progress = Math.min(objective.target, objective.progress + amount);
   if (!raid.tasksComplete && areRaidObjectivesComplete(raid)) {
     raid.tasksComplete = true;
-    notify(L('目标完成，撤离点已开放。', 'Objectives complete. Extraction is now open.'), 'success');
+    notify(L('ç®æ å®æï¼æ¤ç¦»ç¹å·²å¼æ¾ã', 'Objectives complete. Extraction is now open.'), 'success');
   }
 }
 
@@ -11529,22 +11537,22 @@ function getExtractionStatusLabel(zone, raid = state.raid) {
   }
   if (zone.requiresObjectives || zone.kind === 'task') {
     return raid.tasksComplete
-      ? L('撤离已解锁', 'Extraction unlocked')
-      : L(`需先完成目标：${getRaidObjectiveStatus(raid)}`, `Finish objectives first: ${getRaidObjectiveStatus(raid)}`);
+      ? L('æ¤ç¦»å·²è§£é', 'Extraction unlocked')
+      : L(`éåå®æç®æ ï¼${getRaidObjectiveStatus(raid)}`, `Finish objectives first: ${getRaidObjectiveStatus(raid)}`);
   }
   if (zone.kind === 'switch') {
     if (zone.switchArmed && (zone.switchTimer ?? 0) > 0) {
-      return L(`闸门已开启 ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
+      return L(`é¸é¨å·²å¼å¯ ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
     }
     if (zone.switchExpired) {
-      return L('闸门已关闭', 'Gate expired');
+      return L('é¸é¨å·²å³é­', 'Gate expired');
     }
     const point = getSwitchPointById(raid, zone.switchPointId);
     return point
-      ? L(`需先前往 ${getSwitchPointLabel(point)} 拉闸`, `Pull ${getSwitchPointLabel(point)} first`)
-      : L('需先拉闸', 'Lever required');
+      ? L(`éååå¾ ${getSwitchPointLabel(point)} æé¸`, `Pull ${getSwitchPointLabel(point)} first`)
+      : L('éåæé¸', 'Lever required');
   }
-  return L('可撤离', 'Ready');
+  return L('å¯æ¤ç¦»', 'Ready');
 }
 
 function renderBasePanel() {
@@ -11560,10 +11568,10 @@ function renderBasePanel() {
   const selectedMode = getLobbyModeDef();
 
   refs.summaryStrip.innerHTML = [
-    summaryPill(L('资金', 'Funds'), formatMoney(state.save.money)),
-    summaryPill(L('仓库', 'Stash'), formatItemCount(state.save.stash.length)),
-    summaryPill(L('撤离率', 'Survival'), survivalRate),
-    summaryPill(L('最高带出', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
+    summaryPill(L('èµé', 'Funds'), formatMoney(state.save.money)),
+    summaryPill(L('ä»åº', 'Stash'), formatItemCount(state.save.stash.length)),
+    summaryPill(L('æ¤ç¦»ç', 'Survival'), survivalRate),
+    summaryPill(L('æé«å¸¦åº', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   if (refs.lobbyPanel) {
@@ -11574,17 +11582,17 @@ function renderBasePanel() {
   }
 
   refs.loadoutPrep.innerHTML = [
-    prepRow(L('行动模式', 'Mode'), L(selectedMode.nameZh, selectedMode.nameEn)),
-    prepRow(L('兵种', 'Operator'), `${getOperatorName(selectedOperatorId)} · ${getOperatorSkillName(selectedOperatorId)}`),
-    prepRow(L('专属道具', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
-    prepRow(L('出击武器', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} · ${selectedStats.caliber}`),
-    prepRow(L('行动时长', 'Operation Time'), L(`${Math.round(selectedMode.duration / 60)} 分钟`, `${Math.round(selectedMode.duration / 60)} min`)),
-    prepRow(L('首选子弹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} · 库存 ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} · stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
-    prepRow(L('初始医疗包', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
-    prepRow(L('初始护甲', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
-    prepRow(L('背包容量', 'Bag Capacity'), `${getBagSlots()} ${L('格', 'slots')} / ${formatWeight(getBagCapacity())}`),
-    prepRow(L('武器伤害', 'Weapon Damage'), `${selectedStats.damage}`),
-    prepRow(L('模式说明', 'Mode Brief'), L(selectedMode.summaryZh, selectedMode.summaryEn)),
+    prepRow(L('è¡å¨æ¨¡å¼', 'Mode'), L(selectedMode.nameZh, selectedMode.nameEn)),
+    prepRow(L('åµç§', 'Operator'), `${getOperatorName(selectedOperatorId)} Â· ${getOperatorSkillName(selectedOperatorId)}`),
+    prepRow(L('ä¸å±éå·', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
+    prepRow(L('åºå»æ­¦å¨', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} Â· ${selectedStats.caliber}`),
+    prepRow(L('è¡å¨æ¶é¿', 'Operation Time'), L(`${Math.round(selectedMode.duration / 60)} åé`, `${Math.round(selectedMode.duration / 60)} min`)),
+    prepRow(L('é¦éå­å¼¹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} Â· åºå­ ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} Â· stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
+    prepRow(L('åå§å»çå', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
+    prepRow(L('åå§æ¤ç²', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
+    prepRow(L('èåå®¹é', 'Bag Capacity'), `${getBagSlots()} ${L('æ ¼', 'slots')} / ${formatWeight(getBagCapacity())}`),
+    prepRow(L('æ­¦å¨ä¼¤å®³', 'Weapon Damage'), `${selectedStats.damage}`),
+    prepRow(L('æ¨¡å¼è¯´æ', 'Mode Brief'), L(selectedMode.summaryZh, selectedMode.summaryEn)),
   ].join('');
 
   if (refs.operatorPanel) {
@@ -11607,7 +11615,7 @@ function renderBasePanel() {
           </div>
           <div class="stack-list">
             <button class="primary-button small" type="button" data-shop-id="${entry.id}" ${afford ? '' : 'disabled'}>
-              ${entry.disabled ? L('已拥有', 'Owned') : formatMoney(entry.price)}
+              ${entry.disabled ? L('å·²æ¥æ', 'Owned') : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -11631,7 +11639,7 @@ function renderBasePanel() {
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('仓库里还没有带出来的战利品。撤离成功后，物资、子弹和枪械零件都会出现在这里。', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
+    : `<div class="item-meta">${L('ä»åºéè¿æ²¡æå¸¦åºæ¥çæå©åãæ¤ç¦»æååï¼ç©èµãå­å¼¹åæªæ¢°é¶ä»¶é½ä¼åºç°å¨è¿éã', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
 }
 
 function startRaid() {
@@ -11668,7 +11676,7 @@ function startRaid() {
     modeId: modeDef.id,
     bonusReward: modeDef.bonusReward ?? 0,
     timeLeft: modeDef.duration,
-    statusText: L('WASD 移动，鼠标转向，F 开火。', 'WASD to move, mouse to look, F to fire.'),
+    statusText: L('WASD ç§»å¨ï¼é¼ æ è½¬åï¼F å¼ç«ã', 'WASD to move, mouse to look, F to fire.'),
     interactionText: modeDef.getStartInteractionText(),
     bag: [],
     bagValue: 0,
@@ -11822,7 +11830,7 @@ function killEnemy(enemy) {
     const recovered = Math.max(0, Math.round(player.health - previousHealth));
     notify(
       L(
-        '过载延长 +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '，恢复 ' + recovered + ' 生命。' : '。'),
+        'è¿è½½å»¶é¿ +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? 'ï¼æ¢å¤ ' + recovered + ' çå½ã' : 'ã'),
         'Overdrive extended by +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? ` and restored ${recovered} HP.` : '.'),
       ),
       'success',
@@ -11832,7 +11840,7 @@ function killEnemy(enemy) {
   enemy.dropPending = Math.random() < 0.42;
   enemy.dropItem = enemy.dropPending ? createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight)) : null;
   persistSave();
-  notify(L('已击倒 ' + getEnemyLabel(enemy) + '。', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
+  notify(L('å·²å»å ' + getEnemyLabel(enemy) + 'ã', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
 }
 
 function renderRaidResultOverlay(result) {
@@ -11841,19 +11849,19 @@ function renderRaidResultOverlay(result) {
     return;
   }
   const modeDef = getLobbyModeDef(raid.modeId);
-  refs.resultTitle.textContent = result.survived ? L('撤离成功', 'Extraction Success') : L('行动失败', 'Killed in Raid');
+  refs.resultTitle.textContent = result.survived ? L('æ¤ç¦»æå', 'Extraction Success') : L('è¡å¨å¤±è´¥', 'Killed in Raid');
   const rows = [
-    resultItem(L('模式', 'Mode'), L(modeDef.nameZh, modeDef.nameEn)),
-    resultItem(L('结果', 'Result'), localizeRaidReason(result.reason)),
-    resultItem(L('带出物资', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
-    resultItem(L('战利品价值', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
-    resultItem(L('击倒敌人', 'Enemies Down'), `${raid.killCount}`),
-    resultItem(L('剩余时间', 'Time Left'), formatTime(raid.timeLeft)),
+    resultItem(L('æ¨¡å¼', 'Mode'), L(modeDef.nameZh, modeDef.nameEn)),
+    resultItem(L('ç»æ', 'Result'), localizeRaidReason(result.reason)),
+    resultItem(L('å¸¦åºç©èµ', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
+    resultItem(L('æå©åä»·å¼', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
+    resultItem(L('å»åæäºº', 'Enemies Down'), `${raid.killCount}`),
+    resultItem(L('å©ä½æ¶é´', 'Time Left'), formatTime(raid.timeLeft)),
   ];
   if ((result.bonusReward ?? 0) > 0) {
-    rows.push(resultItem(L('合约奖金', 'Contract Bonus'), formatMoney(result.bonusReward)));
+    rows.push(resultItem(L('åçº¦å¥é', 'Contract Bonus'), formatMoney(result.bonusReward)));
   }
-  rows.push(resultItem(L('仓库总数', 'Stash Total'), formatItemCount(state.save.stash.length)));
+  rows.push(resultItem(L('ä»åºæ»æ°', 'Stash Total'), formatItemCount(state.save.stash.length)));
   refs.resultSummary.innerHTML = rows.join('');
 }
 
@@ -11904,9 +11912,9 @@ function finishRaid(success, reason, extracted) {
   notify(
     survived
       ? bonusReward > 0
-        ? L('撤离完成，战利品和合约奖金已带回大厅。', 'Extraction complete. Loot and contract bonus returned to base.')
-        : L('撤离完成，战利品已带回基地。', 'Extraction complete. Loot returned to base.')
-      : L('行动失败，当前战利品和临时装备已重置。', 'Raid failed. Current loot and temporary gear were reset.'),
+        ? L('æ¤ç¦»å®æï¼æå©åååçº¦å¥éå·²å¸¦åå¤§åã', 'Extraction complete. Loot and contract bonus returned to base.')
+        : L('æ¤ç¦»å®æï¼æå©åå·²å¸¦ååºå°ã', 'Extraction complete. Loot returned to base.')
+      : L('è¡å¨å¤±è´¥ï¼å½åæå©ååä¸´æ¶è£å¤å·²éç½®ã', 'Raid failed. Current loot and temporary gear were reset.'),
     survived ? 'success' : 'danger',
   );
 }
@@ -11918,7 +11926,7 @@ function renderMapExtractionList() {
     .map((zone) => {
       const distance = raid ? distance2D(zone.x, zone.z, raid.player.x, raid.player.z) : 0;
       const available = isExtractionCurrentlyAvailable(zone, raid);
-      const status = zone.active ? getExtractionStatusLabel(zone, raid) : L('不可用', 'Unavailable');
+      const status = zone.active ? getExtractionStatusLabel(zone, raid) : L('ä¸å¯ç¨', 'Unavailable');
       let titleClass = '';
       if (available) {
         titleClass = zone.kind === 'switch'
@@ -11935,7 +11943,7 @@ function renderMapExtractionList() {
         '<article class="extract-row">' +
           '<div>' +
             '<div class="item-title ' + titleClass + '">' + getZoneLabel(zone) + '</div>' +
-            '<div class="item-meta">' + status + ' · ' + distance.toFixed(0) + 'm</div>' +
+            '<div class="item-meta">' + status + ' Â· ' + distance.toFixed(0) + 'm</div>' +
           '</div>' +
         '</article>';
     })
@@ -11958,13 +11966,13 @@ function getRaidObjectiveLabel(objective) {
     return '';
   }
   if (objective.id === 'search') {
-    return L('搜索', 'Search');
+    return L('æç´¢', 'Search');
   }
   if (objective.id === 'kill') {
-    return L('清敌', 'Clear');
+    return L('æ¸æ', 'Clear');
   }
   if (objective.id === 'hunter') {
-    return L('猎手', 'Hunters');
+    return L('çæ', 'Hunters');
   }
   return objective.labelZh
     ? L(objective.labelZh, objective.labelEn ?? objective.labelZh)
@@ -11976,9 +11984,9 @@ function getRaidObjectiveStatus(raid = state.raid) {
   if (!objectives.length) {
     const switchZone = raid?.extractions?.find((zone) => zone.kind === 'switch');
     if (switchZone?.switchArmed && (switchZone.switchTimer ?? 0) > 0) {
-      return L('普通撤离已开放 | 拉闸撤离已开放', 'Standard exit open | Lever exit open');
+      return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å·²å¼æ¾', 'Standard exit open | Lever exit open');
     }
-    return L('普通撤离已开放 | 拉闸撤离待开启', 'Standard exit open | Lever exit locked');
+    return L('æ®éæ¤ç¦»å·²å¼æ¾ | æé¸æ¤ç¦»å¾å¼å¯', 'Standard exit open | Lever exit locked');
   }
   return objectives
     .map((objective) => `${getRaidObjectiveLabel(objective)} ${objective.progress}/${objective.target}`)
@@ -11997,7 +12005,7 @@ function advanceRaidObjective(objectiveId, amount = 1) {
   objective.progress = Math.min(objective.target, objective.progress + amount);
   if (!raid.tasksComplete && areRaidObjectivesComplete(raid)) {
     raid.tasksComplete = true;
-    notify(L('目标完成，撤离点已开放。', 'Objectives complete. Extraction is now open.'), 'success');
+    notify(L('ç®æ å®æï¼æ¤ç¦»ç¹å·²å¼æ¾ã', 'Objectives complete. Extraction is now open.'), 'success');
   }
 }
 
@@ -12020,22 +12028,22 @@ function getExtractionStatusLabel(zone, raid = state.raid) {
   }
   if (zone.requiresObjectives || zone.kind === 'task') {
     return raid.tasksComplete
-      ? L('撤离已解锁', 'Extraction unlocked')
-      : L(`需先完成目标：${getRaidObjectiveStatus(raid)}`, `Finish objectives first: ${getRaidObjectiveStatus(raid)}`);
+      ? L('æ¤ç¦»å·²è§£é', 'Extraction unlocked')
+      : L(`éåå®æç®æ ï¼${getRaidObjectiveStatus(raid)}`, `Finish objectives first: ${getRaidObjectiveStatus(raid)}`);
   }
   if (zone.kind === 'switch') {
     if (zone.switchArmed && (zone.switchTimer ?? 0) > 0) {
-      return L(`闸门已开启 ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
+      return L(`é¸é¨å·²å¼å¯ ${Math.ceil(zone.switchTimer)}s`, `Gate open ${Math.ceil(zone.switchTimer)}s`);
     }
     if (zone.switchExpired) {
-      return L('闸门已关闭', 'Gate expired');
+      return L('é¸é¨å·²å³é­', 'Gate expired');
     }
     const point = getSwitchPointById(raid, zone.switchPointId);
     return point
-      ? L(`需先前往 ${getSwitchPointLabel(point)} 拉闸`, `Pull ${getSwitchPointLabel(point)} first`)
-      : L('需先拉闸', 'Lever required');
+      ? L(`éååå¾ ${getSwitchPointLabel(point)} æé¸`, `Pull ${getSwitchPointLabel(point)} first`)
+      : L('éåæé¸', 'Lever required');
   }
-  return L('可撤离', 'Ready');
+  return L('å¯æ¤ç¦»', 'Ready');
 }
 
 function renderBasePanel() {
@@ -12051,10 +12059,10 @@ function renderBasePanel() {
   const selectedMode = getLobbyModeDef();
 
   refs.summaryStrip.innerHTML = [
-    summaryPill(L('资金', 'Funds'), formatMoney(state.save.money)),
-    summaryPill(L('仓库', 'Stash'), formatItemCount(state.save.stash.length)),
-    summaryPill(L('撤离率', 'Survival'), survivalRate),
-    summaryPill(L('最高带出', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
+    summaryPill(L('èµé', 'Funds'), formatMoney(state.save.money)),
+    summaryPill(L('ä»åº', 'Stash'), formatItemCount(state.save.stash.length)),
+    summaryPill(L('æ¤ç¦»ç', 'Survival'), survivalRate),
+    summaryPill(L('æé«å¸¦åº', 'Best Haul'), formatMoney(state.save.stats.bestHaul)),
   ].join('');
 
   if (refs.lobbyPanel) {
@@ -12065,17 +12073,17 @@ function renderBasePanel() {
   }
 
   refs.loadoutPrep.innerHTML = [
-    prepRow(L('行动模式', 'Mode'), L(selectedMode.nameZh, selectedMode.nameEn)),
-    prepRow(L('兵种', 'Operator'), `${getOperatorName(selectedOperatorId)} · ${getOperatorSkillName(selectedOperatorId)}`),
-    prepRow(L('专属道具', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
-    prepRow(L('出击武器', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} · ${selectedStats.caliber}`),
-    prepRow(L('行动时长', 'Operation Time'), L(`${Math.round(selectedMode.duration / 60)} 分钟`, `${Math.round(selectedMode.duration / 60)} min`)),
-    prepRow(L('首选子弹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} · 库存 ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} · stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
-    prepRow(L('初始医疗包', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
-    prepRow(L('初始护甲', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
-    prepRow(L('背包容量', 'Bag Capacity'), `${getBagSlots()} ${L('格', 'slots')} / ${formatWeight(getBagCapacity())}`),
-    prepRow(L('武器伤害', 'Weapon Damage'), `${selectedStats.damage}`),
-    prepRow(L('模式说明', 'Mode Brief'), L(selectedMode.summaryZh, selectedMode.summaryEn)),
+    prepRow(L('è¡å¨æ¨¡å¼', 'Mode'), L(selectedMode.nameZh, selectedMode.nameEn)),
+    prepRow(L('åµç§', 'Operator'), `${getOperatorName(selectedOperatorId)} Â· ${getOperatorSkillName(selectedOperatorId)}`),
+    prepRow(L('ä¸å±éå·', 'Signature Item'), getOperatorItemName(selectedOperatorId)),
+    prepRow(L('åºå»æ­¦å¨', 'Raid Weapon'), `${getWeaponLabel(selectedWeaponId)} Â· ${selectedStats.caliber}`),
+    prepRow(L('è¡å¨æ¶é¿', 'Operation Time'), L(`${Math.round(selectedMode.duration / 60)} åé`, `${Math.round(selectedMode.duration / 60)} min`)),
+    prepRow(L('é¦éå­å¼¹', 'Preferred Ammo'), L(`${getAmmoTierLabel(selectedAmmoId)} Â· åºå­ ${state.save.prepAmmo[selectedAmmoId] ?? 0}`, `${getAmmoTierLabel(selectedAmmoId)} Â· stock ${state.save.prepAmmo[selectedAmmoId] ?? 0}`)),
+    prepRow(L('åå§å»çå', 'Starting Medkits'), `${BASE_MEDKITS + state.save.prep.medkitBonus + getOperatorDef(selectedOperatorId).startMedkitBonus}`),
+    prepRow(L('åå§æ¤ç²', 'Starting Armor'), `${BASE_ARMOR + state.save.prep.armorBonus + getOperatorDef(selectedOperatorId).startArmorBonus}`),
+    prepRow(L('èåå®¹é', 'Bag Capacity'), `${getBagSlots()} ${L('æ ¼', 'slots')} / ${formatWeight(getBagCapacity())}`),
+    prepRow(L('æ­¦å¨ä¼¤å®³', 'Weapon Damage'), `${selectedStats.damage}`),
+    prepRow(L('æ¨¡å¼è¯´æ', 'Mode Brief'), L(selectedMode.summaryZh, selectedMode.summaryEn)),
   ].join('');
 
   if (refs.operatorPanel) {
@@ -12098,7 +12106,7 @@ function renderBasePanel() {
           </div>
           <div class="stack-list">
             <button class="primary-button small" type="button" data-shop-id="${entry.id}" ${afford ? '' : 'disabled'}>
-              ${entry.disabled ? L('已拥有', 'Owned') : formatMoney(entry.price)}
+              ${entry.disabled ? L('å·²æ¥æ', 'Owned') : formatMoney(entry.price)}
             </button>
           </div>
         </article>
@@ -12122,7 +12130,7 @@ function renderBasePanel() {
           </article>
         `)
         .join('')
-    : `<div class="item-meta">${L('仓库里还没有带出来的战利品。撤离成功后，物资、子弹和枪械零件都会出现在这里。', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
+    : `<div class="item-meta">${L('ä»åºéè¿æ²¡æå¸¦åºæ¥çæå©åãæ¤ç¦»æååï¼ç©èµãå­å¼¹åæªæ¢°é¶ä»¶é½ä¼åºç°å¨è¿éã', 'The stash is empty. Loot, ammo, and weapon parts show up here after a successful extraction.')}</div>`;
 }
 
 function startRaid() {
@@ -12159,7 +12167,7 @@ function startRaid() {
     modeId: modeDef.id,
     bonusReward: modeDef.bonusReward ?? 0,
     timeLeft: modeDef.duration,
-    statusText: L('WASD 移动，鼠标转向，F 开火。', 'WASD to move, mouse to look, F to fire.'),
+    statusText: L('WASD ç§»å¨ï¼é¼ æ è½¬åï¼F å¼ç«ã', 'WASD to move, mouse to look, F to fire.'),
     interactionText: modeDef.getStartInteractionText(),
     bag: [],
     bagValue: 0,
@@ -12313,7 +12321,7 @@ function killEnemy(enemy) {
     const recovered = Math.max(0, Math.round(player.health - previousHealth));
     notify(
       L(
-        '过载延长 +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '，恢复 ' + recovered + ' 生命。' : '。'),
+        'è¿è½½å»¶é¿ +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? 'ï¼æ¢å¤ ' + recovered + ' çå½ã' : 'ã'),
         'Overdrive extended by +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? ` and restored ${recovered} HP.` : '.'),
       ),
       'success',
@@ -12323,7 +12331,7 @@ function killEnemy(enemy) {
   enemy.dropPending = Math.random() < 0.42;
   enemy.dropItem = enemy.dropPending ? createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight)) : null;
   persistSave();
-  notify(L('已击倒 ' + getEnemyLabel(enemy) + '。', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
+  notify(L('å·²å»å ' + getEnemyLabel(enemy) + 'ã', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
 }
 
 function renderRaidResultOverlay(result) {
@@ -12332,19 +12340,19 @@ function renderRaidResultOverlay(result) {
     return;
   }
   const modeDef = getLobbyModeDef(raid.modeId);
-  refs.resultTitle.textContent = result.survived ? L('撤离成功', 'Extraction Success') : L('行动失败', 'Killed in Raid');
+  refs.resultTitle.textContent = result.survived ? L('æ¤ç¦»æå', 'Extraction Success') : L('è¡å¨å¤±è´¥', 'Killed in Raid');
   const rows = [
-    resultItem(L('模式', 'Mode'), L(modeDef.nameZh, modeDef.nameEn)),
-    resultItem(L('结果', 'Result'), localizeRaidReason(result.reason)),
-    resultItem(L('带出物资', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
-    resultItem(L('战利品价值', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
-    resultItem(L('击倒敌人', 'Enemies Down'), `${raid.killCount}`),
-    resultItem(L('剩余时间', 'Time Left'), formatTime(raid.timeLeft)),
+    resultItem(L('æ¨¡å¼', 'Mode'), L(modeDef.nameZh, modeDef.nameEn)),
+    resultItem(L('ç»æ', 'Result'), localizeRaidReason(result.reason)),
+    resultItem(L('å¸¦åºç©èµ', 'Loot Extracted'), result.survived ? formatItemCount(result.bagCount) : formatItemCount(0)),
+    resultItem(L('æå©åä»·å¼', 'Haul Value'), result.survived ? formatMoney(result.haul) : formatMoney(0)),
+    resultItem(L('å»åæäºº', 'Enemies Down'), `${raid.killCount}`),
+    resultItem(L('å©ä½æ¶é´', 'Time Left'), formatTime(raid.timeLeft)),
   ];
   if ((result.bonusReward ?? 0) > 0) {
-    rows.push(resultItem(L('合约奖金', 'Contract Bonus'), formatMoney(result.bonusReward)));
+    rows.push(resultItem(L('åçº¦å¥é', 'Contract Bonus'), formatMoney(result.bonusReward)));
   }
-  rows.push(resultItem(L('仓库总数', 'Stash Total'), formatItemCount(state.save.stash.length)));
+  rows.push(resultItem(L('ä»åºæ»æ°', 'Stash Total'), formatItemCount(state.save.stash.length)));
   refs.resultSummary.innerHTML = rows.join('');
 }
 
@@ -12395,9 +12403,9 @@ function finishRaid(success, reason, extracted) {
   notify(
     survived
       ? bonusReward > 0
-        ? L('撤离完成，战利品和合约奖金已带回大厅。', 'Extraction complete. Loot and contract bonus returned to base.')
-        : L('撤离完成，战利品已带回基地。', 'Extraction complete. Loot returned to base.')
-      : L('行动失败，当前战利品和临时装备已重置。', 'Raid failed. Current loot and temporary gear were reset.'),
+        ? L('æ¤ç¦»å®æï¼æå©åååçº¦å¥éå·²å¸¦åå¤§åã', 'Extraction complete. Loot and contract bonus returned to base.')
+        : L('æ¤ç¦»å®æï¼æå©åå·²å¸¦ååºå°ã', 'Extraction complete. Loot returned to base.')
+      : L('è¡å¨å¤±è´¥ï¼å½åæå©ååä¸´æ¶è£å¤å·²éç½®ã', 'Raid failed. Current loot and temporary gear were reset.'),
     survived ? 'success' : 'danger',
   );
 }
@@ -12409,7 +12417,7 @@ function renderMapExtractionList() {
     .map((zone) => {
       const distance = raid ? distance2D(zone.x, zone.z, raid.player.x, raid.player.z) : 0;
       const available = isExtractionCurrentlyAvailable(zone, raid);
-      const status = zone.active ? getExtractionStatusLabel(zone, raid) : L('不可用', 'Unavailable');
+      const status = zone.active ? getExtractionStatusLabel(zone, raid) : L('ä¸å¯ç¨', 'Unavailable');
       let titleClass = '';
       if (available) {
         titleClass = zone.kind === 'switch'
@@ -12426,7 +12434,7 @@ function renderMapExtractionList() {
         '<article class="extract-row">' +
           '<div>' +
             '<div class="item-title ' + titleClass + '">' + getZoneLabel(zone) + '</div>' +
-            '<div class="item-meta">' + status + ' · ' + distance.toFixed(0) + 'm</div>' +
+            '<div class="item-meta">' + status + ' Â· ' + distance.toFixed(0) + 'm</div>' +
           '</div>' +
         '</article>';
     })
@@ -13863,11 +13871,11 @@ function applyStaticLanguage() {
     refs.operatorTitle.textContent = L('\u5175\u79cd', 'Operators');
   }
   if (refs.lobbyTitle) {
-    refs.lobbyTitle.textContent = L('大厅', 'Lobby');
+    refs.lobbyTitle.textContent = L('å¤§å', 'Lobby');
   }
   if (refs.lobbyNote) {
     refs.lobbyNote.textContent = L(
-      '在这里选择行动模式，再决定这次出击的节奏与目标。',
+      'å¨è¿ééæ©è¡å¨æ¨¡å¼ï¼åå³å®è¿æ¬¡åºå»çèå¥ä¸ç®æ ã',
       'Choose the operation mode here before deciding how this run should play.',
     );
   }
@@ -14343,7 +14351,7 @@ window.__sdrPatchedStartRaid = function patchedStartRaid() {
     modeId: modeDef.id,
     bonusReward: modeDef.bonusReward ?? 0,
     timeLeft: modeDef.duration,
-    statusText: L('WASD �ƶ������ת��F ����', 'WASD to move, mouse to look, F to fire.'),
+    statusText: L('WASD ÒÆ¶¯£¬Êó±ê×ªÏò£¬F ¿ª»ð¡£', 'WASD to move, mouse to look, F to fire.'),
     interactionText: modeDef.getStartInteractionText(),
     bag: [],
     bagValue: 0,
@@ -14498,7 +14506,7 @@ window.__sdrPatchedKillEnemy = function patchedKillEnemy(enemy) {
     const recovered = Math.max(0, Math.round(player.health - previousHealth));
     notify(
       L(
-        '�����ӳ� +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '���ָ� ' + recovered + ' ������' : '��'),
+        '¹ýÔØÑÓ³¤ +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '£¬»Ö¸´ ' + recovered + ' ÉúÃü¡£' : '¡£'),
         'Overdrive extended by +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? ` and restored ${recovered} HP.` : '.'),
       ),
       'success',
@@ -14508,7 +14516,7 @@ window.__sdrPatchedKillEnemy = function patchedKillEnemy(enemy) {
   enemy.dropPending = Math.random() < 0.42;
   enemy.dropItem = enemy.dropPending ? createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight)) : null;
   persistSave();
-  notify(L('�ѻ��� ' + getEnemyLabel(enemy) + '��', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
+  notify(L('ÒÑ»÷µ¹ ' + getEnemyLabel(enemy) + '¡£', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
 };
 killEnemy = window.__sdrPatchedKillEnemy;
 
