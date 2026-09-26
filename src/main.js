@@ -14526,7 +14526,7 @@ window.__sdrPatchedKillEnemy = function patchedKillEnemy(enemy) {
     const recovered = Math.max(0, Math.round(player.health - previousHealth));
     notify(
       L(
-        '¹ýÔØÑÓ³¤ +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '£¬»Ö¸´ ' + recovered + ' ÉúÃü¡£' : '¡£'),
+        '过载延长 +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? '，恢复 ' + recovered + ' 生命。' : '。'),
         'Overdrive extended by +' + bonusSeconds.toFixed(1) + 's' + (recovered > 0 ? ` and restored ${recovered} HP.` : '.'),
       ),
       'success',
