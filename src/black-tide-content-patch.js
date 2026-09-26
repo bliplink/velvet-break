@@ -777,6 +777,16 @@
       const raid = state.raid;
       const player = raid?.player;
 
+      const staminaMax = player?.operatorId === OPERATOR_ID ? 650 : Number(player?.maxStamina ?? 500);
+      if (player) {
+        player.maxStamina = staminaMax;
+        player.stamina = Math.max(0, Math.min(staminaMax, Number(player.stamina ?? staminaMax)));
+        const staminaValue = document.getElementById('staminaValue');
+        const staminaFill = document.getElementById('staminaMeterFill');
+        if (staminaValue) staminaValue.textContent = Math.round(player.stamina) + ' / ' + Math.round(staminaMax);
+        if (staminaFill) staminaFill.style.width = Math.max(0, Math.min(100, player.stamina / staminaMax * 100)).toFixed(1) + '%';
+      }
+
       if (player?.operatorId === OPERATOR_ID) {
         player.utilityMaxItems = PRISM_MAX;
         player.utilityGainInterval = PRISM_REFILL;
