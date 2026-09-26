@@ -472,6 +472,21 @@
             ensurePatrolRoute(enemy);
           }
         }
+        enemy.tacticalStrafeTimer = Math.max(0, (enemy.tacticalStrafeTimer ?? 0) - dt);
+        if (active && !enemy.isProne && !enemy.mobilityAction && (enemy.engineerStunTimer ?? 0) <= 0 &&
+          (enemy.tacticalStrafeTimer ?? 0) <= 0 && remaining > 7 && remaining < 30 &&
+          !lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z)) {
+          const towardPlayer = normalize2D(player.x - enemy.x, player.z - enemy.z);
+          const side = enemy.strafeDirection ?? 1;
+          const strafeSpeed = enemy.speed * (enemy.isNamelessBoss ? 0.72 : 0.48) * dt;
+          const beforeStrafeX = enemy.x;
+          const beforeStrafeZ = enemy.z;
+          moveEntityWithCollision(enemy, -towardPlayer.z * side * strafeSpeed, towardPlayer.x * side * strafeSpeed, enemy.radius ?? 0.7);
+          if (distance2D(beforeStrafeX, beforeStrafeZ, enemy.x, enemy.z) < 0.01) enemy.strafeDirection = -side;
+          enemy.heading = Math.atan2(towardPlayer.x, towardPlayer.z);
+          enemy.tacticalStrafeTimer = enemy.isNamelessBoss ? 0.14 : 0.24 + Math.random() * 0.18;
+        }
+
         if (active && !enemy.isProne && (enemy.mobilityCooldown ?? 0) <= 0 &&
           (player.fireCooldown ?? 0) > 0.04 && remaining < 52 &&
           !lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z)) {
