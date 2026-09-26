@@ -149,25 +149,24 @@
           disabled: false,
         },
       ];
-      const echoUnlocked = Boolean(window.__sdrEchoRaidPass);
+      const echoUnlocked = Boolean(state.save.echoUnlocked);
       const echoEntry = {
         id: 'echo_unlock',
         kind: 'prep',
         name: L('回声', 'Echo'),
-        description: L('临时携带近战武器「回声」进入下一局：12 米攻击范围、200 伤害、0.5 秒一刀，命中使目标暴露 5 秒；该携带资格在本局结束后失效。', 'Carry Echo into the next raid: 12m range, 200 damage, 0.5s slash, reveals hit targets for 5s. The carry pass expires when the raid ends.'),
+        description: L('永久解锁近战武器「回声」：12 米攻击范围、200 伤害、0.5 秒一刀，命中使目标暴露 5 秒；购买后每局都会自动携带。', 'Permanently unlock Echo: 12m range, 200 damage, 0.5s slash, reveals hit targets for 5s. Once purchased, Echo is carried into every raid.'),
         price: 100000,
-        status: echoUnlocked ? L('下一局已准备', 'Ready for next raid') : L('单局携带', 'One-raid carry'),
+        status: echoUnlocked ? L('永久拥有', 'Permanently owned') : L('永久解锁', 'Permanent unlock'),
         disabled: echoUnlocked,
       };
       return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...entries]
         .filter((entry) => entry.id !== 'emergency_funding');
     };
 
-    state.save.echoUnlocked = false;
+    state.save.echoUnlocked = Boolean(state.save.echoUnlocked);
     state.save.echoSmokeUnlocked = false;
     persistSave();
-    window.__sdrEchoRaidPass = false;
-    const echoUnlocked = () => Boolean(window.__sdrEchoRaidPass || state.raid?.player?.echoKnifeEquipped);
+    const echoUnlocked = () => Boolean(state.save.echoUnlocked || state.raid?.player?.echoKnifeEquipped);
 
     const basePanelEchoUnlockHandler = (event) => {
       const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
@@ -177,9 +176,10 @@
         return;
       }
       state.save.money -= 100000;
-      window.__sdrEchoRaidPass = true;
+      state.save.echoUnlocked = true;
+      persistSave();
       renderBasePanel();
-      notify(L('回声已准备：仅下一局有效。', 'Echo is ready for one raid only.'), 'success');
+      notify(L('回声已永久解锁：之后每局都会自动携带。', 'Echo permanently unlocked and will be carried into every raid.'), 'success');
     };
     refs?.basePanel?.addEventListener?.('click', basePanelEchoUnlockHandler, true);
 
