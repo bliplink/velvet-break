@@ -206,12 +206,14 @@
       }
       const stamina = Math.round(player.stamina ?? STAMINA_MAX);
       const ratio = clamp((player.stamina ?? STAMINA_MAX) / STAMINA_MAX, 0, 1);
-      ui.value.textContent = `${stamina} / ${STAMINA_MAX}`;
-      ui.detail.textContent = ratio <= 0.01
-        ? safeL('体力耗尽，移速降低', 'Exhausted, movement slowed')
-        : ratio < 0.3
-          ? safeL('体力偏低', 'Low stamina')
-          : safeL('移动消耗，静止恢复', 'Drains while moving, recovers while idle');
+      if (ui.value) ui.value.textContent = `${stamina} / ${STAMINA_MAX}`;
+      if (ui.detail) {
+        ui.detail.textContent = ratio <= 0.01
+          ? safeL('体力耗尽，移速降低', 'Exhausted, movement slowed')
+          : ratio < 0.3
+            ? safeL('体力偏低', 'Low stamina')
+            : safeL('移动消耗，静止恢复', 'Drains while moving, recovers while idle');
+      }
       if (ui.fill) {
         ui.fill.style.width = `${ratio * 100}%`;
         ui.fill.style.background = ratio <= 0.01 ? '#d97568' : ratio < 0.3 ? '#d8c17a' : '#7ed0be';
