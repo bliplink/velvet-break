@@ -32,6 +32,37 @@ jobs:
           node --check src/main.js
           for f in src/*.js; do node --check "$f"; done
 
+      - name: Reject mojibake and replacement characters
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          roots = [Path("index.html"), Path("src"), Path("styles")]
+          bad = ["Ã", "Â", "â€™", "â€“", "â€”", "ï¿½", "�"]
+          hits = []
+          files = [roots[0]]
+          for root in roots[1:]:
+              files.extend(p for p in root.rglob("*") if p.is_file() and p.suffix in {".js", ".css", ".html"})
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+              for token in bad:
+                  if token in text:
+                      hits.append(f"{path}: contains {token!r}")
+          if hits:
+              raise SystemExit("\n".join(hits))
+          print(f"Encoding scan passed across {len(files)} text assets")
+          PY
+
+      - name: Verify final authority patch is loaded last
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html = Path("index.html").read_text(encoding="utf-8")
+          scripts = [line for line in html.splitlines() if "<script" in line and "src/" in line]
+          assert scripts, "No game scripts found"
+          assert "final-polish-patch.js" in scripts[-1], "final-polish-patch.js must remain the last game patch"
+          print(scripts[-1].strip())
+          PY
+
       - name: Start local game server
         run: |
           node server.js > /tmp/game.log 2>&1 &
