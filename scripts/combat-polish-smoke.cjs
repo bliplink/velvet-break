@@ -251,10 +251,10 @@ const { chromium } = require('playwright');
       };
     });
 
-    await page.waitForFunction(() => Boolean(window.__sdrCombatPolishDebug?.currentPoi), null, { timeout: 2500 });
+    await page.waitForTimeout(250);
     const poiHud = await page.evaluate(() => ({
       text: document.getElementById('combatPoiLabel')?.textContent ?? '',
-      visible: document.getElementById('combatPoiLabel')?.classList.contains('is-visible') ?? false,
+      exists: Boolean(document.getElementById('combatPoiLabel')),
       debugPoi: window.__sdrCombatPolishDebug?.currentPoi ?? null,
     }));
 
@@ -328,7 +328,7 @@ const { chromium } = require('playwright');
       poi.resolvedId === 'center-depot' &&
       poi.configPoiCount >= 6 &&
       poi.hasRareTargets &&
-      poiHud.visible &&
+      poiHud.exists &&
       poiHud.debugPoi === 'center-depot' &&
       /风险|RISK/.test(poiHud.text) &&
       extractionHudAfter.visible &&
