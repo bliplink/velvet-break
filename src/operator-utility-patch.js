@@ -111,7 +111,7 @@
       ui.label.textContent = L('专属道具', 'Utility');
       ui.value.textContent = `${utilityName(player.operatorId)} ${count}/${maxItems}`;
       ui.detail.textContent = player.grenadeTargeting
-        ? L(`落点已选 ${player.grenadeTargeting.distance.toFixed(0)} 米，再按 G 投掷`, `Target ${player.grenadeTargeting.distance.toFixed(0)}m. Press G to throw`)
+        ? L(`手雷落点 ${player.grenadeTargeting.distance.toFixed(0)} 米｜按 G 确认投掷`, `Grenade landing ${player.grenadeTargeting.distance.toFixed(0)}m | Press G to throw`)
         : player.utilityAction
         ? L('使用中...', 'Using...')
         : ready
@@ -651,7 +651,7 @@
       if (type === 'assault' && !player.grenadeTargeting) {
         player.grenadeTargeting = { distance: 18, x: player.x, z: player.z };
         updateGrenadeTargeting(player);
-        raid.statusText = L('高级手雷：转动视角选择落点，滚轮调整距离，再按 G 投掷。', 'Advanced Grenade: aim the landing point, use the wheel for distance, then press G to throw.');
+        raid.statusText = L('高级手雷｜移动鼠标选择落点，滚轮调整距离，按 G 确认投掷。', 'Advanced Grenade | Aim with the mouse, use the wheel to adjust distance, press G to throw.');
         syncUtilityUi();
         return;
       }
@@ -676,7 +676,7 @@
       updateGrenadeTargeting(player);
       player.isAiming = false;
       raid.statusText = type === 'assault'
-        ? L('投掷手雷中...', 'Throwing grenade...')
+        ? L('手雷已出手...', 'Grenade away...')
         : type === 'medic'
           ? L('释放增益烟雾中...', 'Deploying recovery smoke...')
           : L('启动电子隐身器...', 'Activating electronic cloak...');
