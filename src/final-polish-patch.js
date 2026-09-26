@@ -124,6 +124,100 @@
       };
     }
 
+
+    // Claire: separate four-use no-cooldown global scan from her jammer utility.
+    const useAbilityBeforeClaire = typeof useOperatorAbility === 'function' ? useOperatorAbility : null;
+    if (useAbilityBeforeClaire) {
+      useOperatorAbility = function useClaireGlobalScan(...args) {
+        const raid = state.raid;
+        const player = raid?.player;
+        if (player?.operatorId !== 'recon') return useAbilityBeforeClaire.apply(this, args);
+        player.claireScanCharges = Number.isFinite(player.claireScanCharges) ? player.claireScanCharges : 4;
+        if (player.claireScanCharges <= 0) {
+          notify('全域扫描次数已耗尽。', 'warning');
+          return;
+        }
+        player.claireScanCharges -= 1;
+        player.abilityCharges = player.claireScanCharges;
+        player.abilityCooldown = 0;
+        player.abilityCooldownPending = false;
+        player.abilityActiveTimer = Math.max(player.abilityActiveTimer ?? 0, 30);
+        player.reconZone = { minX: -MAP_HALF, maxX: MAP_HALF, minZ: -MAP_HALF, maxZ: MAP_HALF };
+        let count = 0;
+        for (const enemy of raid.enemies ?? []) {
+          if (enemy.dead || enemy.despawned) continue;
+          enemy.revealedTimer = Math.max(enemy.revealedTimer ?? 0, 30);
+          enemy.claireFreezeTimer = Math.max(enemy.claireFreezeTimer ?? 0, 20);
+          count += 1;
+        }
+        spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), '#72d9ff', 0.16, 0.2);
+        notify(`全域扫描：冻结 ${count} 名敌人 20 秒，并暴露 30 秒。剩余 ${player.claireScanCharges} 次。`, 'success');
+        syncHud();
+      };
+    }
+
+    const updateEnemiesBeforeClaire = typeof updateEnemies === 'function' ? updateEnemies : null;
+    if (updateEnemiesBeforeClaire) {
+      updateEnemies = function updateEnemiesWithClaireFreeze(dt, ...args) {
+        const raid = state.raid;
+        const frozen = [];
+        for (const enemy of raid?.enemies ?? []) {
+          if ((enemy.claireFreezeTimer ?? 0) > 0 && !enemy.dead && !enemy.despawned) {
+            enemy.claireFreezeTimer = Math.max(0, enemy.claireFreezeTimer - dt);
+            frozen.push({ enemy, x: enemy.x, z: enemy.z, heading: enemy.heading, alertTimer: enemy.alertTimer });
+          }
+        }
+        const result = updateEnemiesBeforeClaire.call(this, dt, ...args);
+        for (const snap of frozen) {
+          if (snap.enemy.dead || snap.enemy.despawned) continue;
+          snap.enemy.x = snap.x;
+          snap.enemy.z = snap.z;
+          snap.enemy.heading = snap.heading;
+          snap.enemy.alertTimer = snap.alertTimer;
+          snap.enemy.revealedTimer = Math.max(snap.enemy.revealedTimer ?? 0, snap.enemy.claireFreezeTimer > 0 ? 0.1 : 0);
+        }
+        return result;
+      };
+    }
+
+    const useClaireJammer = () => {
+      const player = state.raid?.player;
+      if (!player || player.operatorId !== 'recon') return;
+      player.claireJammerCharges = Number.isFinite(player.claireJammerCharges) ? player.claireJammerCharges : 4;
+      player.claireJammerCooldown = Math.max(0, Number(player.claireJammerCooldown ?? 0));
+      if (player.claireJammerCharges <= 0) return notify('电子干扰器已耗尽。', 'warning');
+      if (player.claireJammerCooldown > 0) return notify(`电子干扰器冷却中 ${player.claireJammerCooldown.toFixed(1)}s。`, 'warning');
+      player.claireJammerCharges -= 1;
+      player.claireJammerCooldown = 20;
+      player.claireInvisibleTimer = 10;
+      notify(`电子干扰器启动：隐身 10 秒。剩余 ${player.claireJammerCharges} 个。`, 'success');
+    };
+    window.__sdrUseClaireJammer = useClaireJammer;
+    window.addEventListener('keydown', (event) => {
+      if (event.repeat || state.mode !== 'raid' || !state.raid || state.overlay) return;
+      if (event.code === 'KeyG' || event.key?.toLowerCase?.() === 'g') {
+        useClaireJammer();
+        event.preventDefault();
+      }
+    });
+
+    const updateRaidBeforeClaireTimers = typeof updateRaid === 'function' ? updateRaid : null;
+    if (updateRaidBeforeClaireTimers) {
+      updateRaid = function updateRaidWithClaireTimers(dt, ...args) {
+        const player = state.raid?.player;
+        if (player?.operatorId === 'recon') {
+          if (!Number.isFinite(player.claireScanCharges)) {
+            player.claireScanCharges = 4;
+            player.abilityCharges = 4;
+          }
+          if (!Number.isFinite(player.claireJammerCharges)) player.claireJammerCharges = 4;
+          player.claireJammerCooldown = Math.max(0, Number(player.claireJammerCooldown ?? 0) - dt);
+          player.claireInvisibleTimer = Math.max(0, Number(player.claireInvisibleTimer ?? 0) - dt);
+        }
+        return updateRaidBeforeClaireTimers.call(this, dt, ...args);
+      };
+    }
+
     window.__sdrFinalPolishDebug = {
       version: '20260926-final1',
       nonSolidLoot: true,
@@ -132,6 +226,8 @@
       opaqueBuildings: true,
       dangerReadout: true,
       reconRoleFeedback: true,
+      claireGlobalScan: true,
+      claireJammer: true,
     };
   };
   boot();
