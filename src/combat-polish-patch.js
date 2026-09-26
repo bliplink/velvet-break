@@ -284,6 +284,26 @@
       return result;
     };
 
+    const syncStaminaHud = () => {
+      const player = state.raid?.player;
+      const value = document.getElementById('staminaValue');
+      const fill = document.getElementById('staminaMeterFill');
+      if (!player || !value || !fill) return;
+      const max = Math.max(1, Number(player.maxStamina ?? (player.operatorId === 'lingshuang' ? 650 : 500)));
+      const current = Math.max(0, Math.min(max, Number(player.stamina ?? max)));
+      value.textContent = `${Math.round(current)} / ${Math.round(max)}`;
+      fill.style.width = `${Math.max(0, Math.min(100, current / max * 100))}%`;
+      fill.dataset.low = current / max < 0.22 ? '1' : '0';
+    };
+    const syncHudBeforeStamina = typeof syncHud === 'function' ? syncHud : null;
+    if (syncHudBeforeStamina) {
+      syncHud = function syncHudWithStamina(...args) {
+        const result = syncHudBeforeStamina.apply(this, args);
+        syncStaminaHud();
+        return result;
+      };
+    }
+
     const damageBeforePolish = damageEnemy;
     damageEnemy = function polishedDamageEnemy(enemy, amount, options = {}) {
       const healthBefore = enemy?.health ?? 0;
