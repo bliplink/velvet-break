@@ -70,12 +70,46 @@
       if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
     }
 
+    // Lightweight danger readout: nearby living enemies only; no wallhack positions.
+    const ensureDangerBadge = () => {
+      let badge = document.getElementById('raidDangerBadge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.id = 'raidDangerBadge';
+        badge.style.cssText = 'position:fixed;right:18px;top:86px;z-index:1200;padding:5px 9px;border:1px solid rgba(255,190,92,.35);border-radius:4px;background:rgba(12,16,18,.58);color:#ffd18a;font:700 11px/1.2 system-ui;letter-spacing:.08em;pointer-events:none;opacity:.82';
+        document.body.appendChild(badge);
+      }
+      return badge;
+    };
+    let dangerAccumulator = 0;
+    const updateRaidBeforeDanger = typeof updateRaid === 'function' ? updateRaid : null;
+    if (updateRaidBeforeDanger) {
+      updateRaid = function updateRaidWithDangerReadout(dt, ...args) {
+        const result = updateRaidBeforeDanger.call(this, dt, ...args);
+        dangerAccumulator += dt;
+        if (dangerAccumulator >= 0.35) {
+          dangerAccumulator = 0;
+          const raid = state.raid;
+          const badge = ensureDangerBadge();
+          if (!raid?.player) {
+            badge.style.display = 'none';
+          } else {
+            badge.style.display = '';
+            const nearby = (raid.enemies ?? []).filter(enemy => !enemy.dead && !enemy.despawned && Math.hypot(enemy.x - raid.player.x, enemy.z - raid.player.z) <= 32).length;
+            badge.textContent = nearby >= 6 ? '威胁：极高' : nearby >= 3 ? '威胁：高' : nearby >= 1 ? '威胁：警戒' : '威胁：低';
+          }
+        }
+        return result;
+      };
+    }
+
     window.__sdrFinalPolishDebug = {
       version: '20260926-final1',
       nonSolidLoot: true,
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
       opaqueBuildings: true,
+      dangerReadout: true,
     };
   };
   boot();
