@@ -338,17 +338,14 @@ const containerSpawns = [
   { id: 'supply-d', name: 'Supply Case', x: 84, z: 102, pool: 'tech', tier: 1 },
   { id: 'cache-c', name: 'Hidden Supply Cache', x: 118, z: 58, pool: 'valuable', tier: 3 },
   { id: 'field-d', name: 'Field Cache', x: -18, z: 118, pool: 'weapon', tier: 2 },
-  { id: 'building-center-terminal', name: 'Depot Control Cabinet', x: 5, z: -33, pool: 'tech', tier: 2 },
-  { id: 'building-barracks-locker', name: 'Barracks Personal Locker', x: -50, z: 21, pool: 'valuable', tier: 2 },
+  { id: 'building-center-terminal', name: 'Depot Control Cabinet', x: 0, z: -38, pool: 'tech', tier: 2 },
+  { id: 'building-barracks-locker', name: 'Barracks Personal Locker', x: -56, z: 24, pool: 'valuable', tier: 2 },
   { id: 'building-fuel-toolbox', name: 'Fuel Station Service Box', x: 56, z: 34, pool: 'tech', tier: 2 },
   { id: 'building-freight-manifest', name: 'Freight Manifest Safe', x: 0, z: 76, pool: 'valuable', tier: 3 },
   { id: 'building-silo-panel', name: 'Silo Maintenance Cabinet', x: 88, z: -112, pool: 'tech', tier: 2 },
   { id: 'building-bunker-armory', name: 'Bunker Armory Locker', x: -104, z: -76, pool: 'weapon', tier: 3 },
-  { id: 'building-hangar-crate', name: 'Hangar Equipment Cage', x: 105, z: 54, pool: 'weapon', tier: 2 },
+  { id: 'building-hangar-crate', name: 'Hangar Equipment Cage', x: 100, z: 72, pool: 'weapon', tier: 2 },
   { id: 'building-yard-office', name: 'Yard Office Safe', x: -68, z: 112, pool: 'valuable', tier: 3 },
-  { id: 'building-bunker-secure', name: 'Bunker Secure Cabinet', x: -105, z: -63, pool: 'weapon', tier: 3 },
-  { id: 'building-silo-control', name: 'Silo Control Safe', x: 91, z: -97, pool: 'valuable', tier: 3 },
-  { id: 'building-south-office', name: 'Yard Office Records Safe', x: -64, z: 92, pool: 'valuable', tier: 3 },
 ];
 
 const extractionZones = [
