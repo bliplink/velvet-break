@@ -103,11 +103,11 @@
 
     const isStructuralMesh = (mesh) => {
       if (!mesh?.material) return false;
-      if (mesh.metadata?.raycastTarget === 'obstacle') return true;
+      if (mesh.metadata?.raycastTarget === 'obstacle' || mesh.metadata?.buildingId || mesh.metadata?.structureId) return true;
       const name = String(mesh.name ?? '').toLowerCase();
       if (name.startsWith('extract-') || name.startsWith('container-') || name.startsWith('switch-')) return false;
       if (name === 'utility-cloak-screen' || name.startsWith('utility-cloak-')) return false;
-      return /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning)/.test(name);
+      return /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning|floor|ceiling|doorframe|stairs|stair|bridge|platform|container-wall)/.test(name);
     };
 
     const forceOpaqueBuildings = () => {
@@ -257,6 +257,10 @@
 
     initialPass();
     window.setTimeout(initialPass, 450);
+
+    // Structural materials can be touched by late-loaded map/content patches.
+    // Reassert opaque depth-writing materials periodically without touching VFX.
+    window.setInterval(forceOpaqueBuildings, 1200);
   };
 
   boot();
