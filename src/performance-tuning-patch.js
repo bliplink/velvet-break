@@ -72,7 +72,8 @@
       raid.aiBudgetFrame = (raid.aiBudgetFrame ?? 0) + 1;
       const allEnemies = raid.enemies;
       const activeEnemies = allEnemies.filter((enemy, index) => {
-        if (enemy.isNamelessBoss || enemy.mobilityAction || enemy.dead) return true;
+        if (enemy.isNamelessBoss || enemy.mobilityAction) return true;
+        if (enemy.dead || enemy.despawned) return false;
         if ((enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0 || (enemy.companionAlertTimer ?? 0) > 0) return true;
 
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
