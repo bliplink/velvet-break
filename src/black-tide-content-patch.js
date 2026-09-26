@@ -15,9 +15,6 @@
       typeof updateRaid !== 'function' ||
       typeof useOperatorAbility !== 'function' ||
       typeof applyDamageToPlayer !== 'function' ||
-      typeof enemyShoot !== 'function' ||
-      typeof damageEnemy !== 'function' ||
-      typeof distance2D !== 'function' ||
       typeof getPlayerMoveSpeed !== 'function' ||
       typeof resolveStaticPlacement !== 'function' ||
       typeof generateContainerLoot !== 'function' ||
