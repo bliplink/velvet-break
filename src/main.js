@@ -5365,10 +5365,30 @@ function shuffle(items) {
   return cloned;
 }
 
-renderBasePanel();
-createScene();
-bindEvents();
-runDebugMode();
+function bootGameSafely() {
+  try {
+    renderBasePanel();
+    createScene();
+    bindEvents();
+    runDebugMode();
+    window.__sdrBootStatus = { ok: true, stage: 'ready' };
+  } catch (error) {
+    console.error('[Velvet Break] boot failed', error);
+    window.__sdrBootStatus = {
+      ok: false,
+      stage: 'boot',
+      message: String(error?.stack || error?.message || error),
+    };
+    const host = document.getElementById('notificationHost') || document.body;
+    const node = document.createElement('div');
+    node.id = 'bootErrorPanel';
+    node.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;padding:12px 14px;background:#240b0b;color:#ffd6d6;border:1px solid #ff6868;border-radius:8px;font:13px/1.45 monospace;white-space:pre-wrap;max-height:35vh;overflow:auto';
+    node.textContent = '游戏启动失败：\\n' + window.__sdrBootStatus.message;
+    host.appendChild(node);
+  }
+}
+
+bootGameSafely();
 
 function ensureExtendedRefs() {
   refs.armoryPanel ??= document.getElementById('armoryPanel');
