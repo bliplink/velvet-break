@@ -46,6 +46,20 @@
       return result;
     };
 
+    // Consume Echo's temporary purchase only when a raid actually starts.
+    const startRaidBeforeEchoPass = typeof startRaid === 'function' ? startRaid : null;
+    if (startRaidBeforeEchoPass) {
+      startRaid = function startRaidWithOneRaidEcho(...args) {
+        const carryEcho = Boolean(window.__sdrEchoRaidPass);
+        const result = startRaidBeforeEchoPass.apply(this, args);
+        if (carryEcho && state.raid?.player) {
+          state.raid.player.echoKnifeEquipped = true;
+          window.__sdrEchoRaidPass = false;
+        }
+        return result;
+      };
+    }
+
     // One authoritative stamina HUD after every earlier patch has run.
     const syncHudBeforeFinal = syncHud;
     syncHud = function syncFinalStaminaHud(...args) {
@@ -61,14 +75,33 @@
       return result;
     };
 
-    // Final building opacity guard, including panels, alarms and secure doors.
-    const structures = window.__sdrInteractiveBuildingStructures;
-    for (const mesh of structures?.meshes ?? []) {
-      const material = mesh?.material;
-      if (!material) continue;
-      material.alpha = 1;
-      if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+    // Remove duplicate stamina widgets created by older structure builds.
+    const staminaPanels = [...document.querySelectorAll('.stamina-stat, #staminaPanel')];
+    const canonicalStamina = document.querySelector('.stamina-stat');
+    for (const panel of staminaPanels) {
+      if (canonicalStamina && panel !== canonicalStamina && panel.id === 'staminaPanel') panel.remove();
     }
+
+    // Final building opacity guard. Glass panes are the only structural meshes allowed to stay transparent.
+    const forceOpaqueBuildingMeshes = () => {
+      const structures = window.__sdrInteractiveBuildingStructures;
+      const candidates = new Set([
+        ...(world?.obstacleMeshes ?? []),
+        ...(structures?.meshes ?? []),
+        ...(scene?.meshes ?? []).filter(mesh =>
+          /(?:wall|roof|floor|building|obstacle|stair|ladder|awning|door|cover|divider|window-frame)/i.test(mesh?.name ?? '') &&
+          !/window-pane|lamp|beacon|halo|glow/i.test(mesh?.name ?? '')
+        ),
+      ]);
+      for (const mesh of candidates) {
+        const material = mesh?.material;
+        if (!material) continue;
+        material.alpha = 1;
+        if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+      }
+    };
+    forceOpaqueBuildingMeshes();
+    setInterval(forceOpaqueBuildingMeshes, 750);
 
     // Lightweight danger readout: nearby living enemies only; no wallhack positions.
     const ensureDangerBadge = () => {
@@ -224,6 +257,8 @@
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
       opaqueBuildings: true,
+      oneRaidEcho: true,
+      singleStaminaHud: true,
       dangerReadout: true,
       reconRoleFeedback: true,
       claireGlobalScan: true,
