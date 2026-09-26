@@ -27,6 +27,14 @@ jobs:
       - name: Build static site
         run: npm run build
 
+      - name: Verify complete game build
+        run: |
+          test -f dist/client/index.html
+          test -f dist/client/src/main.js
+          test -f dist/client/vendor/babylon.js
+          test -d dist/client/styles
+          echo "Static game build is complete"
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
