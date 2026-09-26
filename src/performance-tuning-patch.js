@@ -90,41 +90,8 @@
       }
     };
 
-    const originalAnimateRaidEntities = animateRaidEntities;
-    animateRaidEntities = function animateRaidEntitiesWithTieredBudget(dt, ...args) {
-      const raid = state.raid;
-      const player = raid?.player;
-      if (!raid || !player || raid.enemies.length <= 18) return originalAnimateRaidEntities(dt, ...args);
-
-      raid.renderBudgetFrame = (raid.renderBudgetFrame ?? 0) + 1;
-      const allEnemies = raid.enemies;
-      const animatedEnemies = allEnemies.filter((enemy, index) => {
-        if (enemy.isNamelessBoss || enemy.mobilityAction || enemy.dead) return true;
-        const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 70) return true;
-        if (distance <= 118) return (raid.renderBudgetFrame + index) % 2 === 0;
-        return (raid.renderBudgetFrame + index) % 4 === 0;
-      });
-
-      raid.enemies = animatedEnemies;
-      try {
-        return originalAnimateRaidEntities(dt, ...args);
-      } finally {
-        raid.enemies = allEnemies;
-
-        // Omitted enemies remain visible. Only sync cheap root transforms on
-        // budgeted frames; do not disable or pop the whole model.
-        const animatedSet = new Set(animatedEnemies);
-        for (const enemy of allEnemies) {
-          if (animatedSet.has(enemy) || enemy.despawned) continue;
-          const root = enemy.visual?.root;
-          if (!root) continue;
-          root.position.x = enemy.x;
-          root.position.z = enemy.z;
-          root.rotation.y = enemy.heading ?? root.rotation.y;
-        }
-      }
-    };
+    // Visual animation stays full-rate at all distances. Keep performance savings
+    // in AI decision updates instead of making distant actors visibly stutter.
 
     window.__sdrPerformanceDebug = {
       version: '2026-09-19-tiered-v3',
