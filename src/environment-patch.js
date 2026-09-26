@@ -18,6 +18,7 @@
     windows: [],
     ladders: [],
     stairs: [],
+    easterEggs: [],
     roofProps: [],
     };
 
@@ -43,6 +44,10 @@
     mat.emissiveColor = BABYLON.Color3.FromHexString(emissiveHex).scale(0.5);
     mat.specularColor = new BABYLON.Color3(0.03, 0.03, 0.03);
     mat.alpha = alpha;
+    if (alpha >= 0.99 && BABYLON.Material) {
+      mat.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+      mat.needDepthPrePass = false;
+    }
     return mat;
   }
 
@@ -124,6 +129,8 @@
     mesh.material.emissiveColor = BABYLON.Color3.FromHexString(theme.emissive).scale(0.34);
     mesh.material.specularColor = new BABYLON.Color3(0.04, 0.04, 0.04);
     mesh.material.backFaceCulling = false;
+    mesh.material.alpha = 1;
+    if (BABYLON.Material) mesh.material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
   }
 
   function getObstacleIdFromRoot(root) {
@@ -367,7 +374,7 @@
     const stepCount = Math.max(12, Math.ceil((roofHeight - originY) / 0.22));
     const rise = (roofHeight - originY) / stepCount;
     const stepColor = shadeColor(color, -48);
-    const stairLength = Math.max(0.9, (stepCount - 1) * 0.32 + 0.68);
+    const stairLength = Math.max(3.8, (roofHeight - originY) * 0.9);
     const slopeLength = Math.hypot(stairLength, roofHeight - originY);
     const slopeAngle = Math.atan2(roofHeight - originY, stairLength);
     const ramp = BABYLON.MeshBuilder.CreateBox(`stair-ramp-${originX}-${originZ}`, {
@@ -540,6 +547,29 @@
     return { shutter };
   }
 
+  function createSecretTerminal(root, x, y, z, rotY) {
+    const panel = BABYLON.MeshBuilder.CreateBox(`secret-terminal-${root.name}`, { width: 0.62, height: 0.86, depth: 0.18 }, scene);
+    panel.parent = root;
+    panel.position = new BABYLON.Vector3(x, y, z);
+    panel.rotation.y = rotY;
+    panel.material = makePatchMaterial(`secret-terminal-mat-${root.name}`, '#27353d', '#72d9ff');
+    const screen = BABYLON.MeshBuilder.CreateBox(`secret-terminal-screen-${root.name}`, { width: 0.42, height: 0.28, depth: 0.03 }, scene);
+    screen.parent = root;
+    screen.position = new BABYLON.Vector3(x, y + 0.12, z + (Math.abs(rotY) < 0.2 ? 0.11 : 0));
+    screen.rotation.y = rotY;
+    screen.material = makePatchMaterial(`secret-terminal-screen-mat-${root.name}`, '#67e6ff', '#9ff4ff', 0.92);
+    registerStructureFeature(structureRegistry.easterEggs, root, {
+      type: 'easterEgg',
+      x: root.position.x + x,
+      y,
+      z: root.position.z + z,
+      rotY,
+      used: false,
+      panel,
+      screen,
+    });
+  }
+
   function createBillboard(root, x, y, z, rotY, width = 2.6, height = 1.2, face = '#d98a5f') {
     const panel = BABYLON.MeshBuilder.CreatePlane(`billboard-panel-${x}-${z}`, { width, height }, scene);
     panel.parent = root;
@@ -574,7 +604,17 @@
     if (theme === buildingThemes.warehouse || theme === buildingThemes.depot) {
       createBillboard(root, 0, obstacle.h + 1.08, halfD + 0.84, 0, Math.min(3.4, obstacle.w * 0.32), 1.12, theme.awning);
     }
-    createStairRun(root, halfW + 1.1, 0.18, -halfD - 2.4, obstacle.h, 0, 1, theme.trim);
+    const stairRun = Math.max(3.8, (obstacle.h - 0.18) * 0.9);
+    createStairRun(root, halfW + 0.9, 0.18, -halfD - stairRun - 0.65, obstacle.h, 0, 1, theme.trim);
+
+    createWindowPanel(root, -halfW * 0.28, Math.min(2.0, obstacle.h * 0.38), halfD + 0.08, 0, 1.18, 0.86, theme.accent);
+    createWindowPanel(root, halfW * 0.28, Math.min(2.0, obstacle.h * 0.38), -halfD - 0.08, Math.PI, 1.18, 0.86, theme.accent);
+    if (obstacle.w >= 8 && obstacle.h >= 4.4) {
+      createLadder(root, halfW + 0.08, 0.12, halfD * 0.18, obstacle.h + 0.16, Math.PI / 2);
+    }
+    if (obstacle.id === 'north-apartment') {
+      createSecretTerminal(root, 0, 1.2, -halfD - 0.16, Math.PI);
+    }
 
     const awning = BABYLON.MeshBuilder.CreateBox(`awning-${obstacle.id}`, { width: 2.8, height: 0.12, depth: 1.1 }, scene);
     awning.parent = root;
@@ -588,7 +628,7 @@
     if (theme === buildingThemes.apartment) {
       createBalcony(root, -halfW * 0.38, 3.12, halfD + 0.52, 0, 1.88, 0.94, theme.trim);
       createBalcony(root, halfW * 0.38, 3.12, halfD + 0.52, 0, 1.88, 0.94, theme.trim);
-      createStairRun(root, -halfW - 1.08, 0.18, halfD + 2.4, obstacle.h, 0, -1, theme.trim);
+      createStairRun(root, -halfW - 0.9, 0.18, halfD + stairRun + 0.65, obstacle.h, 0, -1, theme.trim);
     }
     if (theme === buildingThemes.utility) {
       createRoofUnit(root, 0, obstacle.h + 0.42, 0, 1.4, 1.1, 0.72, theme.trim);
