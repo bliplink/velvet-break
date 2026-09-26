@@ -1986,11 +1986,190 @@
       );
     };
 
+
+    const INTERACTIVE_BUILDING_IDS = new Set(['center-depot', 'west-barracks', 'east-hangar']);
+    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], meshes: [], initialized: false };
+    window.__sdrInteractiveBuildingStructures = buildingStructures;
+
+    const removeObstacleById = (id) => {
+      const index = obstacleDefs.findIndex((entry) => entry.id === id);
+      if (index >= 0) return obstacleDefs.splice(index, 1)[0];
+      return null;
+    };
+
+    const ensureDoorObstacle = (door) => {
+      const exists = obstacleDefs.some((entry) => entry.id === door.obstacle.id);
+      if (!door.open && !exists) obstacleDefs.push(door.obstacle);
+      if (door.open && exists) removeObstacleById(door.obstacle.id);
+    };
+
+    const createInteractiveBuildingShell = (source) => {
+      const thickness = Math.min(1.0, Math.max(0.62, Math.min(source.w, source.d) * 0.035));
+      const doorWidth = Math.min(5.2, Math.max(3.8, source.w * 0.16));
+      const southZ = source.z + source.d / 2 - thickness / 2;
+      const northZ = source.z - source.d / 2 + thickness / 2;
+      const sideH = source.h;
+      const leftWidth = (source.w - doorWidth) / 2;
+      const wallSpecs = [
+        { id: `${source.id}-wall-n`, x: source.x, z: northZ, w: source.w, d: thickness },
+        { id: `${source.id}-wall-w`, x: source.x - source.w / 2 + thickness / 2, z: source.z, w: thickness, d: source.d },
+        { id: `${source.id}-wall-e`, x: source.x + source.w / 2 - thickness / 2, z: source.z, w: thickness, d: source.d },
+        { id: `${source.id}-wall-sw`, x: source.x - doorWidth / 2 - leftWidth / 2, z: southZ, w: leftWidth, d: thickness },
+        { id: `${source.id}-wall-se`, x: source.x + doorWidth / 2 + leftWidth / 2, z: southZ, w: leftWidth, d: thickness },
+      ].map((spec) => ({ ...spec, h: sideH, color: source.color, structureId: source.id }));
+
+      for (const wall of wallSpecs) {
+        obstacleDefs.push(wall);
+        const mesh = BABYLON.MeshBuilder.CreateBox(wall.id, { width: wall.w, height: wall.h, depth: wall.d }, scene);
+        mesh.position = new BABYLON.Vector3(wall.x, wall.h / 2, wall.z);
+        mesh.material = makeMaterial(`${wall.id}-mat`, source.color, shadeColor(source.color, -18));
+        mesh.metadata = { raycastTarget: 'obstacle', structureId: source.id };
+        world.obstacleMeshes.push(mesh);
+        buildingStructures.meshes.push(mesh);
+      }
+
+      const roof = BABYLON.MeshBuilder.CreateBox(`${source.id}-interactive-roof`, {
+        width: source.w,
+        height: 0.28,
+        depth: source.d,
+      }, scene);
+      roof.position = new BABYLON.Vector3(source.x, source.h + 0.14, source.z);
+      roof.material = makeMaterial(`${source.id}-interactive-roof-mat`, shadeColor(source.color, 8), shadeColor(source.color, -20));
+      roof.metadata = { structureId: source.id };
+      buildingStructures.meshes.push(roof);
+
+      const floor = BABYLON.MeshBuilder.CreateBox(`${source.id}-interactive-floor`, {
+        width: source.w - thickness * 1.8,
+        height: 0.12,
+        depth: source.d - thickness * 1.8,
+      }, scene);
+      floor.position = new BABYLON.Vector3(source.x, 0.06, source.z);
+      floor.material = makeMaterial(`${source.id}-interactive-floor-mat`, '#283238', '#151d21');
+      buildingStructures.meshes.push(floor);
+
+      const doorObstacle = {
+        id: `${source.id}-door-collision`,
+        x: source.x,
+        z: southZ,
+        w: doorWidth,
+        d: thickness,
+        h: Math.min(3.8, source.h * 0.72),
+        structureId: source.id,
+      };
+      const doorMesh = BABYLON.MeshBuilder.CreateBox(`${source.id}-interactive-door`, {
+        width: doorWidth,
+        height: doorObstacle.h,
+        depth: Math.max(0.22, thickness * 0.55),
+      }, scene);
+      doorMesh.position = new BABYLON.Vector3(source.x, doorObstacle.h / 2, southZ);
+      doorMesh.material = makeMaterial(`${source.id}-interactive-door-mat`, '#51636c', '#1d292f');
+      doorMesh.metadata = { structureId: source.id, interactiveDoor: true };
+
+      const door = {
+        id: `${source.id}-door`,
+        buildingId: source.id,
+        name: source.id === 'center-depot' ? '中心仓库门' : source.id === 'west-barracks' ? '西侧兵营门' : '东侧机库门',
+        x: source.x,
+        z: southZ + 0.55,
+        open: false,
+        mesh: doorMesh,
+        obstacle: doorObstacle,
+      };
+      buildingStructures.doors.push(door);
+      buildingStructures.meshes.push(doorMesh);
+      ensureDoorObstacle(door);
+    };
+
+    if (!buildingStructures.initialized) {
+      buildingStructures.initialized = true;
+      for (const buildingId of INTERACTIVE_BUILDING_IDS) {
+        const source = obstacleDefs.find((entry) => entry.id === buildingId);
+        if (!source) continue;
+        removeObstacleById(buildingId);
+        const legacyMesh = scene.getMeshByName(buildingId);
+        legacyMesh?.setEnabled(false);
+        createInteractiveBuildingShell(source);
+      }
+    }
+
+    const originalBuildingInteraction = getCurrentInteraction;
+    getCurrentInteraction = function getCurrentInteractionWithBuildings() {
+      const base = originalBuildingInteraction();
+      const player = state.raid?.player;
+      if (!player) return base;
+      let nearestDoor = null;
+      let nearestDistance = Infinity;
+      for (const door of buildingStructures.doors) {
+        const dist = distance2D(player.x, player.z, door.x, door.z);
+        if (dist < 3.1 && dist < nearestDistance) {
+          nearestDoor = door;
+          nearestDistance = dist;
+        }
+      }
+      if (nearestDoor && (!base || nearestDistance < 2.2)) return { type: 'building-door', door: nearestDoor };
+      return base;
+    };
+
+    const toggleBuildingDoor = (door) => {
+      if (!door) return;
+      door.open = !door.open;
+      ensureDoorObstacle(door);
+      if (door.mesh) {
+        door.mesh.rotation.y = door.open ? Math.PI / 2 : 0;
+        door.mesh.position.x = door.x + (door.open ? door.obstacle.w * 0.46 : 0);
+      }
+      spawnPulse(new BABYLON.Vector3(door.x, 1.1, door.z), door.open ? '#8fe3b8' : '#f0c57d', 0.13, 0.24);
+      notify(door.open ? `${door.name} 已开启。` : `${door.name} 已关闭。`, door.open ? 'success' : 'warning');
+    };
+
+    const originalTriggerRaidInteract = triggerRaidInteract;
+    triggerRaidInteract = function triggerRaidInteractWithBuildingDoors() {
+      if (state.mode === 'raid' && state.raid && !state.overlay) {
+        const interaction = getCurrentInteraction();
+        if (interaction?.type === 'building-door') {
+          toggleBuildingDoor(interaction.door);
+          state.input.interactHeld = false;
+          return;
+        }
+      }
+      return originalTriggerRaidInteract();
+    };
+
+    const updateBuildingInteriorState = () => {
+      const raid = state.raid;
+      if (!raid) return;
+      const actors = [raid.player, ...(raid.enemies ?? [])].filter(Boolean);
+      for (const actor of actors) {
+        actor.insideBuildingId = null;
+        for (const id of INTERACTIVE_BUILDING_IDS) {
+          const walls = obstacleDefs.filter((entry) => entry.structureId === id && String(entry.id).includes('-wall-'));
+          if (!walls.length) continue;
+          const minX = Math.min(...walls.map((entry) => entry.x - entry.w / 2)) + 0.7;
+          const maxX = Math.max(...walls.map((entry) => entry.x + entry.w / 2)) - 0.7;
+          const minZ = Math.min(...walls.map((entry) => entry.z - entry.d / 2)) + 0.7;
+          const maxZ = Math.max(...walls.map((entry) => entry.z + entry.d / 2)) - 0.7;
+          if (actor.x > minX && actor.x < maxX && actor.z > minZ && actor.z < maxZ) {
+            actor.insideBuildingId = id;
+            break;
+          }
+        }
+      }
+    };
+
     const originalStartRaid = startRaid;
     startRaid = function patchedStartRaid() {
       ensureSaveShape();
       const result = originalStartRaid();
       ensurePlayerExpansionState(state.raid?.player);
+      for (const door of buildingStructures.doors) {
+        door.open = false;
+        if (door.mesh) {
+          door.mesh.rotation.y = 0;
+          door.mesh.position.x = door.x;
+        }
+        ensureDoorObstacle(door);
+      }
+      updateBuildingInteriorState();
       return result;
     };
 
@@ -2002,6 +2181,11 @@
       }
 
       const result = originalUpdateRaid(dt);
+      updateBuildingInteriorState();
+      const buildingInteraction = getCurrentInteraction();
+      if (state.raid && buildingInteraction?.type === 'building-door') {
+        state.raid.interactionText = buildingInteraction.door.open ? '按 E 关闭建筑门' : '按 E 打开建筑门';
+      }
       const currentRaid = state.raid;
       const player = currentRaid?.player;
       if (!currentRaid || !player) {
