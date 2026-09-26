@@ -159,29 +159,8 @@
       return impactBefore.call(this, position, color, intensity, flavor);
     };
 
-    const animateBeforeDistanceBudget = typeof animateRaidEntities === 'function' ? animateRaidEntities : null;
-    if (animateBeforeDistanceBudget) {
-      let distantVisualAccumulator = 0;
-      animateRaidEntities = function distanceBudgetedAnimation(dt, ...args) {
-        const raid = state.raid;
-        const player = raid?.player;
-        if (!player || !raid?.enemies?.length) return animateBeforeDistanceBudget.call(this, dt, ...args);
-        distantVisualAccumulator += dt;
-        if (distantVisualAccumulator < 0.12) {
-          const original = raid.enemies;
-          const near = original.filter(enemy => enemy?.dead || enemy?.despawned || distanceFromPlayer(enemy) <= 48);
-          if (near.length !== original.length) {
-            raid.enemies = near;
-            debug.distantAiVisualSkips += original.length - near.length;
-            try { return animateBeforeDistanceBudget.call(this, dt, ...args); }
-            finally { raid.enemies = original; }
-          }
-          return animateBeforeDistanceBudget.call(this, dt, ...args);
-        }
-        distantVisualAccumulator = 0;
-        return animateBeforeDistanceBudget.call(this, dt, ...args);
-      };
-    }
+    // Keep visual animation continuous at every distance. AI logic may still use
+    // distance budgets, but character roots/limbs must not visibly jump between frames.
 
     const updateEffectsBefore = updateEffects;
     updateEffects = function updateEffectsWithBudget(dt, ...args) {
