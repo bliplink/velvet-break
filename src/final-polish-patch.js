@@ -103,6 +103,27 @@
       };
     }
 
+    // Recon role feedback: summarize scan value without exposing permanent positions.
+    let reconNoticeReady = true;
+    const useAbilityBeforeReconFeedback = typeof useOperatorAbility === 'function' ? useOperatorAbility : null;
+    if (useAbilityBeforeReconFeedback) {
+      useOperatorAbility = function useOperatorAbilityWithReconFeedback(...args) {
+        const player = state.raid?.player;
+        const wasRecon = player?.operatorId === 'recon';
+        const chargesBefore = player?.abilityCharges ?? 0;
+        const result = useAbilityBeforeReconFeedback.apply(this, args);
+        if (wasRecon && chargesBefore > (player?.abilityCharges ?? 0) && reconNoticeReady) {
+          const raid = state.raid;
+          const revealed = (raid?.enemies ?? []).filter(enemy => !enemy.dead && !enemy.despawned && (enemy.revealedTimer ?? 0) > 0).length;
+          const elites = (raid?.enemies ?? []).filter(enemy => !enemy.dead && !enemy.despawned && (enemy.revealedTimer ?? 0) > 0 && (enemy.isNamelessBoss || enemy.type === 'bruiser')).length;
+          notify(`侦查回波：发现 ${revealed} 个目标${elites ? `，其中高威胁 ${elites} 个` : ''}。`, revealed ? 'success' : 'warning');
+          reconNoticeReady = false;
+          setTimeout(() => { reconNoticeReady = true; }, 500);
+        }
+        return result;
+      };
+    }
+
     window.__sdrFinalPolishDebug = {
       version: '20260926-final1',
       nonSolidLoot: true,
@@ -110,6 +131,7 @@
       authoritativeStaminaHud: true,
       opaqueBuildings: true,
       dangerReadout: true,
+      reconRoleFeedback: true,
     };
   };
   boot();
