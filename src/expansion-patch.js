@@ -1988,7 +1988,7 @@
 
 
     const INTERACTIVE_BUILDING_IDS = new Set(['center-depot', 'west-barracks', 'east-hangar']);
-    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], meshes: [], initialized: false };
+    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], panels: [], meshes: [], initialized: false };
     window.__sdrInteractiveBuildingStructures = buildingStructures;
 
     const removeObstacleById = (id) => {
@@ -2078,6 +2078,50 @@
       buildingStructures.doors.push(door);
       buildingStructures.meshes.push(doorMesh);
       ensureDoorObstacle(door);
+
+      const interiorDepth = Math.max(3.6, source.d * 0.28);
+      const coverSpecs = [
+        { id: `${source.id}-interior-cover-a`, x: source.x - source.w * 0.2, z: source.z - source.d * 0.12, w: Math.max(2.4, source.w * 0.18), d: 1.2, h: 1.25 },
+        { id: `${source.id}-interior-cover-b`, x: source.x + source.w * 0.2, z: source.z + source.d * 0.08, w: Math.max(2.4, source.w * 0.18), d: 1.2, h: 1.25 },
+        { id: `${source.id}-interior-divider`, x: source.x - source.w * 0.28, z: source.z - source.d * 0.28, w: 0.7, d: interiorDepth, h: Math.min(2.8, source.h * 0.52) },
+      ];
+      for (const cover of coverSpecs) {
+        obstacleDefs.push({ ...cover, color: '#34434a', structureId: source.id });
+        const mesh = BABYLON.MeshBuilder.CreateBox(cover.id, { width: cover.w, height: cover.h, depth: cover.d }, scene);
+        mesh.position = new BABYLON.Vector3(cover.x, cover.h / 2, cover.z);
+        mesh.material = makeMaterial(`${cover.id}-mat`, '#46575f', '#202b30');
+        mesh.metadata = { raycastTarget: 'obstacle', structureId: source.id };
+        world.obstacleMeshes.push(mesh);
+        buildingStructures.meshes.push(mesh);
+      }
+
+      const panelX = source.x + source.w * 0.34;
+      const panelZ = source.z - source.d * 0.28;
+      const panelMesh = BABYLON.MeshBuilder.CreateBox(`${source.id}-power-panel`, { width: 0.72, height: 1.45, depth: 0.32 }, scene);
+      panelMesh.position = new BABYLON.Vector3(panelX, 1.05, panelZ);
+      panelMesh.material = makeMaterial(`${source.id}-power-panel-mat`, '#52656d', '#243139');
+      panelMesh.metadata = { structureId: source.id, interactivePower: true };
+      buildingStructures.meshes.push(panelMesh);
+
+      const lampMesh = BABYLON.MeshBuilder.CreateBox(`${source.id}-ceiling-lamp`, { width: 2.6, height: 0.12, depth: 0.55 }, scene);
+      lampMesh.position = new BABYLON.Vector3(source.x, source.h - 0.38, source.z);
+      lampMesh.material = makeMaterial(`${source.id}-ceiling-lamp-mat`, '#8ba3a9', '#6fc6d8');
+      buildingStructures.meshes.push(lampMesh);
+      const light = new BABYLON.PointLight(`${source.id}-interior-light`, new BABYLON.Vector3(source.x, source.h - 0.8, source.z), scene);
+      light.diffuse = BABYLON.Color3.FromHexString('#b9e8f1');
+      light.intensity = 0;
+      light.range = Math.max(source.w, source.d) * 0.72;
+      buildingStructures.panels.push({
+        id: `${source.id}-power`,
+        buildingId: source.id,
+        name: source.id === 'center-depot' ? '中心仓库电闸' : source.id === 'west-barracks' ? '兵营电闸' : '机库电闸',
+        x: panelX,
+        z: panelZ,
+        powered: false,
+        mesh: panelMesh,
+        lampMesh,
+        light,
+      });
     };
 
     if (!buildingStructures.initialized) {
@@ -2107,6 +2151,16 @@
         }
       }
       if (nearestDoor && (!base || nearestDistance < 2.2)) return { type: 'building-door', door: nearestDoor };
+      let nearestPanel = null;
+      let nearestPanelDistance = Infinity;
+      for (const panel of buildingStructures.panels ?? []) {
+        const dist = distance2D(player.x, player.z, panel.x, panel.z);
+        if (dist < 2.5 && dist < nearestPanelDistance) {
+          nearestPanel = panel;
+          nearestPanelDistance = dist;
+        }
+      }
+      if (nearestPanel && (!base || nearestPanelDistance < 2.0)) return { type: 'building-power', panel: nearestPanel };
       return base;
     };
 
@@ -2128,6 +2182,18 @@
         const interaction = getCurrentInteraction();
         if (interaction?.type === 'building-door') {
           toggleBuildingDoor(interaction.door);
+          state.input.interactHeld = false;
+          return;
+        }
+        if (interaction?.type === 'building-power') {
+          const panel = interaction.panel;
+          panel.powered = !panel.powered;
+          if (panel.light) panel.light.intensity = panel.powered ? 0.72 : 0;
+          if (panel.lampMesh?.material) {
+            panel.lampMesh.material.emissiveColor = BABYLON.Color3.FromHexString(panel.powered ? '#b9eff8' : '#263238');
+          }
+          spawnPulse(new BABYLON.Vector3(panel.x, 1.0, panel.z), panel.powered ? '#9deed2' : '#8c9ba0', 0.12, 0.22);
+          notify(panel.powered ? `${panel.name} 已送电。` : `${panel.name} 已断电。`, panel.powered ? 'success' : 'warning');
           state.input.interactHeld = false;
           return;
         }
@@ -2169,6 +2235,11 @@
         }
         ensureDoorObstacle(door);
       }
+      for (const panel of buildingStructures.panels ?? []) {
+        panel.powered = false;
+        if (panel.light) panel.light.intensity = 0;
+        if (panel.lampMesh?.material) panel.lampMesh.material.emissiveColor = BABYLON.Color3.FromHexString('#263238');
+      }
       updateBuildingInteriorState();
       return result;
     };
@@ -2185,6 +2256,8 @@
       const buildingInteraction = getCurrentInteraction();
       if (state.raid && buildingInteraction?.type === 'building-door') {
         state.raid.interactionText = buildingInteraction.door.open ? '按 E 关闭建筑门' : '按 E 打开建筑门';
+      } else if (state.raid && buildingInteraction?.type === 'building-power') {
+        state.raid.interactionText = buildingInteraction.panel.powered ? '按 E 关闭室内电源' : '按 E 开启室内电源';
       }
       const currentRaid = state.raid;
       const player = currentRaid?.player;
