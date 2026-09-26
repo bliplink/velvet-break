@@ -29,12 +29,6 @@
       if (!Number.isFinite(x) || !Number.isFinite(z) || obstacleDefs.some((entry) => entry.id === id)) return;
       obstacleDefs.push({ id, x, z, w, d, h, hiddenOnMap: true, temporaryProp: true });
     };
-    const createContainerBeforeSolids = createContainerVisual;
-    createContainerVisual = function createSolidContainer(container) {
-      const visual = createContainerBeforeSolids(container);
-      addSolidProp(`prop-container-${container.id}`, container.x, container.z, 1.8, 1.2, 1.2);
-      return visual;
-    };
     const createSwitchBeforeSolids = createSwitchVisual;
     createSwitchVisual = function createSolidSwitch(point) {
       const visual = createSwitchBeforeSolids(point);
