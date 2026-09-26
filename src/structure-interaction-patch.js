@@ -759,8 +759,8 @@
       const top = getStairTopTarget(stair);
       if (!obstacle) return top;
       return {
-        x: clamp(top.x, obstacle.x - obstacle.w / 2 + 1.25, obstacle.x + obstacle.w / 2 - 1.25),
-        z: clamp(top.z, obstacle.z - obstacle.d / 2 + 1.25, obstacle.z + obstacle.d / 2 - 1.25),
+        x: clamp(top.x, obstacle.x - obstacle.w / 2 + 0.65, obstacle.x + obstacle.w / 2 - 0.65),
+        z: clamp(top.z, obstacle.z - obstacle.d / 2 + 0.65, obstacle.z + obstacle.d / 2 - 0.65),
       };
     };
 
