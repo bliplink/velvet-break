@@ -176,7 +176,8 @@
       if (!tacticalStrip) {
         return null;
       }
-      let panel = document.getElementById('staminaPanel');
+      let panel = document.getElementById('staminaPanel') || document.querySelector('.stamina-stat');
+      if (panel && !panel.id) panel.id = 'staminaPanel';
       if (!panel) {
         panel = document.createElement('div');
         panel.id = 'staminaPanel';
@@ -604,6 +605,11 @@
           consider({ type: 'stairs', stair }, dist);
         }
       }
+      for (const easterEgg of registry.easterEggs ?? []) {
+        if (player.onRoofBuildingId) continue;
+        const dist = distance2D(player.x, player.z, easterEgg.x, easterEgg.z);
+        if (dist <= 2.1) consider({ type: 'easterEgg', easterEgg }, dist);
+      }
       return best;
     };
 
@@ -759,13 +765,39 @@
     };
 
     const traverseWindow = (windowFeature) => {
-      if (!windowFeature) {
-        return false;
+      const player = state.raid?.player;
+      if (!windowFeature || !player) return false;
+      if (!windowFeature.broken) return breakWindow(windowFeature);
+      const target = getTraverseTargetForWallFeature(windowFeature, player);
+      if (!target) return false;
+      const leaving = player.insideBuildingId === windowFeature.obstacleId;
+      return beginStructureTraverse(player, 'window', target.x, target.z, 0.5, {
+        labelZh: leaving ? '翻窗离开建筑。' : '翻窗进入建筑。',
+        labelEn: leaving ? 'Vaulted out through the window.' : 'Vaulted in through the window.',
+        statusZh: '翻窗中...',
+        statusEn: 'Vaulting...',
+      }, {
+        insideBuildingId: leaving ? null : windowFeature.obstacleId,
+        clearInsideBuilding: leaving,
+      });
+    };
+
+    const activateEasterEgg = (easterEgg) => {
+      if (!easterEgg) return false;
+      const first = !state.save.easterEggSignalFound;
+      easterEgg.used = true;
+      if (easterEgg.screen?.material) {
+        easterEgg.screen.material.emissiveColor = BABYLON.Color3.FromHexString('#ffd36f');
       }
-      if (!windowFeature.broken) {
-        return breakWindow(windowFeature);
+      if (first) {
+        state.save.easterEggSignalFound = true;
+        state.save.money = Math.max(0, Number(state.save.money ?? 0)) + 2025;
+        persistSave();
+        notify(safeL('彩蛋：隐藏信号 2025-10-01 已解码。奖励 2,025。', 'Easter egg: hidden signal 2025-10-01 decoded. Reward: 2,025.'), 'success');
+      } else {
+        notify(safeL('隐藏终端：信号已经解码。', 'Hidden terminal: signal already decoded.'), 'success');
       }
-      return notifyWindowAlreadyBroken();
+      return true;
     };
 
     const traverseLadder = (ladder) => {
@@ -853,6 +885,10 @@
       }
       if (interaction?.type === 'stairs') {
         traverseStairs(interaction.stair);
+        return;
+      }
+      if (interaction?.type === 'easterEgg') {
+        activateEasterEgg(interaction.easterEgg);
         return;
       }
       originalTriggerRaidInteract();
@@ -1012,6 +1048,8 @@
           player.onRoofBuildingId === interaction.stair.obstacleId ? '按 E 下楼梯' : '按 E 上楼梯',
           player.onRoofBuildingId === interaction.stair.obstacleId ? 'Press E to go downstairs' : 'Press E to go upstairs',
         );
+      } else if (interaction.type === 'easterEgg') {
+        raid.interactionText = safeL('按 E 调查异常信号', 'Press E to inspect strange signal');
       }
     };
 
