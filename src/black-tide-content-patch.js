@@ -557,7 +557,7 @@
       }
     }, true);
 
-    const FROST_RADIUS = 10;
+    const FROST_RADIUS = 5;
     const FROST_DURATION = 5;
     const disposeFrostField = (field) => {
       field?.root?.dispose?.(false, true);
