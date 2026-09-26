@@ -2201,16 +2201,6 @@
       if (nearestPanel && (!base || nearestPanelDistance < 2.0)) return { type: 'building-power', panel: nearestPanel };
       let nearestAlarm = null;
       let nearestAlarmDistance = Infinity;
-      if (state.raid?.player) state.raid.player.secureKeys = 1;
-      for (const secure of buildingStructures.secureDoors ?? []) {
-        secure.unlocked = false;
-        secure.open = false;
-        if (secure.mesh) {
-          secure.mesh.rotation.y = 0;
-          secure.mesh.position.x = secure.x;
-        }
-        if (!obstacleDefs.some((entry) => entry.id === secure.obstacle.id)) obstacleDefs.push(secure.obstacle);
-      }
       for (const alarm of buildingStructures.alarms ?? []) {
         const dist = distance2D(player.x, player.z, alarm.x, alarm.z);
         if (dist < 2.3 && dist < nearestAlarmDistance) {
@@ -2349,6 +2339,16 @@
           door.mesh.position.x = door.x;
         }
         ensureDoorObstacle(door);
+      }
+      if (state.raid?.player) state.raid.player.secureKeys = 1;
+      for (const secure of buildingStructures.secureDoors ?? []) {
+        secure.unlocked = false;
+        secure.open = false;
+        if (secure.mesh) {
+          secure.mesh.rotation.y = 0;
+          secure.mesh.position.x = secure.x;
+        }
+        if (!obstacleDefs.some((entry) => entry.id === secure.obstacle.id)) obstacleDefs.push(secure.obstacle);
       }
       for (const alarm of buildingStructures.alarms ?? []) {
         alarm.active = false;
