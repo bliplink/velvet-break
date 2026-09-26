@@ -1987,8 +1987,8 @@
     };
 
 
-    const INTERACTIVE_BUILDING_IDS = new Set(['center-depot', 'west-barracks', 'east-hangar']);
-    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], panels: [], meshes: [], initialized: false };
+    const INTERACTIVE_BUILDING_IDS = new Set(['center-depot', 'west-barracks', 'east-hangar', 'west-bunker', 'north-silo', 'south-yard-2']);
+    const buildingStructures = window.__sdrInteractiveBuildingStructures ?? { doors: [], panels: [], alarms: [], meshes: [], initialized: false };
     window.__sdrInteractiveBuildingStructures = buildingStructures;
 
     const removeObstacleById = (id) => {
@@ -2068,7 +2068,7 @@
       const door = {
         id: `${source.id}-door`,
         buildingId: source.id,
-        name: source.id === 'center-depot' ? '中心仓库门' : source.id === 'west-barracks' ? '西侧兵营门' : '东侧机库门',
+        name: source.id === 'center-depot' ? '中心仓库门' : source.id === 'west-barracks' ? '西侧兵营门' : source.id === 'east-hangar' ? '东侧机库门' : source.id === 'west-bunker' ? '西侧地堡门' : source.id === 'north-silo' ? '北侧筒仓门' : '南侧货场办公室门',
         x: source.x,
         z: southZ + 0.55,
         open: false,
@@ -2111,10 +2111,25 @@
       light.diffuse = BABYLON.Color3.FromHexString('#b9e8f1');
       light.intensity = 0;
       light.range = Math.max(source.w, source.d) * 0.72;
+      const alarmMesh = BABYLON.MeshBuilder.CreateCylinder(`${source.id}-alarm`, { height: 0.36, diameter: 0.5, tessellation: 12 }, scene);
+      alarmMesh.rotation.z = Math.PI / 2;
+      alarmMesh.position = new BABYLON.Vector3(source.x - source.w * 0.34, 2.15, source.z - source.d * 0.3);
+      alarmMesh.material = makeMaterial(`${source.id}-alarm-mat`, '#7b3f3b', '#4d1715');
+      alarmMesh.metadata = { structureId: source.id, interactiveAlarm: true };
+      buildingStructures.meshes.push(alarmMesh);
+      buildingStructures.alarms.push({
+        id: `${source.id}-alarm`,
+        buildingId: source.id,
+        x: alarmMesh.position.x,
+        z: alarmMesh.position.z,
+        active: false,
+        mesh: alarmMesh,
+      });
+
       buildingStructures.panels.push({
         id: `${source.id}-power`,
         buildingId: source.id,
-        name: source.id === 'center-depot' ? '中心仓库电闸' : source.id === 'west-barracks' ? '兵营电闸' : '机库电闸',
+        name: source.id === 'center-depot' ? '中心仓库电闸' : source.id === 'west-barracks' ? '兵营电闸' : source.id === 'east-hangar' ? '机库电闸' : source.id === 'west-bunker' ? '地堡电闸' : source.id === 'north-silo' ? '筒仓电闸' : '货场办公室电闸',
         x: panelX,
         z: panelZ,
         powered: false,
@@ -2161,6 +2176,16 @@
         }
       }
       if (nearestPanel && (!base || nearestPanelDistance < 2.0)) return { type: 'building-power', panel: nearestPanel };
+      let nearestAlarm = null;
+      let nearestAlarmDistance = Infinity;
+      for (const alarm of buildingStructures.alarms ?? []) {
+        const dist = distance2D(player.x, player.z, alarm.x, alarm.z);
+        if (dist < 2.3 && dist < nearestAlarmDistance) {
+          nearestAlarm = alarm;
+          nearestAlarmDistance = dist;
+        }
+      }
+      if (nearestAlarm && (!base || nearestAlarmDistance < 1.9)) return { type: 'building-alarm', alarm: nearestAlarm };
       return base;
     };
 
@@ -2194,6 +2219,29 @@
           }
           spawnPulse(new BABYLON.Vector3(panel.x, 1.0, panel.z), panel.powered ? '#9deed2' : '#8c9ba0', 0.12, 0.22);
           notify(panel.powered ? `${panel.name} 已送电。` : `${panel.name} 已断电。`, panel.powered ? 'success' : 'warning');
+          state.input.interactHeld = false;
+          return;
+        }
+        if (interaction?.type === 'building-alarm') {
+          const alarm = interaction.alarm;
+          alarm.active = !alarm.active;
+          if (alarm.mesh?.material) {
+            alarm.mesh.material.emissiveColor = BABYLON.Color3.FromHexString(alarm.active ? '#ff4b3e' : '#4d1715');
+          }
+          if (alarm.active) {
+            for (const enemy of state.raid.enemies ?? []) {
+              if (enemy.dead) continue;
+              const dist = distance2D(enemy.x, enemy.z, alarm.x, alarm.z);
+              if (dist < 34) {
+                enemy.alertTimer = Math.max(enemy.alertTimer ?? 0, 8);
+                enemy.investigateTimer = Math.max(enemy.investigateTimer ?? 0, 8);
+                enemy.lastKnownPlayerX = alarm.x;
+                enemy.lastKnownPlayerZ = alarm.z;
+              }
+            }
+          }
+          spawnPulse(new BABYLON.Vector3(alarm.x, 1.6, alarm.z), alarm.active ? '#ff675b' : '#8d9da2', 0.14, 0.28);
+          notify(alarm.active ? '建筑警报已触发，附近敌人正在靠近。' : '建筑警报已关闭。', alarm.active ? 'danger' : 'success');
           state.input.interactHeld = false;
           return;
         }
@@ -2235,6 +2283,10 @@
         }
         ensureDoorObstacle(door);
       }
+      for (const alarm of buildingStructures.alarms ?? []) {
+        alarm.active = false;
+        if (alarm.mesh?.material) alarm.mesh.material.emissiveColor = BABYLON.Color3.FromHexString('#4d1715');
+      }
       for (const panel of buildingStructures.panels ?? []) {
         panel.powered = false;
         if (panel.light) panel.light.intensity = 0;
@@ -2258,6 +2310,8 @@
         state.raid.interactionText = buildingInteraction.door.open ? '按 E 关闭建筑门' : '按 E 打开建筑门';
       } else if (state.raid && buildingInteraction?.type === 'building-power') {
         state.raid.interactionText = buildingInteraction.panel.powered ? '按 E 关闭室内电源' : '按 E 开启室内电源';
+      } else if (state.raid && buildingInteraction?.type === 'building-alarm') {
+        state.raid.interactionText = buildingInteraction.alarm.active ? '按 E 关闭警报' : '按 E 触发建筑警报';
       }
       const currentRaid = state.raid;
       const player = currentRaid?.player;
