@@ -167,7 +167,7 @@
     state.save.echoSmokeUnlocked = false;
     persistSave();
     window.__sdrEchoRaidPass = false;
-    const echoUnlocked = () => Boolean(window.__sdrEchoRaidPass);
+    const echoUnlocked = () => Boolean(window.__sdrEchoRaidPass || state.raid?.player?.echoKnifeEquipped);
 
     const basePanelEchoUnlockHandler = (event) => {
       const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
@@ -639,7 +639,6 @@
       player?.echoKnifeInspect?.visual?.dispose(false, true);
       for (const marker of echoMarkers.values()) marker.remove();
       echoMarkers.clear();
-      window.__sdrEchoRaidPass = false;
       return clearBeforeEcho();
     };
 
