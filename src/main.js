@@ -9312,7 +9312,7 @@ function getOperatorDefs() {
       nameZh: '侦察兵',
       nameEn: 'Recon',
       passiveZh: '被动：移动更快，更难被敌人提前发现。',
-      passiveEn: 'Passive: faster movement and lower enemy detection.',
+      passiveEn: 'Role: Recon. Passive: faster movement and lower enemy detection.',
       skillNameZh: '脉冲扫描',
       skillNameEn: 'Pulse Scan',
       skillTextZh: '扫描附近敌人并高亮显示，但不会标记到小地图。',
@@ -9911,7 +9911,7 @@ function buildSupportPromptText(raid = state.raid) {
   } else {
     const nearestSwitch = getNearestRaidZone(raid, (zone) => zone.kind === 'switch');
     if (nearestSwitch) {
-      parts.push(L(`${getZoneLabel(nearestSwitch.zone)}ï¼${getExtractionStatusLabel(nearestSwitch.zone, raid)}`, `${getZoneLabel(nearestSwitch.zone)}: ${getExtractionStatusLabel(nearestSwitch.zone, raid)}`));
+      parts.push(L(`${getZoneLabel(nearestSwitch.zone)}：${getExtractionStatusLabel(nearestSwitch.zone, raid)}`, `${getZoneLabel(nearestSwitch.zone)}: ${getExtractionStatusLabel(nearestSwitch.zone, raid)}`));
     }
   }
   if (!parts.length) {
@@ -13166,9 +13166,9 @@ function getOperatorDefs() {
     },
     recon: {
       id: 'recon',
-      nameZh: '\u4fa6\u5bdf\u5175',
-      nameEn: 'Recon',
-      passiveZh: '\u88ab\u52a8\uff1a\u79fb\u52a8\u66f4\u5feb\uff0c\u66f4\u96be\u88ab\u654c\u4eba\u63d0\u524d\u53d1\u73b0\u3002',
+      nameZh: '\u4fa6\u67e5\u4f4d · \u5e7d\u7075',
+      nameEn: 'Recon · Ghost',
+      passiveZh: '\u5b9a\u4f4d\uff1a\u4fa6\u67e5\u4f4d\u3002\u88ab\u52a8\uff1a\u79fb\u52a8\u66f4\u5feb\uff0c\u66f4\u96be\u88ab\u654c\u4eba\u63d0\u524d\u53d1\u73b0\u3002',
       passiveEn: 'Passive: faster movement and lower enemy detection.',
       skillNameZh: '\u900f\u89c6\u626b\u63cf',
       skillNameEn: 'Ghost Scan',
