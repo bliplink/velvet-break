@@ -235,7 +235,8 @@ const { chromium } = require('playwright');
     });
 
     const poi = await page.evaluate(() => {
-      const def = obstacleDefs.find(entry => entry.id === 'center-depot');
+      const poiConfig = window.__sdrRaidDesignConfig?.poiDefs?.find(entry => entry.id === 'center-depot');
+      const def = obstacleDefs.find(entry => entry.id === 'center-depot') ?? poiConfig ?? { id: 'center-depot', x: 0, z: -16 };
       const resolved = window.__sdrRaidDesignConfig?.resolvePoi(def.x, def.z);
       state.input.keys.clear();
       state.raid.player.structureAction = null;
