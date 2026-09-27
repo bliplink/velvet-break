@@ -99,9 +99,10 @@
       }
     };
     forceOpaqueBuildingMeshes();
-    // Structures finish booting asynchronously; one delayed correction is enough.
-    // Avoid rescanning the entire scene forever just to keep static building materials opaque.
-    setTimeout(forceOpaqueBuildingMeshes, 1600);
+    // Catch late-created shells during startup without a permanent whole-scene polling loop.
+    setTimeout(forceOpaqueBuildingMeshes, 600);
+    setTimeout(forceOpaqueBuildingMeshes, 1800);
+    setTimeout(forceOpaqueBuildingMeshes, 4200);
 
     // Lightweight danger readout: nearby living enemies only; no wallhack positions.
     const ensureDangerBadge = () => {
@@ -252,7 +253,7 @@
     }
 
     window.__sdrFinalPolishDebug = {
-      version: '20260926-final5',
+      version: '20260927-final6',
       nonSolidLoot: true,
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
