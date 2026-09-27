@@ -282,11 +282,10 @@ function scaleObstacleDefs(obstacles) {
 function expandEnemySpawns(baseSpawns) {
   const offsetScale = scaleWorldValue(4);
   return baseSpawns.flatMap((spawn, index) => {
+    // Keep enough patrol variety without multiplying every authored route into four overlapping squads.
     const variants = [
       { ox: 0, oz: 0, bias: 0 },
       { ox: index % 2 === 0 ? offsetScale : -offsetScale, oz: index % 3 === 0 ? -offsetScale : offsetScale, bias: 0.8 },
-      { ox: index % 2 === 0 ? -offsetScale : offsetScale, oz: index % 3 === 1 ? -offsetScale : offsetScale, bias: 1.6 },
-      { ox: index % 2 === 0 ? offsetScale * 1.25 : -offsetScale * 1.25, oz: index % 3 === 2 ? offsetScale * 1.25 : -offsetScale * 1.25, bias: 2.4 },
     ];
     return variants.map((variant, variantIndex) => ({
       x: Math.max(-PLAYABLE_HALF + 10, Math.min(PLAYABLE_HALF - 10, scaleWorldValue(spawn.x) + variant.ox)),
