@@ -151,6 +151,7 @@ const { chromium } = require('playwright');
       const swingsBefore = window.__sdrCombatPolishDebug.echoSwingCount;
       const hitsBefore = window.__sdrCombatPolishDebug.echoHitCount;
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyT', key: 't' }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyT', key: 't' }));
       const actionStarted = Boolean(player.echoKnifeAction);
       animateRaidEntities(0.13);
       const echoVisual = player.echoKnifeAction?.visual;
