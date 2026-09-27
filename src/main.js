@@ -2790,7 +2790,7 @@ function chooseRaidEnemySpawns(playerSpawn) {
     modeId === 'contract' ? 16 :
     modeId === 'blacktide' ? 14 :
     modeId === 'blitz' ? 12 :
-    10;
+    8;
   const targetCount = Math.min(candidates.length, requestedCount);
   const selected = [];
   const minSpacing = 11;
