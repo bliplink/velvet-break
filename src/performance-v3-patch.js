@@ -50,7 +50,7 @@
     const freezeStaticWorld = () => {
       const frozenMaterials = new Set();
       let frozenMeshes = 0;
-      const staticName = /^(?:obstacle-|boundary-|roof-|tower-|fence-|industrial-lamp-(?:base|shaft|collar|arm|brace|head|lens)-)/i;
+      const staticName = /^(?:ground$|district-|obstacle-|boundary-|roof-|roof-unit-|roof-vent-|tower-|fence-|awning-|balcony-(?:floor|rail)-|trim-band-|stair-(?:ramp|tread|landing|rail)-|ladder-(?:left|right|rung)-|window-frame-|industrial-lamp-(?:base|shaft|collar|arm|brace|head|lens)-)/i;
 
       for (const mesh of scene.meshes ?? []) {
         if (!mesh || mesh.isDisposed?.()) continue;
