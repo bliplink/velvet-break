@@ -129,8 +129,18 @@
     const spawnElitePatrol = (raid) => {
       const point = eventLocation(raid, 58);
       if (!point) return false;
+      const activeRegulars = (raid.enemies ?? []).filter((enemy) =>
+        !enemy.dead && !enemy.despawned && !enemy.isNamelessBoss && !enemy.isNamelessMinion && !enemy.isRangeTarget
+      ).length;
+      const patrolCap =
+        raid.modeId === 'contract' ? 16 :
+        raid.modeId === 'black-tide' ? 14 :
+        raid.modeId === 'blitz' ? 12 :
+        10;
+      const openSlots = Math.max(0, patrolCap - activeRegulars);
+      if (openSlots <= 0) return false;
       const event = { id: `event-patrol-${Date.now()}`, type: 'patrol', nameZh: '精英巡逻', nameEn: 'Elite patrol', x: point.x, z: point.z, resolved: false };
-      const types = [0, 1, 2];
+      const types = [0, 1, 2].slice(0, openSlots);
       types.forEach((type, index) => {
         const angle = (Math.PI * 2 * index) / types.length;
         const spawn = resolveStaticPlacement(point.x + Math.cos(angle) * 3.4, point.z + Math.sin(angle) * 3.4, 1.2);
