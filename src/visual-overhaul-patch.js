@@ -137,11 +137,12 @@
       const locators = legacyPoles.map((mesh) => ({ x: mesh.position.x, z: mesh.position.z }));
       if (!locators.length) return;
 
-      for (const mesh of scene.meshes) {
+      const legacyMeshes = scene.meshes.filter((mesh) => {
         const name = String(mesh.name ?? '');
-        if (name.startsWith('lamp-pole-') || (name.startsWith('lamp-') && !name.startsWith('lamp-pole-'))) {
-          mesh.setEnabled(false);
-        }
+        return name.startsWith('lamp-pole-') || (name.startsWith('lamp-') && !name.startsWith('lamp-pole-'));
+      });
+      for (const mesh of legacyMeshes) {
+        mesh.dispose(false, true);
       }
 
       locators.forEach(({ x, z }, index) => {
@@ -235,7 +236,7 @@
     }
 
     window.__sdrVisualOverhaulDebug = {
-      version: '2026-09-19-canister-rollback-v1',
+      version: '2026-09-27-static-pass-v2',
       humanActorOverhaul: false,
       playerArmsOverhaul: false,
       opaqueBuildings: true,
@@ -258,9 +259,10 @@
     initialPass();
     window.setTimeout(initialPass, 450);
 
-    // Structural materials can be touched by late-loaded map/content patches.
-    // Reassert opaque depth-writing materials periodically without touching VFX.
-    window.setInterval(forceOpaqueBuildings, 1200);
+    // Late-loaded map/content patches settle during startup. Recheck a few
+    // times without keeping a permanent whole-scene scan alive during play.
+    window.setTimeout(forceOpaqueBuildings, 1400);
+    window.setTimeout(forceOpaqueBuildings, 3600);
   };
 
   boot();
