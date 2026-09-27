@@ -2788,7 +2788,7 @@ function chooseRaidEnemySpawns(playerSpawn) {
   const modeId = typeof getSelectedLobbyModeId === 'function' ? getSelectedLobbyModeId() : 'raid';
   const requestedCount =
     modeId === 'contract' ? 16 :
-    modeId === 'black-tide' ? 14 :
+    modeId === 'blacktide' ? 14 :
     modeId === 'blitz' ? 12 :
     10;
   const targetCount = Math.min(candidates.length, requestedCount);
