@@ -1489,7 +1489,7 @@ function resetSave() {
 }
 
 function formatMoney(value) {
-  return `â¿${Math.round(value).toLocaleString('zh-CN')}`;
+  return `¥${Math.round(value).toLocaleString('zh-CN')}`;
 }
 
 function formatWeight(value) {
@@ -14414,7 +14414,7 @@ window.__sdrPatchedStartRaid = function patchedStartRaid() {
     modeId: modeDef.id,
     bonusReward: modeDef.bonusReward ?? 0,
     timeLeft: modeDef.duration,
-    statusText: L('WASD ÒÆ¶¯£¬Êó±ê×ªÏò£¬F ¿ª»ð¡£', 'WASD to move, mouse to look, F to fire.'),
+    statusText: L('WASD 移动，鼠标转向，F 开火。', 'WASD to move, mouse to look, F to fire.'),
     interactionText: modeDef.getStartInteractionText(),
     bag: [],
     bagValue: 0,
@@ -14579,7 +14579,7 @@ window.__sdrPatchedKillEnemy = function patchedKillEnemy(enemy) {
   enemy.dropPending = Math.random() < 0.42;
   enemy.dropItem = enemy.dropPending ? createLootInstance(weightedPick(bonusPool, (item) => item.spawnWeight)) : null;
   persistSave();
-  notify(L('ÒÑ»÷µ¹ ' + getEnemyLabel(enemy) + '¡£', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
+  notify(L('已击倒 ' + getEnemyLabel(enemy) + '。', 'Target down: ' + getEnemyLabel(enemy) + '.'), 'success');
 };
 killEnemy = window.__sdrPatchedKillEnemy;
 
