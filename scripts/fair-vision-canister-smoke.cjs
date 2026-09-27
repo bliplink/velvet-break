@@ -55,7 +55,8 @@ process.on('exit', () => server?.kill());
     const companionTankMeshes = scene.meshes.filter(mesh => mesh.name.startsWith('actor-tank-raid-companion-clone'));
 
     const opaqueStructureMeshes = scene.meshes.filter(mesh =>
-      /^(obstacle-|boundary-|roof-|window-|door-|wide-door-|tower-|fence-)/.test(mesh.name)
+      /^(obstacle-|boundary-|roof-|window-|door-|wide-door-|tower-|fence-)/.test(mesh.name) &&
+      !/^window-(?:pane|lamp)-/.test(mesh.name)
     );
     const transparentStructures = opaqueStructureMeshes.filter(mesh =>
       mesh.material && typeof mesh.material.alpha === 'number' && mesh.material.alpha < 0.999
