@@ -110,6 +110,22 @@ jobs:
       - name: Verify Black Tide mode map and Lingshuang
         run: node scripts/black-tide-content-smoke.cjs
 
+      - name: Pack local Playwright runtime
+        if: always()
+        run: |
+          tar -czf local-playwright-runtime.tgz \
+            node_modules/playwright \
+            node_modules/playwright-core \
+            package.json package-lock.json server.js scripts
+
+      - name: Upload local Playwright runtime
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-playwright-runtime
+          path: local-playwright-runtime.tgz
+          retention-days: 1
+
       - name: Upload QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
