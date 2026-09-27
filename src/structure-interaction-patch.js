@@ -441,33 +441,24 @@
     };
 
     const resolveStairCollision = (entity, stair, radius) => {
-      if (!entity || !stair || entity.onRoofBuildingId === stair.obstacleId || entity.structureAction?.type === 'stairs') {
-        return;
-      }
+      if (!entity || !stair || entity.onRoofBuildingId === stair.obstacleId || entity.structureAction?.type === 'stairs') return;
+      // The stair flight is walkable; only slim side rails block lateral movement.
       const run = stair.run ?? Math.max(1.1, ((stair.stepCount ?? 4) - 1) * 0.38 + 0.68);
-      const centerX = stair.x + stair.dirX * run * 0.5;
-      const centerZ = stair.z + stair.dirZ * run * 0.5;
-      const halfX = Math.abs(stair.dirX) > 0 ? run * 0.5 + 0.1 : Math.max(0.78, (stair.width ?? 1.5) * 0.5);
-      const halfZ = Math.abs(stair.dirZ) > 0 ? run * 0.5 + 0.1 : Math.max(0.78, (stair.depth ?? 1.5) * 0.5);
-      const nearestX = clamp(entity.x, centerX - halfX, centerX + halfX);
-      const nearestZ = clamp(entity.z, centerZ - halfZ, centerZ + halfZ);
-      const dx = entity.x - nearestX;
-      const dz = entity.z - nearestZ;
-      const distance = Math.hypot(dx, dz);
-      if (distance > 0 && distance < radius) {
-        const push = radius - distance + 0.001;
-        entity.x += (dx / distance) * push;
-        entity.z += (dz / distance) * push;
-        return;
-      }
-      if (distance === 0) {
-        const escapeX = halfX - Math.abs(entity.x - centerX);
-        const escapeZ = halfZ - Math.abs(entity.z - centerZ);
-        if (escapeX < escapeZ) {
-          entity.x += entity.x < centerX ? -(escapeX + radius) : escapeX + radius;
-        } else {
-          entity.z += entity.z < centerZ ? -(escapeZ + radius) : escapeZ + radius;
-        }
+      const width = Math.max(1.2, stair.width ?? 1.5);
+      const along = (entity.x - stair.x) * stair.dirX + (entity.z - stair.z) * stair.dirZ;
+      if (along < -0.7 || along > run + 0.45) return;
+      const lateralX = -stair.dirZ;
+      const lateralZ = stair.dirX;
+      const lateral = (entity.x - stair.x) * lateralX + (entity.z - stair.z) * lateralZ;
+      const railCenter = width * 0.5 + 0.08;
+      const minDistance = radius + 0.09;
+      for (const side of [-1, 1]) {
+        const delta = lateral - side * railCenter;
+        if (Math.abs(delta) >= minDistance) continue;
+        const push = minDistance - Math.abs(delta) + 0.001;
+        const direction = delta < 0 ? -1 : 1;
+        entity.x += lateralX * direction * push;
+        entity.z += lateralZ * direction * push;
       }
     };
 
