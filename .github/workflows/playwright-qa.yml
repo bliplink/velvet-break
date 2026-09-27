@@ -120,7 +120,8 @@ jobs:
           tar -czf local-playwright-runtime.tgz \
             node_modules/playwright \
             node_modules/playwright-core \
-            package.json package-lock.json server.js scripts
+            package.json package-lock.json server.js scripts \
+            -C "$HOME/.cache" ms-playwright
 
       - name: Upload local Playwright runtime
         if: always()
