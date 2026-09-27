@@ -107,6 +107,9 @@
       const name = String(mesh.name ?? '').toLowerCase();
       if (name.startsWith('extract-') || name.startsWith('container-') || name.startsWith('switch-')) return false;
       if (name === 'utility-cloak-screen' || name.startsWith('utility-cloak-')) return false;
+      // Glass panes and their status lamps are intentionally translucent.
+      // Window frames remain structural and must stay fully opaque.
+      if (name.startsWith('window-pane-') || name.startsWith('window-lamp-')) return false;
       return /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning|floor|ceiling|doorframe|stairs|stair|bridge|platform|container-wall)/.test(name);
     };
 
