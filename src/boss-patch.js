@@ -349,9 +349,10 @@
     };
 
     const clearBossTerritory = (raid, boss) => {
-      const removed = (raid.enemies ?? []).filter((enemy) => !enemy.isNamelessBoss && inBossTerritory(boss, enemy.x, enemy.z));
-      raid.enemies = (raid.enemies ?? []).filter((enemy) => enemy.isNamelessBoss || !inBossTerritory(boss, enemy.x, enemy.z));
-      for (const enemy of removed) disposeVisual(enemy.visual);
+      // Preserve live enemies instead of deleting them when Nameless spawns.
+      // Moving them outside the boss territory avoids sudden disappearances and
+      // keeps objective modes from losing required kill targets.
+      expelRegularEnemiesFromTerritory(raid, boss);
     };
 
     const constrainToBossTerritory = (enemy, boss) => {
