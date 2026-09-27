@@ -70,7 +70,8 @@ const { chromium } = require('playwright');
         spawnSafeTimer: raid.spawnSafeTimer,
         spawnSafeRadius: raid.spawnSafeRadius,
         blitzBonusCount: bonuses.length,
-        tunedEnemies: raid.enemies.filter(enemy => enemy.blitzModeTuned).length,
+        regularEnemyCount: raid.enemies.filter(enemy => !enemy.dead && !enemy.despawned && !enemy.isNamelessBoss && !enemy.isNamelessMinion && !enemy.isRangeTarget).length,
+        tunedEnemies: raid.enemies.filter(enemy => enemy.blitzModeTuned && !enemy.isNamelessBoss && !enemy.isNamelessMinion).length,
         debug: window.__sdrBlitzModeDebug ?? null,
       };
     });
@@ -157,11 +158,11 @@ const { chromium } = require('playwright');
       lobby.duration === 300 &&
       lobby.bonusReward === 5200 &&
       lobby.lobbyText.includes('极速突袭') &&
-      lobby.performance?.version === '2026-09-19-tiered-v3' &&
+      lobby.performance?.version === '2026-09-27-tiered-v4' &&
       lobby.performance?.maxScalingLevel === 1.65 &&
       lobby.performance?.tieredAI &&
       lobby.performance?.tieredAnimation &&
-      lobby.performanceV3?.version === '2026-09-19-fps-v5' &&
+      lobby.performanceV3?.version === '2026-09-27-fps-v6' &&
       lobby.performanceV3?.baseEffectLimit === 72 &&
       lobby.performanceV3?.frozenStaticMeshes > 100 &&
       lobby.performanceV3?.frozenStaticMaterials > 5 &&
@@ -181,7 +182,8 @@ const { chromium } = require('playwright');
       blitzRaid.spawnSafeTimer <= 4 &&
       blitzRaid.spawnSafeRadius <= 62 &&
       blitzRaid.blitzBonusCount >= 2 &&
-      blitzRaid.tunedEnemies >= 20 &&
+      blitzRaid.regularEnemyCount >= 6 &&
+      blitzRaid.tunedEnemies === blitzRaid.regularEnemyCount &&
       blitzRaid.debug?.starts >= 1 &&
       objectiveCompletion.tasksComplete &&
       objectiveCompletion.taskAvailableAfterObjectives === true &&
