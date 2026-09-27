@@ -64,7 +64,7 @@
     updateEnemies = function updateEnemiesWithTieredBudget(dt) {
       const raid = state.raid;
       const player = raid?.player;
-      if (!raid || !player || raid.enemies.length <= 18) {
+      if (!raid || !player || raid.enemies.length <= 4) {
         tuneResolution();
         return originalUpdateEnemies(dt);
       }
@@ -77,9 +77,9 @@
         if ((enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0 || (enemy.companionAlertTimer ?? 0) > 0) return true;
 
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
-        if (distance <= 60) return true;
-        if (distance <= 100) return (raid.aiBudgetFrame + index) % 2 === 0;
-        return (raid.aiBudgetFrame + index) % 5 === 0;
+        if (distance <= 52) return true;
+        if (distance <= 92) return (raid.aiBudgetFrame + index) % 2 === 0;
+        return (raid.aiBudgetFrame + index) % 3 === 0;
       });
 
       raid.enemies = activeEnemies;
@@ -95,14 +95,14 @@
     // in AI decision updates instead of making distant actors visibly stutter.
 
     window.__sdrPerformanceDebug = {
-      version: '2026-09-19-tiered-v3',
+      version: '2026-09-27-tiered-v4',
       noHardEnemyCull: true,
       tieredAI: true,
       tieredAnimation: true,
       adaptiveResolution: true,
       maxScalingLevel: 1.65,
-      aiNearDistance: 60,
-      animationNearDistance: 70,
+      aiNearDistance: 52,
+      animationNearDistance: 999,
       scalingLevel,
       fps: 0,
     };
