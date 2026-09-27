@@ -28,7 +28,7 @@
     if ('constantlyUpdateMeshUnderPointer' in scene) scene.constantlyUpdateMeshUnderPointer = false;
 
     const debug = {
-      version: '2026-09-19-fps-v5',
+      version: '2026-09-27-fps-v6',
       baseEffectLimit: 72,
       effectLimit: 72,
       trimmedEffects: 0,
