@@ -2783,7 +2783,15 @@ function chooseRaidEnemySpawns(playerSpawn) {
     .filter(({ safeDistance }) => safeDistance < SPAWN_SAFE_RADIUS)
     .map(({ spawn }) => spawn);
   const candidates = safeSpawns.concat(fallbackSpawns);
-  const targetCount = Math.min(candidates.length, 28);
+  // Keep ordinary raids readable and smooth. Objective modes still retain
+  // enough hostiles to complete their kill targets without flooding the map.
+  const modeId = typeof getSelectedLobbyModeId === 'function' ? getSelectedLobbyModeId() : 'raid';
+  const requestedCount =
+    modeId === 'contract' ? 16 :
+    modeId === 'black-tide' ? 14 :
+    modeId === 'blitz' ? 12 :
+    10;
+  const targetCount = Math.min(candidates.length, requestedCount);
   const selected = [];
   const minSpacing = 11;
   for (const spawn of candidates) {
