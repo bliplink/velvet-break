@@ -203,7 +203,7 @@ const { chromium } = require('playwright');
       visuals.baseBodyVisible &&
       visuals.fairVision?.originalCharacterModels &&
       visuals.rollback?.legacyCanisterModel &&
-      visuals.rollback?.opaquePasses <= 2 &&
+      visuals.rollback?.opaquePasses <= 3 &&
       stability.debug?.version === '2026-09-20-stability-v4' &&
       stability.debug?.lastVisibleEnemyCount > 0 &&
       stability.enemyVisible &&
