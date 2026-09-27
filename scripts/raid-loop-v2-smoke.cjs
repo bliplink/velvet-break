@@ -28,7 +28,7 @@ const { chromium } = require('playwright');
     const risk = await page.evaluate(() => {
       const debug = window.__sdrRaidLoopV2Debug;
       const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
-      const obstacle = obstacleDefs.find(entry => entry.id === poi.id);
+      const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === poi.id) : null) ?? poi;
       return {
         version: debug?.version ?? null,
         risk: debug?.getRiskAt?.(obstacle.x, obstacle.z) ?? null,
@@ -38,7 +38,8 @@ const { chromium } = require('playwright');
 
     const lootBonus = await page.evaluate(() => {
       const debug = window.__sdrRaidLoopV2Debug;
-      const obstacle = obstacleDefs.find(entry => entry.id === 'center-depot');
+      const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
+      const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === 'center-depot') : null) ?? poi;
       const container = state.raid.containers[0];
       container.x = obstacle.x;
       container.z = obstacle.z;
@@ -63,7 +64,8 @@ const { chromium } = require('playwright');
 
     const enemyRisk = await page.evaluate(() => {
       const debug = window.__sdrRaidLoopV2Debug;
-      const obstacle = obstacleDefs.find(entry => entry.id === 'center-depot');
+      const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
+      const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === 'center-depot') : null) ?? poi;
       const enemy = state.raid.enemies.find(entry => !entry.dead && !entry.despawned && !entry.isNamelessBoss);
       enemy.x = obstacle.x + 3;
       enemy.z = obstacle.z + 3;
@@ -91,7 +93,8 @@ const { chromium } = require('playwright');
     const alert = await page.evaluate(() => {
       closeLootPanel?.();
       const debug = window.__sdrRaidLoopV2Debug;
-      const obstacle = obstacleDefs.find(entry => entry.id === 'center-depot');
+      const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
+      const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === 'center-depot') : null) ?? poi;
       const container = state.raid.containers[0];
       const enemy = state.raid.enemies.find(entry => !entry.dead && !entry.despawned && !entry.isNamelessBoss);
 
