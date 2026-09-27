@@ -134,7 +134,7 @@
       ).length;
       const patrolCap =
         raid.modeId === 'contract' ? 16 :
-        raid.modeId === 'black-tide' ? 14 :
+        raid.modeId === 'blacktide' ? 14 :
         raid.modeId === 'blitz' ? 12 :
         10;
       const openSlots = Math.max(0, patrolCap - activeRegulars);
