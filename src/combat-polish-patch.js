@@ -488,6 +488,17 @@
       const dealt = Math.max(0, before - Math.max(0, target.health ?? 0));
       debug.echoHitCount += 1;
       debug.lastEchoTarget = { enemyId: target.id, reveal: target.echoRevealTimer, damage: dealt };
+      const markerId = String(target.id ?? `${target.x}:${target.z}`);
+      let marker = echoMarkers.get(markerId);
+      if (!marker) {
+        marker = document.createElement('div');
+        marker.className = 'echo-exposure-marker';
+        echoExposureLayer.appendChild(marker);
+        echoMarkers.set(markerId, marker);
+      }
+      marker.classList.toggle('is-boss', Boolean(target.isNamelessBoss));
+      marker.hidden = false;
+      marker.textContent = `${enemyLabel(target)} · ${target.echoRevealTimer.toFixed(1)}s`;
       if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(target.x, 1.1, target.z), '#72d9ff', 0.9, 'hard');
       if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(target.x, 1, target.z), 'hard');
       // No in-raid Echo text prompt; hit feedback stays visual/audio only.
@@ -779,7 +790,7 @@
         extractLabel.classList.remove('is-visible');
         lastExtractKey = null;
       }
-    }, 360);
+    }, 120);
   };
 
   boot();
