@@ -336,7 +336,7 @@ async function main() {
     persistSave();
     renderBasePanel();
 
-    const prepProducts = getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id));
+    const prepProducts = getShopEntries().filter(entry => ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id));
     buyShopEntry('weapon_smg');
     buyShopEntry('part_red_dot');
     renderBasePanel();
@@ -369,7 +369,7 @@ async function main() {
     money: state.save.money,
     ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
     ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
-    prepProductCount: getShopEntries().filter(entry => entry.kind === 'prep' || ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id)).length,
+    prepProductCount: getShopEntries().filter(entry => ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id)).length,
     emergencyFundingPresent: getShopEntries().some(entry => entry.id === 'emergency_funding'),
     unlockButton: Boolean(document.querySelector('[data-engineer-unlock]')),
   }));
