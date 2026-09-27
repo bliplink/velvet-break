@@ -17,6 +17,8 @@ const { chromium } = require('playwright');
 
     await page.evaluate(() => {
       state.save.selectedOperatorId = 'assault';
+      state.save.echoUnlocked = true;
+      if (typeof persistSave === 'function') persistSave();
       startRaid();
       state.raid.player.dropTimer = 0;
       state.raid.spawnSafeTimer = 0;
