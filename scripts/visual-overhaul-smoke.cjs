@@ -31,7 +31,8 @@ const { chromium } = require('playwright');
         if (!mat) return false;
         const name = String(mesh.name ?? '');
         const structural = !/^(?:extract|container|switch)-/i.test(name) &&
-          !/^utility-cloak-/i.test(name) && (
+          !/^utility-cloak-/i.test(name) &&
+          !/^window-(?:pane|lamp)-/i.test(name) && (
           mesh.metadata?.raycastTarget === 'obstacle' ||
           /(?:building|facade|warehouse|hangar|bunker|freight|silo|office|apartment|depot|utility|roof|wall|boundary|tower|pillar|window|awning)/i.test(name)
         );
