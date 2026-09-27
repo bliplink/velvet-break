@@ -643,13 +643,13 @@
     };
 
     const poiDefs = [
-      { id: 'center-depot', zh: '中央军械库', en: 'Central Depot', risk: 'high' },
-      { id: 'west-barracks', zh: '西侧兵营', en: 'West Barracks', risk: 'medium' },
-      { id: 'east-fuel', zh: '东侧燃料区', en: 'East Fuel Farm', risk: 'high' },
-      { id: 'south-freight', zh: '南部货运区', en: 'South Freight', risk: 'medium' },
-      { id: 'west-bunker', zh: '西部地堡', en: 'West Bunker', risk: 'high' },
-      { id: 'east-hangar', zh: '东部机库', en: 'East Hangar', risk: 'high' },
-      { id: 'north-silo', zh: '北部筒仓', en: 'North Silo', risk: 'medium' },
+      { id: 'center-depot', zh: '中央军械库', en: 'Central Depot', risk: 'high', x: 0, z: -16, w: 18, d: 10 },
+      { id: 'west-barracks', zh: '西侧兵营', en: 'West Barracks', risk: 'medium', x: -28, z: 12, w: 14, d: 12 },
+      { id: 'east-fuel', zh: '东侧燃料区', en: 'East Fuel Farm', risk: 'high', x: 28, z: 16, w: 12, d: 12 },
+      { id: 'south-freight', zh: '南部货运区', en: 'South Freight', risk: 'medium', x: 0, z: 30, w: 22, d: 8 },
+      { id: 'west-bunker', zh: '西部地堡', en: 'West Bunker', risk: 'high', x: -52, z: -30, w: 9, d: 10 },
+      { id: 'east-hangar', zh: '东部机库', en: 'East Hangar', risk: 'high', x: 50, z: 26, w: 12, d: 10 },
+      { id: 'north-silo', zh: '北部筒仓', en: 'North Silo', risk: 'medium', x: 44, z: -50, w: 10, d: 8 },
     ];
 
     const resolvePoi = (x, z) => {
@@ -659,12 +659,13 @@
         const obstacle = typeof obstacleDefs !== 'undefined'
           ? obstacleDefs.find(entry => entry.id === def.id)
           : null;
-        if (!obstacle) continue;
-        const distance = Math.hypot(x - obstacle.x, z - obstacle.z);
-        const radius = Math.max(12, Math.max(obstacle.w, obstacle.d) * 1.35);
+        const anchor = obstacle ?? def;
+        if (!Number.isFinite(anchor.x) || !Number.isFinite(anchor.z)) continue;
+        const distance = Math.hypot(x - anchor.x, z - anchor.z);
+        const radius = Math.max(12, Math.max(anchor.w ?? 8, anchor.d ?? 8) * 1.35);
         if (distance <= radius && distance < bestDistance) {
           bestDistance = distance;
-          best = { ...def, x: obstacle.x, z: obstacle.z, radius };
+          best = { ...def, x: anchor.x, z: anchor.z, radius };
         }
       }
       return best;
