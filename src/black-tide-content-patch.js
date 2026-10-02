@@ -192,10 +192,26 @@
       return order.includes(OPERATOR_ID) ? order : [...order, OPERATOR_ID];
     };
 
+    const operatorUnlockPrices = {
+      assault: 0,
+      recon: 80000,
+      medic: 70000,
+      engineer: 100000,
+      [OPERATOR_ID]: OPERATOR_PRICE,
+    };
+    const operatorUnlockFlags = {
+      recon: 'claireUnlocked',
+      medic: 'benjaminUnlocked',
+      engineer: 'engineerUnlocked',
+      [OPERATOR_ID]: 'lingshuangUnlocked',
+    };
+    const currentSelectedBeforeEconomy = state.save.selectedOperatorId;
+    if (currentSelectedBeforeEconomy === 'recon' && state.save.claireUnlocked == null) state.save.claireUnlocked = true;
+    if (currentSelectedBeforeEconomy === 'medic' && state.save.benjaminUnlocked == null) state.save.benjaminUnlocked = true;
     const isOperatorUnlocked = (operatorId) => {
-      if (operatorId === 'engineer') return Boolean(state.save.engineerUnlocked);
-      if (operatorId === OPERATOR_ID) return Boolean(state.save.lingshuangUnlocked);
-      return true;
+      if (operatorId === 'assault') return true;
+      const flag = operatorUnlockFlags[operatorId];
+      return flag ? Boolean(state.save[flag]) : true;
     };
 
     if (preload.selectedModeId === MODE_ID) state.save.selectedModeId = MODE_ID;
@@ -204,13 +220,13 @@
     }
 
     const selectBeforeWarden = setSelectedOperator;
-    setSelectedOperator = function selectLingshuang(operatorId) {
-      if (operatorId === OPERATOR_ID && !state.save.lingshuangUnlocked) {
-        notify(Ls('凌霜尚未解锁，需要 120,000 资金。', 'Lingshuang is locked. 120,000 funds are required.'), 'warning');
+    setSelectedOperator = function selectPricedOperator(operatorId) {
+      if (!isOperatorUnlocked(operatorId)) {
+        const price = operatorUnlockPrices[operatorId] ?? 0;
+        notify(Ls(`该干员尚未解锁，需要 ${price.toLocaleString('en-US')} 资金。`, `This operator is locked. ${price.toLocaleString('en-US')} funds are required.`), 'warning');
         return;
       }
-      const result = selectBeforeWarden(operatorId);
-      return result;
+      return selectBeforeWarden(operatorId);
     };
 
     renderOperatorPanel = function renderOperatorsWithLingshuang() {
@@ -224,16 +240,14 @@
           : operatorId === OPERATOR_ID
             ? `<div class="item-meta">${Ls('棱镜盾：650 点护盾，持续 8 秒；最多 2 个，每 18 秒补充 1 个，G 使用。', 'Prism Shield: 650 shield for 8s; max 2, +1 every 18s, press G.')}</div>`
             : '';
-        const lock = operatorId === 'engineer'
-          ? `<div class="item-meta operator-lock-note">${Ls('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>`
-          : operatorId === OPERATOR_ID
-            ? `<div class="item-meta lingshuang-lock-note">${Ls('解锁价格：120,000 资金', 'Unlock cost: 120,000 funds')}</div>`
-            : '';
+        const price = operatorUnlockPrices[operatorId] ?? 0;
+        const priceText = price > 0
+          ? Ls(`价格：${price.toLocaleString('en-US')} 资金`, `Price: ${price.toLocaleString('en-US')} funds`)
+          : Ls('初始干员 · 免费', 'Starter operator · Free');
+        const lock = `<div class="item-meta operator-lock-note">${priceText}</div>`;
         const action = unlocked
           ? `<button class="${active ? 'primary-button' : 'ghost-button'} small" type="button" data-operator-id="${operatorId}">${active ? Ls('已选择', 'Selected') : Ls('选择', 'Select')}</button>`
-          : operatorId === 'engineer'
-            ? `<button class="primary-button small" type="button" data-engineer-unlock ${state.save.money >= 100000 ? '' : 'disabled'}>${Ls('购买彦飞', 'Buy Yanfei')}</button>`
-            : `<button class="primary-button small" type="button" data-lingshuang-unlock ${state.save.money >= OPERATOR_PRICE ? '' : 'disabled'}>${Ls('购买凌霜', 'Buy Lingshuang')}</button>`;
+          : `<button class="primary-button small" type="button" data-operator-unlock="${operatorId}" ${state.save.money >= price ? '' : 'disabled'}>${Ls('解锁', 'Unlock')} · ${price.toLocaleString('en-US')}</button>`;
         return `
           <article class="shop-row operator-card ${active ? 'is-active' : ''} ${unlocked ? '' : 'is-locked'}">
             <div>
@@ -242,12 +256,31 @@
               <div class="item-meta">${Ls('技能：' + Ls(operator.skillNameZh, operator.skillNameEn) + ' · ' + Ls(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${Ls('专属道具：' + Ls(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
               ${extra}
-              ${unlocked ? '' : lock}
+              ${lock}
             </div>
             <div class="stack-list">${action}</div>
           </article>`;
       }).join('');
     };
+
+    refs.basePanel?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-operator-unlock]');
+      if (!button) return;
+      const operatorId = button.dataset.operatorUnlock;
+      if (!operatorId || isOperatorUnlocked(operatorId)) return;
+      const price = operatorUnlockPrices[operatorId] ?? 0;
+      if (state.save.money < price) {
+        notify(Ls('资金不足。', 'Not enough funds.'), 'danger');
+        return;
+      }
+      state.save.money -= price;
+      const flag = operatorUnlockFlags[operatorId];
+      if (flag) state.save[flag] = true;
+      state.save.selectedOperatorId = operatorId;
+      persistSave();
+      renderBasePanel();
+      notify(Ls('干员已解锁并选择。', 'Operator unlocked and selected.'), 'success');
+    });
 
     refs.basePanel?.addEventListener('click', (event) => {
       const button = event.target.closest('[data-lingshuang-unlock]');
