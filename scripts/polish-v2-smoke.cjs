@@ -230,26 +230,26 @@ const { chromium } = require('playwright');
       firstRescue.health > 1 &&
       firstRescue.reviveCount >= 1 &&
       balance.name === 'Benjamin' &&
-      balance.healed >= 799 && balance.healed <= 801 &&
+      balance.healed >= 649 && balance.healed <= 651 &&
       balance.armorAfterSkill === 0 &&
       balance.maxArmor > 0 &&
-      balance.immunity >= 11.99 && balance.immunity <= 12.01 &&
+      balance.immunity >= 7.99 && balance.immunity <= 8.01 &&
       balance.speedBoost === 0 &&
       balance.activeTimer >= 19.9 && balance.activeTimer <= 20.1 &&
       balance.postTimer <= 8.1 && balance.postTimer > 7.5 &&
       balance.postReductionMult === 0.5 &&
-      balance.boostedDamage >= 199 && balance.boostedDamage <= 201 &&
-      balance.description.includes('restore 800 HP') &&
-      balance.description.includes('double bullet damage') &&
-      kai.abilityDuration === 35 &&
-      kai.startTimer >= 34.9 && kai.startTimer <= 35.1 &&
-      kai.afterKillTimer >= 36.4 && kai.afterKillTimer <= 36.6 &&
-      kai.healOnKill >= 89 && kai.healOnKill <= 91 &&
+      balance.boostedDamage >= 159 && balance.boostedDamage <= 161 &&
+      balance.description.includes('restore 650 HP') &&
+      balance.description.includes('1.6x bullet damage') &&
+      kai.abilityDuration === 28 &&
+      kai.startTimer >= 27.9 && kai.startTimer <= 28.1 &&
+      kai.afterKillTimer >= 29.4 && kai.afterKillTimer <= 29.6 &&
+      kai.healOnKill >= 59 && kai.healOnKill <= 61 &&
       kai.killExtendSeconds === 1.5 &&
-      kai.killHeal === 90 &&
-      kai.spreadMult === 0.70 &&
-      kai.recoilMult === 0.72 &&
-      kai.reloadMult === 0.72 &&
+      kai.killHeal === 60 &&
+      kai.spreadMult === 0.78 &&
+      kai.recoilMult === 0.8 &&
+      kai.reloadMult === 0.82 &&
       kai.startArmorBonus === 170 &&
       kai.armorDurabilityCostMult === 0.5 &&
       kai.startingArmor === 200 &&
