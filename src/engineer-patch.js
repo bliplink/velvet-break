@@ -22,7 +22,7 @@
     window.__sdrEngineerPatchApplied = true;
 
     const ENGINEER_ID = 'engineer';
-    const ENGINEER_PRICE = 100000;
+    const ENGINEER_PRICE = 200000;
     const BARRIER_LENGTH = 15;
     const BARRIER_DEPTH = 0.72;
     const BARRIER_HEIGHT = 3.05;
@@ -154,7 +154,7 @@
     const setOperatorBeforeEngineer = setSelectedOperator;
     setSelectedOperator = function selectEngineerOperator(operatorId) {
       if (operatorId === ENGINEER_ID && !isEngineerUnlocked()) {
-        notify(L('彦飞尚未解锁，需要 100,000 资金。', 'Yanfei is locked. 100,000 funds are required.'), 'warning');
+        notify(L('彦飞尚未解锁，需要 200,000 资金。', 'Yanfei is locked. 200,000 funds are required.'), 'warning');
         return;
       }
       return setOperatorBeforeEngineer(operatorId);
@@ -175,7 +175,7 @@
               <div class="item-meta">${L('技能：' + L(operator.skillNameZh, operator.skillNameEn) + ' · ' + L(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${L('专属道具：' + L(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
               ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多 10 个，G 部署；火焰弹：最多 2 个，I 选点 / 确认；震撼弹：最多 2 个，O 选点 / 确认，命中敌人减速 10 秒。三种道具均持续补充。', 'Rapid Barrier: max 10, G deploy; Incendiary: max 2, I select / confirm; Stun Grenade: max 2, O select / confirm and slows enemies for 10s. All utilities resupply over time.')}</div>` : ''}
-              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>` : ''}
+              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>` : ''}
             </div>
             <div class="stack-list">
               ${unlocked
