@@ -26,7 +26,7 @@
 
       for (const enemy of raid.enemies ?? []) {
         if (enemy.dead || enemy.despawned || enemy.isRangeTarget || enemy.mobilityAction || enemy.isProne) continue;
-        enemy.jumpDecisionTimer = Math.max(0, (enemy.jumpDecisionTimer ?? (0.55 + Math.random() * 1.2)) - dt);
+        enemy.jumpDecisionTimer = Math.max(0, (enemy.jumpDecisionTimer ?? (0.48 + Math.random() * 0.95)) - dt);
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
         const engaged = (enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0;
         const recentlyShot = (player.fireCooldown ?? 0) > 0.04 && distance < 48;
@@ -39,13 +39,13 @@
           toward.z * 0.52 + toward.x * side * 0.86,
         );
         const started = beginMobilityAction(enemy, 'jump', direction.x, direction.z, {
-          duration: 0.54,
-          speed: enemy.isNamelessBoss ? 12.2 : 10.2,
+          duration: 0.50,
+          speed: enemy.isNamelessBoss ? 12.8 : 10.8,
           height: enemy.isNamelessBoss ? 1.2 : 1.08,
-          cooldown: enemy.isNamelessBoss ? 0.62 : 1.0,
+          cooldown: enemy.isNamelessBoss ? 0.56 : 0.85,
           spinDir: side,
         });
-        enemy.jumpDecisionTimer = started ? 1.8 + Math.random() * 1.5 : 0.32;
+        enemy.jumpDecisionTimer = started ? 1.5 + Math.random() * 1.2 : 0.32;
         if (started) enemy.strafeDirection = -side;
       }
       return result;
