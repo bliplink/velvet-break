@@ -111,6 +111,9 @@ jobs:
       - name: Verify FPS v3 and Blitz Raid
         run: node scripts/performance-blitz-smoke.cjs
 
+      - name: Verify staged HVT contract
+        run: node scripts/contract-hvt-smoke.cjs
+
       - name: Verify Black Tide mode map and Lingshuang
         run: node scripts/black-tide-content-smoke.cjs
 
