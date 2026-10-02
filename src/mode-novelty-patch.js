@@ -20,14 +20,134 @@
     window.__sdrModeNoveltyApplied = true;
 
     const debug = {
-      version: '2026-10-02-mode-novelty-v1',
+      version: '2026-10-02-mode-novelty-v2',
       blitzRelayCompletions: 0,
       contractHvtKills: 0,
+      lockdownGhostCaches: 0,
+      blitzCouriersSpawned: 0,
+      blitzCouriersKilled: 0,
+      contractBlackFilesSpawned: 0,
+      contractBlackFilesKilled: 0,
       lastRelayId: null,
       lastHvtId: null,
     };
     window.__sdrModeNoveltyDebug = debug;
     const Ls = (zh, en) => typeof L === 'function' ? L(zh, en) : en;
+
+
+    const armLockdownGhostCache = (raid) => {
+      if (!raid || raid.modeId !== 'raid') return null;
+      const player = raid.player;
+      const candidates = (raid.containers ?? [])
+        .filter(container => !container.opened && !String(container.id ?? '').startsWith('drop-'))
+        .slice()
+        .sort((a, b) => {
+          const da = player ? Math.hypot(a.x - player.x, a.z - player.z) : 0;
+          const db = player ? Math.hypot(b.x - player.x, b.z - player.z) : 0;
+          return db - da;
+        });
+      if (!candidates.length) return null;
+      const pool = candidates.slice(0, Math.max(1, Math.ceil(candidates.length * 0.45)));
+      const target = pool[Math.floor(Math.random() * pool.length)];
+      target.lockdownGhostCache = true;
+      target.lockdownGhostOriginalName = target.name;
+      target.name = Ls('无编号补给箱', 'Unnumbered Cache');
+      raid.lockdownGhostCacheId = target.id;
+      raid.lockdownGhostHintTimer = 6 + Math.random() * 8;
+      return target;
+    };
+
+    const activateLockdownGhost = (raid, container) => {
+      const player = raid?.player;
+      if (!player || !container || raid.lockdownGhostTriggered) return;
+      raid.lockdownGhostTriggered = true;
+      raid.bonusReward = Math.max(0, Number(raid.bonusReward ?? 0)) + 1800;
+      player.invisibilityTimer = Math.max(player.invisibilityTimer ?? 0, 6);
+      player.lockdownGhostTimer = 18;
+      debug.lockdownGhostCaches += 1;
+      notify(Ls(
+        '幽灵频段 617：信号遮蔽 6 秒，额外发现 1,800 行动奖金。',
+        'Ghost frequency 617: 6s signal masking and +1,800 operation bonus.',
+      ), 'success');
+    };
+
+    const markBlitzCourier = (raid) => {
+      if (!raid || raid.blitzCourierId) return null;
+      const candidates = (raid.enemies ?? []).filter(enemy =>
+        !enemy.dead && !enemy.despawned && !enemy.isRangeTarget &&
+        !enemy.isNamelessBoss && !enemy.isNamelessMinion
+      );
+      if (!candidates.length) return null;
+      const player = raid.player;
+      candidates.sort((a, b) => {
+        const da = player ? Math.hypot(a.x - player.x, a.z - player.z) : 0;
+        const db = player ? Math.hypot(b.x - player.x, b.z - player.z) : 0;
+        return db - da;
+      });
+      const courier = candidates[0];
+      courier.blitzCourier = true;
+      courier.blitzCourierBaseName ??= courier.name;
+      courier.name = Ls('404 信使', 'Courier 404');
+      courier.maxHealth = Math.round((courier.maxHealth ?? courier.health ?? 100) * 1.65);
+      courier.health = courier.maxHealth;
+      courier.speed = (courier.speed ?? 2.5) * 1.35;
+      courier.fireInterval = Math.max(0.24, (courier.fireInterval ?? 1) * 0.72);
+      courier.accuracyBonus = (courier.accuracyBonus ?? 0) + 0.18;
+      courier.combatSpeedMult = (courier.combatSpeedMult ?? 1) * 1.3;
+      raid.blitzCourierId = courier.id;
+      debug.blitzCouriersSpawned += 1;
+      notify(Ls(
+        '隐藏事件：检测到 404 信使。击败它可夺取额外突袭奖金。',
+        'Hidden event: Courier 404 detected. Eliminate it for an extra Blitz bonus.',
+      ), 'warning');
+      return courier;
+    };
+
+    const assignBlackFileTarget = (raid) => {
+      if (!raid || raid.contractBlackFileId || raid.contractBlackFileResolved) return null;
+      const candidates = (raid.enemies ?? []).filter(enemy =>
+        !enemy.dead && !enemy.despawned && !enemy.isRangeTarget &&
+        !enemy.isNamelessBoss && !enemy.isNamelessMinion && !enemy.contractHvtActive
+      );
+      if (!candidates.length) return null;
+      const target = candidates[Math.floor(Math.random() * candidates.length)];
+      target.contractBlackFile = true;
+      target.contractBlackFileBaseName ??= target.name;
+      target.name = Ls('黑档案 NULL', 'Black File NULL');
+      target.maxHealth = Math.round((target.maxHealth ?? target.health ?? 100) * 1.9);
+      target.health = target.maxHealth;
+      target.damage = Math.round((target.damage ?? 10) * 1.45);
+      target.speed = (target.speed ?? 2.5) * 1.18;
+      target.fireInterval = Math.max(0.24, (target.fireInterval ?? 1) * 0.76);
+      target.accuracyBonus = (target.accuracyBonus ?? 0) + 0.16;
+      raid.contractBlackFileId = target.id;
+      debug.contractBlackFilesSpawned += 1;
+      notify(Ls(
+        '黑档案已解密：发现可选目标 NULL。击败它不会影响撤离，但有额外奖金。',
+        'Black File decrypted: optional target NULL discovered. Extraction is unaffected, but the target carries an extra bonus.',
+      ), 'warning');
+      return target;
+    };
+
+    const applyContractModifier = (target) => {
+      const roll = Math.floor(Math.random() * 3);
+      if (roll === 0) {
+        target.contractModifier = 'bulwark';
+        target.name += Ls(' · 重甲', ' · Bulwark');
+        target.maxHealth = Math.round(target.maxHealth * 1.28);
+        target.health = target.maxHealth;
+      } else if (roll === 1) {
+        target.contractModifier = 'pursuer';
+        target.name += Ls(' · 追猎', ' · Pursuer');
+        target.speed *= 1.22;
+        target.combatSpeedMult = (target.combatSpeedMult ?? 1) * 1.2;
+      } else {
+        target.contractModifier = 'deadeye';
+        target.name += Ls(' · 神射', ' · Deadeye');
+        target.fireInterval = Math.max(0.22, target.fireInterval * 0.82);
+        target.accuracyBonus += 0.12;
+      }
+    };
 
     const selectRelayContainers = (raid) => {
       const player = raid?.player;
@@ -111,6 +231,7 @@
         target.speed = (target.speed ?? 2.5) * 1.16;
         target.fireInterval = Math.max(0.28, (target.fireInterval ?? 1) * 0.82);
         target.accuracyBonus = (target.accuracyBonus ?? 0) + 0.12;
+        applyContractModifier(target);
       }
       raid.contractHvtId = target.id;
       debug.lastHvtId = target.id;
@@ -123,6 +244,10 @@
       const result = startBeforeNovelty.apply(this, args);
       const raid = state.raid;
       if (!raid) return result;
+
+      if (raid.modeId === 'raid') {
+        armLockdownGhostCache(raid);
+      }
 
       if (raid.modeId === 'blitz') {
         raid.objectives = [
@@ -158,7 +283,14 @@
         !container.opened &&
         container.id === raid.blitzActiveRelayId
       );
+      const isGhostCache = Boolean(
+        raid?.modeId === 'raid' &&
+        container &&
+        !container.opened &&
+        container.id === raid.lockdownGhostCacheId
+      );
       const result = lootBeforeNovelty.call(this, container, ...args);
+      if (isGhostCache && raid) activateLockdownGhost(raid, container);
       if (!isRelay || !raid) return result;
       advanceRaidObjective('relay', 1);
       debug.blitzRelayCompletions += 1;
@@ -166,6 +298,10 @@
       raid.blitzRelayIndex = (raid.blitzRelayIndex ?? 0) + 1;
       triggerBlitzOverdrive(raid);
       markRelay(raid);
+      if ((raid.blitzRelayIndex ?? 0) >= 3) {
+        const elapsed = Math.max(0, 300 - Number(raid.timeLeft ?? 300));
+        if (elapsed <= 90) markBlitzCourier(raid);
+      }
       return result;
     };
 
@@ -173,7 +309,23 @@
     killEnemy = function killWithContractStages(enemy, ...args) {
       const raid = state.raid;
       const wasHvt = Boolean(raid?.modeId === 'contract' && enemy?.contractHvtActive && !enemy.dead);
+      const wasCourier = Boolean(raid?.modeId === 'blitz' && enemy?.blitzCourier && !enemy.dead);
+      const wasBlackFile = Boolean(raid?.modeId === 'contract' && enemy?.contractBlackFile && !enemy.dead);
       const result = killBeforeNovelty.call(this, enemy, ...args);
+      if (wasCourier && raid && enemy?.dead) {
+        raid.blitzCourierId = null;
+        raid.bonusReward = Math.max(0, Number(raid.bonusReward ?? 0)) + 3500;
+        if (raid.player) raid.player.blitzOverdriveTimer = Math.max(raid.player.blitzOverdriveTimer ?? 0, 12);
+        debug.blitzCouriersKilled += 1;
+        notify(Ls('404 信使已截获：+3,500 突袭奖金，超频重新充能。', 'Courier 404 intercepted: +3,500 Blitz bonus and Overdrive recharged.'), 'success');
+      }
+      if (wasBlackFile && raid && enemy?.dead) {
+        raid.contractBlackFileId = null;
+        raid.contractBlackFileResolved = true;
+        raid.bonusReward = Math.max(0, Number(raid.bonusReward ?? 0)) + 5000;
+        debug.contractBlackFilesKilled += 1;
+        notify(Ls('黑档案 NULL 已清除：+5,000 隐藏合约奖金。', 'Black File NULL cleared: +5,000 hidden contract bonus.'), 'success');
+      }
       if (!wasHvt || !raid || !enemy?.dead) return result;
 
       enemy.contractHvtActive = false;
@@ -188,7 +340,11 @@
         `HVT stage complete: +2,200 contract bonus (${raid.contractHvtStage}/3).`,
       ), 'success');
       raid.contractHvtId = null;
-      if ((raid.contractHvtStage ?? 0) < 3) window.setTimeout(() => assignContractHvt(state.raid), 180);
+      if ((raid.contractHvtStage ?? 0) < 3) {
+        window.setTimeout(() => assignContractHvt(state.raid), 180);
+      } else {
+        window.setTimeout(() => assignBlackFileTarget(state.raid), 260);
+      }
       return result;
     };
 
@@ -218,6 +374,14 @@
       const raid = state.raid;
       const player = raid?.player;
       if (!raid || !player) return result;
+      if (raid.modeId === 'raid') {
+        player.lockdownGhostTimer = Math.max(0, (player.lockdownGhostTimer ?? 0) - dt);
+        raid.lockdownGhostHintTimer = Math.max(0, (raid.lockdownGhostHintTimer ?? 0) - dt);
+        if (!raid.lockdownGhostHintShown && !raid.lockdownGhostTriggered && raid.lockdownGhostHintTimer <= 0) {
+          raid.lockdownGhostHintShown = true;
+          notify(Ls('无线电里夹着一段重复数字：6-1-7……地图上似乎有个没有编号的箱子。', 'A repeating number leaks through the radio: 6-1-7... There may be an unnumbered cache somewhere in the zone.'), 'warning');
+        }
+      }
       if (raid.modeId === 'blitz') {
         player.blitzOverdriveTimer = Math.max(0, (player.blitzOverdriveTimer ?? 0) - dt);
         if (!raid.tasksComplete && !raid.blitzActiveRelayId && (raid.blitzRelayIndex ?? 0) < 3) markRelay(raid);
