@@ -396,24 +396,18 @@
         passiveEn: 'Male · Tactical support specialist with extra medical supplies and sustained fire.',
         skillNameZh: '火力增益',
         skillNameEn: 'Firepower Boost',
-        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒；随后 8 秒伤害减半且子弹伤害翻倍。技能不会自动触发。',
-        skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then take half damage and deal double bullet damage for 8s. Never auto-triggers.',
+        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒；随后 8 秒伤害减半且子弹伤害提升至 1.6 倍。技能不会自动触发。',
+        skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then take half damage and deal 1.6x bullet damage for 8s. Never auto-triggers.',
         itemNameZh: '增益烟雾',
         itemNameEn: 'Recovery Smoke',
       });
-      delete defs.recon;
       return defs;
     };
 
     const originalGetOperatorOrder = getOperatorOrder;
     getOperatorOrder = function availableOperatorOrder() {
-      return originalGetOperatorOrder().filter((operatorId) => operatorId !== 'recon');
+      return originalGetOperatorOrder();
     };
-
-    if (state.save.selectedOperatorId === 'recon') {
-      state.save.selectedOperatorId = 'assault';
-      persistSave();
-    }
 
     const activateSkill = () => {
       const raid = state.raid;
@@ -702,7 +696,7 @@
         return;
       }
       const boostedDamage = player?.__supportShot && player.operatorId === 'medic' && (player.supportFirepowerTimer ?? 0) > 0
-        ? damage * 2
+        ? damage * 1.6
         : damage;
       return originalDamageEnemy(enemy, boostedDamage, options);
     };
@@ -826,7 +820,7 @@
       if (current?.supportFirepowerPending && (current.damageImmunityTimer ?? 0) <= 0) {
         current.supportFirepowerPending = false;
         current.supportFirepowerTimer = 8;
-        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 8 seconds of half damage taken and double bullet damage.'), 'success');
+        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害提升至 1.6 倍。', 'Immunity ended: 8 seconds of half damage taken and double bullet damage.'), 'success');
       }
       if (current) {
         // Old layers refill abilityCharges. The raid-wide four-use cap is authoritative.
