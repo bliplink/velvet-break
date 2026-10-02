@@ -69,30 +69,31 @@
         if (enemy.aiStrengthProfile === 'boss') return enemy;
         enemy.aiStrengthProfile = 'boss';
         // Boss health deliberately remains operator-dependent (2,000 for Kai, 1,500 otherwise).
-        enemy.damage = Math.max(36, enemy.damage ?? 0);
-        enemy.speed = Math.max(6.4, enemy.speed ?? 0);
-        enemy.preferredRange = Math.max(35, enemy.preferredRange ?? 0);
-        enemy.longFireRange = Math.max(46, enemy.longFireRange ?? 0);
-        enemy.detectRange = Math.max(50, enemy.detectRange ?? 0);
-        enemy.fireInterval = Math.min(0.32, enemy.fireInterval ?? 0.32);
-        enemy.shotBurst = Math.max(5, enemy.shotBurst ?? 1);
-        enemy.accuracyBonus = Math.max(0.36, enemy.accuracyBonus ?? 0);
-        enemy.combatSpeedMult = Math.max(1.32, enemy.combatSpeedMult ?? 1);
+        enemy.damage = Math.max(48, enemy.damage ?? 0);
+        enemy.speed = Math.max(7.2, enemy.speed ?? 0);
+        enemy.preferredRange = Math.max(36, enemy.preferredRange ?? 0);
+        enemy.longFireRange = Math.max(54, enemy.longFireRange ?? 0);
+        enemy.detectRange = Math.max(60, enemy.detectRange ?? 0);
+        enemy.fireInterval = Math.min(0.24, enemy.fireInterval ?? 0.24);
+        enemy.shotBurst = Math.max(7, enemy.shotBurst ?? 1);
+        enemy.accuracyBonus = Math.max(0.46, enemy.accuracyBonus ?? 0);
+        enemy.combatSpeedMult = Math.max(1.5, enemy.combatSpeedMult ?? 1);
         return enemy;
       }
       if (enemy.isNamelessMinion) {
         if (enemy.aiStrengthProfile !== 'minion') {
           enemy.aiStrengthProfile = 'minion';
-          enemy.maxHealth = 180;
-          enemy.health = Math.min(enemy.health ?? 180, 180);
-          enemy.damage = 12;
-          enemy.speed = 4.25;
-          enemy.detectRange = 30;
-          enemy.preferredRange = 16;
-          enemy.longFireRange = 24;
-          enemy.fireInterval = 1.25;
-          enemy.shotBurst = 1;
-          enemy.accuracyBonus = 0.02;
+          enemy.maxHealth = Math.max(320, enemy.maxHealth ?? 0);
+          enemy.health = Math.min(enemy.health ?? enemy.maxHealth, enemy.maxHealth);
+          enemy.damage = Math.max(28, enemy.damage ?? 0);
+          enemy.speed = Math.max(6.1, enemy.speed ?? 0);
+          enemy.detectRange = Math.max(48, enemy.detectRange ?? 0);
+          enemy.preferredRange = Math.max(20, enemy.preferredRange ?? 0);
+          enemy.longFireRange = Math.max(34, enemy.longFireRange ?? 0);
+          enemy.fireInterval = Math.min(0.58, enemy.fireInterval ?? 0.58);
+          enemy.shotBurst = Math.max(3, enemy.shotBurst ?? 1);
+          enemy.accuracyBonus = Math.max(0.18, enemy.accuracyBonus ?? 0);
+          enemy.combatSpeedMult = Math.max(1.28, enemy.combatSpeedMult ?? 1);
         }
         return enemy;
       }
@@ -203,12 +204,12 @@
     enemyShoot = function strengthenedEnemyShot(enemy, options = {}) {
       const boss = Boolean(enemy?.isNamelessBoss);
       const minion = Boolean(enemy?.isNamelessMinion);
-      const hitCap = boss ? 0.96 : minion ? 0.72 : 0.94;
+      const hitCap = boss ? 0.97 : minion ? 0.88 : 0.94;
       return shootBeforeReview(enemy, {
         ...options,
-        accuracyMult: (options.accuracyMult ?? 1) * (boss ? 1.22 : minion ? 0.9 : 1.16),
-        missSpread: (options.missSpread ?? 1.8) * (boss ? 0.56 : minion ? 1.05 : 0.68),
-        minHitChance: Math.min(hitCap, Math.max(options.minHitChance ?? 0, boss ? 0.54 : minion ? 0.28 : 0.46)),
+        accuracyMult: (options.accuracyMult ?? 1) * (boss ? 1.3 : minion ? 1.12 : 1.16),
+        missSpread: (options.missSpread ?? 1.8) * (boss ? 0.48 : minion ? 0.72 : 0.68),
+        minHitChance: Math.min(hitCap, Math.max(options.minHitChance ?? 0, boss ? 0.62 : minion ? 0.42 : 0.46)),
         maxHitChance: Math.min(hitCap, options.maxHitChance ?? hitCap),
       });
     };
