@@ -72,14 +72,25 @@ const { chromium } = require('playwright');
         blitzBonusCount: bonuses.length,
         regularEnemyCount: raid.enemies.filter(enemy => !enemy.dead && !enemy.despawned && !enemy.isNamelessBoss && !enemy.isNamelessMinion && !enemy.isRangeTarget).length,
         tunedEnemies: raid.enemies.filter(enemy => enemy.blitzModeTuned && !enemy.isNamelessBoss && !enemy.isNamelessMinion).length,
+        relayIds: (raid.blitzRelays ?? []).map(entry => entry.id),
+        activeRelayId: raid.blitzActiveRelayId ?? null,
+        novelty: window.__sdrModeNoveltyDebug ?? null,
         debug: window.__sdrBlitzModeDebug ?? null,
       };
     });
 
     const objectiveCompletion = await page.evaluate(() => {
       const raid = state.raid;
-      for (let i = 0; i < 3; i++) advanceRaidObjective('search', 1);
-      for (let i = 0; i < 6; i++) advanceRaidObjective('kill', 1);
+      const opened = [];
+      for (let i = 0; i < 3; i++) {
+        const activeId = raid.blitzActiveRelayId;
+        const relay = raid.containers.find(entry => entry.id === activeId);
+        if (!relay) break;
+        openLootPanel(relay);
+        opened.push(activeId);
+        closeLootPanel();
+      }
+      for (let i = 0; i < 4; i++) advanceRaidObjective('kill', 1);
       const taskExit = raid.extractions.find(zone => zone.kind === 'task');
       return {
         tasksComplete: raid.tasksComplete,
@@ -89,6 +100,12 @@ const { chromium } = require('playwright');
           progress: entry.progress,
           target: entry.target,
         })),
+        opened,
+        relayIndex: raid.blitzRelayIndex,
+        activeRelayId: raid.blitzActiveRelayId ?? null,
+        overdrive: raid.player.blitzOverdriveTimer ?? 0,
+        alertedEnemies: raid.enemies.filter(enemy => !enemy.dead && (enemy.alertTimer ?? 0) > 0).length,
+        novelty: window.__sdrModeNoveltyDebug ?? null,
       };
     });
 
@@ -149,7 +166,7 @@ const { chromium } = require('playwright');
     const result = { lobby, blitzRaid, objectiveCompletion, effects, visuals, stability, errors };
     console.log(JSON.stringify(result, null, 2));
 
-    const searchObjective = blitzRaid.objectives.find(entry => entry.id === 'search');
+    const relayObjective = blitzRaid.objectives.find(entry => entry.id === 'relay');
     const killObjective = blitzRaid.objectives.find(entry => entry.id === 'kill');
 
     const ok = Boolean(
@@ -170,8 +187,11 @@ const { chromium } = require('playwright');
       blitzRaid.isBlitzRaid &&
       blitzRaid.timeLeft <= 300 &&
       blitzRaid.timeLeft > 295 &&
-      searchObjective?.target === 3 &&
-      killObjective?.target === 6 &&
+      relayObjective?.target === 3 &&
+      killObjective?.target === 4 &&
+      blitzRaid.relayIds.length === 3 &&
+      Boolean(blitzRaid.activeRelayId) &&
+      blitzRaid.novelty?.version === '2026-10-02-mode-novelty-v1' &&
       blitzRaid.tasksComplete === false &&
       blitzRaid.extractionKinds.includes('task') &&
       blitzRaid.extractionKinds.includes('switch') &&
@@ -187,6 +207,12 @@ const { chromium } = require('playwright');
       blitzRaid.debug?.starts >= 1 &&
       objectiveCompletion.tasksComplete &&
       objectiveCompletion.taskAvailableAfterObjectives === true &&
+      objectiveCompletion.opened.length === 3 &&
+      objectiveCompletion.relayIndex === 3 &&
+      objectiveCompletion.activeRelayId === null &&
+      objectiveCompletion.overdrive > 0 &&
+      objectiveCompletion.alertedEnemies > 0 &&
+      objectiveCompletion.novelty?.blitzRelayCompletions === 3 &&
       effects.afterSpawn <= 72 &&
       effects.afterUpdate <= 72 &&
       effects.skippedSmoke > 0 &&
@@ -209,7 +235,7 @@ const { chromium } = require('playwright');
       stability.enemyVisible &&
       stability.hudVisible &&
       stability.hudText.includes('极速突袭') &&
-      stability.hudText.includes('搜索') &&
+      stability.hudText.includes('接力') &&
       stability.hudText.includes('清敌') &&
       errors.length === 0
     );
