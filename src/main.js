@@ -1290,17 +1290,17 @@ function getLobbyModeDefs() {
       id: 'contract',
       nameZh: '清剿合约',
       nameEn: 'Purge Contract',
-      summaryZh: '目标玩法。先完成清剿目标，再从唯一撤离点带着战利品撤出。',
-      summaryEn: 'Objective mode. Finish the purge contract first, then escape through the only extraction point.',
-      detailZh: '7 分钟限时，击倒 10 名敌人并清掉 2 名猎手，成功撤离可额外获得奖金。',
-      detailEn: '7-minute contract. Eliminate 10 enemies including 2 hunters. Successful extraction grants a direct bonus.',
+      summaryZh: '三阶段 HVT 猎杀。每击败一名高价值目标才会解锁下一阶段，完成整条猎杀链后撤离。',
+      summaryEn: 'A three-stage HVT hunt. Each high-value target reveals the next stage before extraction opens.',
+      detailZh: '7 分钟限时：连续猎杀 3 名强化 HVT，同时清掉 8 名敌人；每个 HVT 都会追加阶段奖金。',
+      detailEn: '7-minute contract: eliminate 3 strengthened HVTs plus 8 hostiles. Each HVT adds a stage bonus.',
       deployZh: '接受清剿合约',
       deployEn: 'Accept Contract',
       duration: 7 * 60,
       bonusReward: 9600,
       objectiveFactory: () => ([
-        { id: 'kill', label: 'kill', target: 10, progress: 0 },
-        { id: 'hunter', label: 'hunter', target: 2, progress: 0 },
+        { id: 'hvt', label: 'HVT', target: 3, progress: 0 },
+        { id: 'kill', label: 'kill', target: 8, progress: 0 },
       ]),
       buildLayout(playerSpawn) {
         const standard = extractionZones
@@ -1321,10 +1321,10 @@ function getLobbyModeDefs() {
         };
       },
       getStartInteractionText() {
-        return L('清剿目标未完成前，唯一撤离点不会开放。', 'The only extraction stays locked until purge objectives are done.');
+        return L('HVT 猎杀链未完成前，唯一撤离点不会开放。', 'The only extraction stays locked until the HVT chain is complete.');
       },
       getStartNotice() {
-        return L('清剿合约开始。先完成目标，再前往唯一撤离点。', 'Purge contract started. Finish the objectives, then move to the only extraction.');
+        return L('HVT 合约开始：先猎杀当前标记目标，再追踪下一阶段。', 'HVT contract started: eliminate the marked target to reveal the next stage.');
       },
     },
   };
