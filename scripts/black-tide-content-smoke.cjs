@@ -190,7 +190,7 @@ const { chromium } = require('playwright');
       lobby.unlocked &&
       lobby.selectedOperatorId === 'lingshuang' &&
       lobby.selectedModeId === 'blacktide' &&
-      lobby.unlockCost === 120000 &&
+      lobby.unlockCost === 190000 &&
       lobby.debug?.version === '2026-09-25-black-tide-v1' &&
       persisted.unlocked &&
       persisted.selectedOperatorId === 'lingshuang' &&
