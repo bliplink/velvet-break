@@ -22,12 +22,12 @@
     window.__sdrEngineerPatchApplied = true;
 
     const ENGINEER_ID = 'engineer';
-    const ENGINEER_PRICE = 200000;
+    const ENGINEER_PRICE = 100000;
     const BARRIER_LENGTH = 15;
     const BARRIER_DEPTH = 0.72;
     const BARRIER_HEIGHT = 3.05;
-    const BARRIER_LIMIT = 8;
-    const ENGINEER_UTILITY_MAX = 10;
+    const BARRIER_LIMIT = 6;
+    const ENGINEER_UTILITY_MAX = 6;
     const STUN_RADIUS = 10;
     const STUN_SLOW_DURATION = 10;
     const STUN_SLOW_MULT = 0.45;
@@ -67,9 +67,9 @@
       skillTextZh: 'C 启动 25 秒传送窗口，期间不耗体力、受到伤害降低三分之一；启动时全场敌人硬控 7 秒。J 瞬移至鼠标位置，可上房顶但不能穿墙。',
       skillTextEn: 'C: 25s stamina-free warp with one-third damage reduction; stun all enemies for 7s on activation. J: warp to the mouse point, including roofs, without passing through walls.',
       itemNameZh: '速凝掩体', itemNameEn: 'Rapid Barrier',
-      moveMult: 1, spreadMult: 0.2, recoilMult: 0.2, reloadMult: 1, detectMult: 1,
+      moveMult: 1, spreadMult: 0.55, recoilMult: 0.55, reloadMult: 0.92, detectMult: 1,
       healBonus: 0, healCooldownMult: 1, startArmorBonus: 20, startMedkitBonus: 0,
-      utilityCharges: 1, abilityDuration: 25, abilityCooldown: 0, abilityColor: '#58c8ff',
+      utilityCharges: 1, abilityDuration: 20, abilityCooldown: 0, abilityColor: '#58c8ff',
     };
 
     const ensureExecutionOverlay = () => {
@@ -86,7 +86,6 @@
     const getDefinitionsBeforeEngineer = getOperatorDefs;
     getOperatorDefs = function engineerOperatorDefinitions() {
       const defs = getDefinitionsBeforeEngineer();
-      delete defs.recon;
       delete defs.vanguard;
       delete defs.saboteur;
       delete defs.quartermaster;
@@ -96,15 +95,23 @@
         passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption. Movement costs 5 stamina/s; steadier aim, faster reloads, and stamina recovery while idle.',
         skillTextZh: '手动启动：35 秒内移速 x2、伤害翻倍；期间每击败一人延长 1.5 秒并恢复 90 生命。',
         skillTextEn: 'Manual: 35s of x2 speed and double damage. Each kill during it adds 1.5s and restores 90 HP.',
-        spreadMult: 0.70, recoilMult: 0.72, reloadMult: 0.72, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
-        abilityDuration: 35, speedBoostMult: 2, damageBoostMult: 2, killExtendSeconds: 1.5, killHeal: 90,
+        spreadMult: 0.78, recoilMult: 0.80, reloadMult: 0.82, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
+        abilityDuration: 28, speedBoostMult: 1.65, damageBoostMult: 1.6, killExtendSeconds: 1.5, killHeal: 60,
+      });
+      if (defs.recon) Object.assign(defs.recon, {
+        nameZh: '克莱尔', nameEn: 'Claire',
+        passiveZh: '女 · 侦查位。高机动、低侦测，擅长全图控场与信息压制。',
+        passiveEn: 'Female · Recon specialist with high mobility, low detection, and map-wide control.',
+        moveMult: 1.08, spreadMult: 0.88, reloadMult: 0.9, detectMult: 0.65,
+        scanDamageMult: 1.6, abilityMoveMult: 1.25, pressureMoveMult: 1.45,
+        startArmorBonus: 0, startMedkitBonus: 0,
       });
       Object.assign(defs.medic, {
         nameZh: '本杰明', nameEn: 'Benjamin',
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒；随后 8 秒减伤一半且子弹伤害翻倍。增益烟雾持续 7 秒。',
+        skillTextZh: '手动触发：恢复 650 生命、免伤 8 秒；随后 8 秒减伤一半且子弹伤害翻倍。增益烟雾持续 7 秒。',
         skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then 8s of half incoming damage and double bullet damage. Recovery Smoke lasts 7s.',
         spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
         abilityDuration: 20, abilityColor: '#74e0a0',
@@ -114,7 +121,7 @@
     };
 
     getOperatorOrder = function engineerOperatorOrder() {
-      return ['assault', 'medic', ENGINEER_ID];
+      return ['assault', 'recon', 'medic', ENGINEER_ID];
     };
 
     const restoreEngineerPurchaseFromPersistentSave = () => {
@@ -134,7 +141,7 @@
 
     const isEngineerUnlocked = () => Boolean(state.save.engineerUnlocked);
     const ensureSelection = () => {
-      if (!["assault", "medic", ENGINEER_ID].includes(state.save.selectedOperatorId)) {
+      if (!["assault", "recon", "medic", ENGINEER_ID].includes(state.save.selectedOperatorId)) {
         state.save.selectedOperatorId = 'assault';
       }
       if (state.save.selectedOperatorId === ENGINEER_ID && !isEngineerUnlocked()) {
@@ -147,7 +154,7 @@
     const setOperatorBeforeEngineer = setSelectedOperator;
     setSelectedOperator = function selectEngineerOperator(operatorId) {
       if (operatorId === ENGINEER_ID && !isEngineerUnlocked()) {
-        notify(L('彦飞尚未解锁，需要 200,000 资金。', 'Yanfei is locked. 200,000 funds are required.'), 'warning');
+        notify(L('彦飞尚未解锁，需要 100,000 资金。', 'Yanfei is locked. 100,000 funds are required.'), 'warning');
         return;
       }
       return setOperatorBeforeEngineer(operatorId);
@@ -168,7 +175,7 @@
               <div class="item-meta">${L('技能：' + L(operator.skillNameZh, operator.skillNameEn) + ' · ' + L(operator.skillTextZh, operator.skillTextEn), 'Skill: ' + operator.skillNameEn + ' · ' + operator.skillTextEn)}</div>
               <div class="item-meta">${L('专属道具：' + L(operator.itemNameZh, operator.itemNameEn), 'Signature item: ' + operator.itemNameEn)}</div>
               ${operatorId === ENGINEER_ID ? `<div class="item-meta">${L('速凝掩体：最多 10 个，G 部署；火焰弹：最多 2 个，I 选点 / 确认；震撼弹：最多 2 个，O 选点 / 确认，命中敌人减速 10 秒。三种道具均持续补充。', 'Rapid Barrier: max 10, G deploy; Incendiary: max 2, I select / confirm; Stun Grenade: max 2, O select / confirm and slows enemies for 10s. All utilities resupply over time.')}</div>` : ''}
-              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>` : ''}
+              ${operatorId === ENGINEER_ID && !unlocked ? `<div class="item-meta operator-lock-note">${L('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>` : ''}
             </div>
             <div class="stack-list">
               ${unlocked
@@ -183,7 +190,7 @@
       const button = event.target.closest('[data-engineer-unlock]');
       if (!button || isEngineerUnlocked()) return;
       if (state.save.money < ENGINEER_PRICE) {
-        notify(L('资金不足，需要 200,000。', 'Not enough funds. Need 200,000.'), 'danger');
+        notify(L('资金不足，需要 100,000。', 'Not enough funds. Need 100,000.'), 'danger');
         return;
       }
       state.save.money -= ENGINEER_PRICE;
@@ -386,8 +393,8 @@
         player.abilityCharges = player.skillUses;
         player.abilityActiveTimer = 20;
         player.operatorEffectTimer = 20;
-        player.health = Math.min(player.maxHealth, player.health + 800);
-        player.damageImmunityTimer = 12;
+        player.health = Math.min(player.maxHealth, player.health + 650);
+        player.damageImmunityTimer = 8;
         player.medicSpeedBoostTimer = 0;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
@@ -396,7 +403,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：恢复 800 生命、免伤 12 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +800 HP, 12s immunity, then 8s of half damage taken and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：恢复 650 生命、免伤 8 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +650 HP, 8s immunity, then 8s of half damage taken and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
@@ -412,7 +419,7 @@
       state.input.fireHeld = false;
       for (const enemy of state.raid.enemies ?? []) {
         if (enemy.dead || enemy.despawned) continue;
-        enemy.engineerStunTimer = 7;
+        enemy.engineerStunTimer = 5;
         enemy.mobilityAction = null;
         enemy.muzzleTimer = 0;
       }
