@@ -40,7 +40,7 @@
     const MODE_ID = 'blacktide';
     const MAP_ID = 'black-tide-harbor';
     const OPERATOR_ID = 'lingshuang';
-    const OPERATOR_PRICE = 120000;
+    const OPERATOR_PRICE = 190000;
     const PHASE_DURATION = 30;
     const PHASE_MOVE_MULT = 1.45;
     const PHASE_DAMAGE_MULT = 0.45;
@@ -194,9 +194,9 @@
 
     const operatorUnlockPrices = {
       assault: 0,
-      recon: 80000,
-      medic: 70000,
-      engineer: 100000,
+      recon: 180000,
+      medic: 170000,
+      engineer: 200000,
       [OPERATOR_ID]: OPERATOR_PRICE,
     };
     const operatorUnlockFlags = {
