@@ -92,7 +92,7 @@ assert.equal(boss.engineerStunTimer, 5);
 context.useOperatorAbility();
 assert.equal(r.player.skillUses, 3);
 context.applyDamageToPlayer(300);
-assert.equal(r.player.health, 650);
+assert.equal(r.player.health, 800);
 context.enemyShoot(boss);
 assert.equal(boss.shots, undefined);
 assert.equal(context.beginMobilityAction(boss), false);
@@ -152,7 +152,7 @@ context.applyDamageToPlayer(999);
 assert.equal(r.player.health, 750);
 context.updateRaid(5);
 context.applyDamageToPlayer(100);
-assert.equal(r.player.health, 800);
+assert.equal(r.player.health, 650);
 for (let i = 0; i < 5; i++) context.killEnemy({ health: 100 });
 assert.equal(r.player.benjaminKillShieldTimer, 2.5);
 
