@@ -149,12 +149,15 @@
         return;
       }
 
+      const relay = raid.objectives?.find((entry) => entry.id === 'relay');
       const search = raid.objectives?.find((entry) => entry.id === 'search');
       const kill = raid.objectives?.find((entry) => entry.id === 'kill');
       const taskReady = Boolean(raid.tasksComplete);
       const switchReady = Boolean(raid.extractions?.some((zone) => zone.kind === 'switch' && zone.active !== false));
       const timeText = formatTime(raid.timeLeft);
-      const objectiveText = `搜索 ${search?.progress ?? 0}/${search?.target ?? 3} · 清敌 ${kill?.progress ?? 0}/${kill?.target ?? 6}`;
+      const objectiveText = relay
+        ? `接力 ${relay.progress ?? 0}/${relay.target ?? 3} · 清敌 ${kill?.progress ?? 0}/${kill?.target ?? 4}`
+        : `搜索 ${search?.progress ?? 0}/${search?.target ?? 3} · 清敌 ${kill?.progress ?? 0}/${kill?.target ?? 6}`;
       const exitText = taskReady
         ? '任务撤离已解锁'
         : switchReady
