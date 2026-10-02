@@ -193,8 +193,8 @@
     beginMobilityAction = function beginStrengthenedEnemyMobility(actor, ...args) {
       const started = mobilityBeforeReview(actor, ...args);
       if (started && isEnemyActor(actor) && actor.mobilityAction) {
-        actor.mobilityAction.speed *= actor.isNamelessBoss ? 1.24 : 1.14;
-        actor.mobilityCooldown *= actor.isNamelessBoss ? 0.62 : 0.74;
+        actor.mobilityAction.speed *= actor.isNamelessBoss ? 1.28 : 1.22;
+        actor.mobilityCooldown *= actor.isNamelessBoss ? 0.58 : 0.62;
       }
       return started;
     };
@@ -206,9 +206,9 @@
       const hitCap = boss ? 0.96 : minion ? 0.72 : 0.94;
       return shootBeforeReview(enemy, {
         ...options,
-        accuracyMult: (options.accuracyMult ?? 1) * (boss ? 1.18 : minion ? 0.88 : 1.1),
-        missSpread: (options.missSpread ?? 1.8) * (boss ? 0.62 : minion ? 1.12 : 0.76),
-        minHitChance: Math.min(hitCap, Math.max(options.minHitChance ?? 0, boss ? 0.5 : minion ? 0.25 : 0.41)),
+        accuracyMult: (options.accuracyMult ?? 1) * (boss ? 1.22 : minion ? 0.9 : 1.16),
+        missSpread: (options.missSpread ?? 1.8) * (boss ? 0.56 : minion ? 1.05 : 0.68),
+        minHitChance: Math.min(hitCap, Math.max(options.minHitChance ?? 0, boss ? 0.54 : minion ? 0.28 : 0.46)),
         maxHitChance: Math.min(hitCap, options.maxHitChance ?? hitCap),
       });
     };
@@ -478,13 +478,13 @@
           !lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z)) {
           const towardPlayer = normalize2D(player.x - enemy.x, player.z - enemy.z);
           const side = enemy.strafeDirection ?? 1;
-          const strafeSpeed = enemy.speed * (enemy.isNamelessBoss ? 0.72 : 0.48) * dt;
+          const strafeSpeed = enemy.speed * (enemy.isNamelessBoss ? 0.78 : 0.62) * dt;
           const beforeStrafeX = enemy.x;
           const beforeStrafeZ = enemy.z;
           moveEntityWithCollision(enemy, -towardPlayer.z * side * strafeSpeed, towardPlayer.x * side * strafeSpeed, enemy.radius ?? 0.7);
           if (distance2D(beforeStrafeX, beforeStrafeZ, enemy.x, enemy.z) < 0.01) enemy.strafeDirection = -side;
           enemy.heading = Math.atan2(towardPlayer.x, towardPlayer.z);
-          enemy.tacticalStrafeTimer = enemy.isNamelessBoss ? 0.14 : 0.24 + Math.random() * 0.18;
+          enemy.tacticalStrafeTimer = enemy.isNamelessBoss ? 0.12 : 0.16 + Math.random() * 0.12;
         }
 
         if (active && !enemy.isProne && (enemy.mobilityCooldown ?? 0) <= 0 &&
@@ -493,12 +493,12 @@
           const toward = normalize2D(enemy.x - player.x, enemy.z - player.z);
           const aimX = Math.sin(player.yaw ?? 0);
           const aimZ = Math.cos(player.yaw ?? 0);
-          if (toward.x * aimX + toward.z * aimZ > 0.96 && Math.random() < (enemy.isNamelessBoss ? 0.72 : 0.38)) {
+          if (toward.x * aimX + toward.z * aimZ > 0.96 && Math.random() < (enemy.isNamelessBoss ? 0.78 : 0.52)) {
             const side = enemy.strafeDirection ?? 1;
             if (beginMobilityAction(enemy, 'dodge', -toward.z * side, toward.x * side, {
               duration: 0.3,
-              speed: enemy.isNamelessBoss ? 12.4 : 9.4,
-              cooldown: enemy.isNamelessBoss ? 0.62 : 1.08,
+              speed: enemy.isNamelessBoss ? 13.2 : 10.5,
+              cooldown: enemy.isNamelessBoss ? 0.54 : 0.86,
             })) enemy.strafeDirection = -side;
           }
         }
@@ -542,14 +542,14 @@
       if (wasAlive && enemy && !enemy.dead && !enemy.isRangeTarget && player &&
         !options.utilityKind && !options.execution && damage > 0 && !enemy.isProne &&
         !enemy.mobilityAction && (enemy.mobilityCooldown ?? 0) <= 0 &&
-        Math.random() < (enemy.isNamelessBoss ? 0.58 : 0.34)) {
+        Math.random() < (enemy.isNamelessBoss ? 0.64 : 0.46)) {
         const away = normalize2D(enemy.x - player.x, enemy.z - player.z);
         const side = enemy.strafeDirection ?? (Math.random() < 0.5 ? -1 : 1);
         const dodged = beginMobilityAction(enemy, 'dodge', -away.z * side + away.x * 0.15,
           away.x * side + away.z * 0.15, {
             duration: enemy.isNamelessBoss ? 0.34 : 0.28,
-            speed: enemy.isNamelessBoss ? 12.4 : 9.4,
-            cooldown: enemy.isNamelessBoss ? 0.62 : 1.08,
+            speed: enemy.isNamelessBoss ? 13.2 : 10.5,
+            cooldown: enemy.isNamelessBoss ? 0.54 : 0.86,
           });
         if (dodged) enemy.strafeDirection = -side;
       }
