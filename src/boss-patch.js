@@ -271,15 +271,15 @@
         isNamelessBoss: true,
         health: bossHealth,
         maxHealth: bossHealth,
-        damage: 30,
-        speed: 5,
-        preferredRange: 30,
-        longFireRange: 30,
-        detectRange: BOSS_DETECT_RANGE,
-        fireInterval: 0.42,
-        shotBurst: 4,
-        burstInterval: 0.06,
-        accuracyBonus: 0.23,
+        damage: 42,
+        speed: 6.8,
+        preferredRange: 34,
+        longFireRange: 48,
+        detectRange: 56,
+        fireInterval: 0.26,
+        shotBurst: 6,
+        burstInterval: 0.045,
+        accuracyBonus: 0.42,
         radius: 0.92,
         territoryX: territory.x,
         territoryZ: territory.z,
@@ -321,12 +321,18 @@
           id: `nameless-minion-${Date.now()}-${index}`,
           name: '无名护卫',
           isNamelessMinion: true,
-          health: 180,
-          maxHealth: 180,
-          damage: 18,
-          speed: 4.4,
-          detectRange: 36,
-          preferredRange: 18,
+          health: 320,
+          maxHealth: 320,
+          damage: 28,
+          speed: 6.1,
+          detectRange: 48,
+          preferredRange: 20,
+          longFireRange: 34,
+          fireInterval: 0.58,
+          shotBurst: 3,
+          burstInterval: 0.08,
+          accuracyBonus: 0.18,
+          combatSpeedMult: 1.25,
           territoryX: boss.territoryX,
           territoryZ: boss.territoryZ,
           territoryRadius: boss.territoryRadius,
@@ -737,9 +743,9 @@
         boss.mobilityAction?.type !== 'roll' &&
         !lineOfSightBlocked(boss.x, boss.z, player.x, player.z)
       ) {
-        enemyShoot(boss, { accuracyMult: 0.86, maxHitChance: 0.82 });
-        boss.directFireTimer = 0.95;
-        boss.shootCooldown = Math.max(boss.shootCooldown ?? 0, 0.7);
+        enemyShoot(boss, { accuracyMult: 1.02, minHitChance: 0.58, maxHitChance: 0.9, missSpread: 0.62 });
+        boss.directFireTimer = 0.58;
+        boss.shootCooldown = Math.max(boss.shootCooldown ?? 0, 0.42);
       }
       if (playerInside) {
         player.namelessSuppressionTimer = 0.25;
@@ -775,14 +781,14 @@
       boss.bossCloakShotTimer = Math.max(0, (boss.bossCloakShotTimer ?? 0) - dt);
       boss.elbowTimer = Math.max(0, boss.elbowTimer - dt);
       if (distance < 2.2 && boss.elbowTimer <= 0 && (boss.recoveryTimer ?? 0) <= 0 && !boss.flashAction && !lineOfSightBlocked(boss.x, boss.z, player.x, player.z)) {
-        boss.elbowTimer = 1.5;
-        applyDamageToPlayer(55);
+        boss.elbowTimer = 1.0;
+        applyDamageToPlayer(80);
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#ff7e68', 0.08, 0.1);
       }
       boss.lastHitTimer = Math.max(0, (boss.lastHitTimer ?? 0) - dt);
       boss.evasionTimer = Math.max(0, (boss.evasionTimer ?? 0) - dt);
       if (boss.evasionTimer <= 0 && playerInside && !boss.mobilityAction && !boss.dodgeReaction && !boss.flashAction && boss.recoveryTimer <= 0) {
-        boss.evasionTimer = 1.3 + Math.random() * 0.7;
+        boss.evasionTimer = 0.78 + Math.random() * 0.48;
         const towardX = (player.x - boss.x) / Math.max(distance, 1);
         const towardZ = (player.z - boss.z) / Math.max(distance, 1);
         const side = Math.random() < 0.5 ? -1 : 1;
@@ -824,8 +830,8 @@
         action.mesh.rotation.z += dt * 9;
         if (action.timer <= 0) resolveNamelessFlash(boss, player);
       }
-      if (boss.flashTimer <= 0 && !boss.flashAction && !boss.mobilityAction && boss.recoveryTimer <= 0 && playerInside && distance > 5 && distance < 24 && Math.random() < 0.58) {
-        boss.flashTimer = 6 + Math.random() * 3;
+      if (boss.flashTimer <= 0 && !boss.flashAction && !boss.mobilityAction && boss.recoveryTimer <= 0 && playerInside && distance > 4.5 && distance < 28 && Math.random() < 0.74) {
+        boss.flashTimer = 4 + Math.random() * 2;
         const targetLead = Math.min(3.4, distance * 0.14);
         const targetX = clamp(player.x + Math.sin(player.yaw) * targetLead, -PLAYABLE_HALF + 1, PLAYABLE_HALF - 1);
         const targetZ = clamp(player.z + Math.cos(player.yaw) * targetLead, -PLAYABLE_HALF + 1, PLAYABLE_HALF - 1);
@@ -838,12 +844,12 @@
         boss.flashTimer = 1.1;
       }
       if (boss.tacticalTimer <= 0 && playerInside && !boss.mobilityAction && !boss.flashAction && !boss.dodgeReaction && boss.recoveryTimer <= 0) {
-        boss.tacticalTimer = 2 + Math.random();
+        boss.tacticalTimer = 1.15 + Math.random() * 0.65;
         const retreat = boss.health < boss.maxHealth * 0.55 || distance < 9;
         const dirX = (boss.x - player.x) / Math.max(distance, 1);
         const dirZ = (boss.z - player.z) / Math.max(distance, 1);
         const direction = chooseBossEvasion(boss, retreat ? dirX : -dirZ, retreat ? dirZ : dirX, dirX, dirZ, 5.8);
-        const started = beginMobilityAction(boss, retreat ? (Math.random() < 0.6 ? 'roll' : 'slide') : (Math.random() < 0.64 ? 'dodge' : 'jump'), direction.x, direction.z, { duration: 0.44, speed: 13.4, cooldown: 0.55 });
+        const started = beginMobilityAction(boss, retreat ? (Math.random() < 0.6 ? 'roll' : 'slide') : (Math.random() < 0.64 ? 'dodge' : 'jump'), direction.x, direction.z, { duration: 0.42, speed: 14.8, cooldown: 0.42 });
         if (started) boss.recoveryTimer = Math.max(boss.recoveryTimer, 0.78);
       }
       const offsetX = boss.x - boss.territoryX;
