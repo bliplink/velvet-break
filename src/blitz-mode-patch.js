@@ -41,17 +41,17 @@
           id: 'blitz',
           nameZh: '极速突袭',
           nameEn: 'Blitz Raid',
-          summaryZh: '5 分钟高压搜打撤。完成搜索与清敌目标可开启任务撤离，也可以冒险拉闸快速离场。',
-          summaryEn: 'A 5-minute high-pressure raid. Complete search and kill objectives for the task exit, or risk the lever route for a faster escape.',
-          detailZh: '搜索 3 个物资点并击倒 6 名敌人。出生保护更短、敌人反应更快，但会额外投放高价值物资。',
-          detailEn: 'Search 3 caches and eliminate 6 hostiles. Spawn protection is shorter and enemies react faster, but extra high-value loot is injected.',
+          summaryZh: '5 分钟热区接力。按顺序冲击 3 个指定物资点，每完成一站都会触发短时超频并引爆全场警戒。',
+          summaryEn: 'A 5-minute hot-relay raid. Rush 3 marked caches in order; each relay triggers Overdrive and alerts the whole map.',
+          detailZh: '完成 3 段热区接力并击倒 4 名敌人。接力期间获得移速/换弹强化，但敌人会主动追踪你的位置。',
+          detailEn: 'Complete 3 relay stages and eliminate 4 hostiles. Relay Overdrive boosts movement/reload while hostiles actively hunt you.',
           deployZh: '进入极速突袭',
           deployEn: 'Enter Blitz Raid',
           duration: 5 * 60,
           bonusReward: 5200,
           objectiveFactory: () => ([
-            { id: 'search', label: 'search', target: 3, progress: 0 },
-            { id: 'kill', label: 'kill', target: 6, progress: 0 },
+            { id: 'relay', label: 'relay', target: 3, progress: 0 },
+            { id: 'kill', label: 'kill', target: 4, progress: 0 },
           ]),
           buildLayout(playerSpawn) {
             const layout = chooseRaidExtractions(playerSpawn);
@@ -81,12 +81,12 @@
           },
           getStartInteractionText() {
             return typeof L === 'function'
-              ? L('极速突袭：完成搜索/清敌可解锁任务撤离，或直接寻找拉闸点开启快速撤离。', 'Blitz: finish search/kill objectives for the task exit, or find the lever to open the fast exit.')
+              ? L('极速突袭：按顺序冲击 3 个热区接力点，完成接力后解锁任务撤离；也可冒险拉闸。', 'Blitz: rush 3 relay caches in order to unlock the task exit, or risk the lever route.')
               : 'Blitz Raid started.';
           },
           getStartNotice() {
             return typeof L === 'function'
-              ? L('极速突袭开始：只有 5 分钟，目标与撤离路线同时推进。', 'Blitz Raid started: only 5 minutes, push objectives and extraction routes in parallel.')
+              ? L('极速突袭开始：热区接力已标记。每完成一站都会触发超频并拉高全图警戒。', 'Blitz Raid started: relay caches are marked. Each stage triggers Overdrive and a full-map alert.')
               : 'Blitz Raid started.';
           },
         },
