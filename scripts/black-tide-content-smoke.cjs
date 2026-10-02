@@ -24,7 +24,7 @@ const { chromium } = require('playwright');
 
       const defs = getLobbyModeDefs();
       const operator = getOperatorDefs().lingshuang;
-      const unlock = document.querySelector('[data-lingshuang-unlock]');
+      const unlock = document.querySelector('[data-operator-unlock="lingshuang"]');
       const beforeMoney = state.save.money;
       unlock?.click();
       setSelectedLobbyMode('blacktide');
@@ -54,7 +54,7 @@ const { chromium } = require('playwright');
       selectedOperatorId: state.save.selectedOperatorId,
       selectedModeId: state.save.selectedModeId,
       order: getOperatorOrder(),
-      hasUnlockButton: Boolean(document.querySelector('[data-lingshuang-unlock]')),
+      hasUnlockButton: Boolean(document.querySelector('[data-operator-unlock="lingshuang"]')),
       selectedCardText: document.querySelector('.operator-card.is-active')?.textContent ?? '',
     }));
 
@@ -185,12 +185,12 @@ const { chromium } = require('playwright');
       /黑潮|Black Tide/i.test(lobby.modeText) &&
       lobby.hasOperator &&
       lobby.operatorName === 'Lingshuang' &&
-      lobby.operatorDuration === 18 &&
-      lobby.operatorArmorBonus === 70 &&
+      lobby.operatorDuration === 30 &&
+      lobby.operatorArmorBonus === 120 &&
       lobby.unlocked &&
       lobby.selectedOperatorId === 'lingshuang' &&
       lobby.selectedModeId === 'blacktide' &&
-      lobby.unlockCost === 240000 &&
+      lobby.unlockCost === 120000 &&
       lobby.debug?.version === '2026-09-25-black-tide-v1' &&
       persisted.unlocked &&
       persisted.selectedOperatorId === 'lingshuang' &&
@@ -215,16 +215,16 @@ const { chromium } = require('playwright');
       raid.harborCaches >= 16 &&
       raid.playerArmor >= 100 &&
       raid.operatorId === 'lingshuang' &&
-      raid.utilityInterval === 25 &&
+      raid.utilityInterval === 18 &&
       ability.started === true &&
       ability.skillUses === 3 &&
-      ability.activeTimer >= 17.9 &&
-      ability.speedRatio > 1.24 && ability.speedRatio < 1.26 &&
-      ability.healthAfter100 >= 934 && ability.healthAfter100 <= 936 &&
+      ability.activeTimer >= 29.9 &&
+      ability.speedRatio > 1.44 && ability.speedRatio < 1.46 &&
+      ability.healthAfter100 >= 954 && ability.healthAfter100 <= 956 &&
       shield.started === true &&
       shield.utilityItems === 0 &&
       shield.barrierTimer >= 7.9 &&
-      shield.barrierHp >= 19 && shield.barrierHp <= 21 &&
+      shield.barrierHp >= 549 && shield.barrierHp <= 551 &&
       shield.healthDelta === 0 &&
       shield.visual &&
       /棱镜盾|Prism Shield/i.test(shield.utilityText) &&
