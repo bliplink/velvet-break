@@ -341,8 +341,8 @@ async function main() {
     buyShopEntry('part_red_dot');
     renderBasePanel();
 
-    const unlockButton = document.querySelector('[data-engineer-unlock]');
-    const lockTextBefore = document.querySelector('.operator-lock-note')?.textContent ?? '';
+    const unlockButton = document.querySelector('[data-operator-unlock="engineer"]');
+    const lockTextBefore = unlockButton?.closest('.operator-card')?.querySelector('.operator-lock-note')?.textContent ?? '';
     const moneyBeforeEngineer = state.save.money;
     unlockButton?.click();
 
@@ -357,7 +357,7 @@ async function main() {
       ownsSmg: state.save.armory.ownedWeapons.includes('smg'),
       ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
       unlockText: document.querySelector('.operator-lock-note')?.textContent ?? '',
-      hasUnlockButtonAfter: Boolean(document.querySelector('[data-engineer-unlock]')),
+      hasUnlockButtonAfter: Boolean(document.querySelector('[data-operator-unlock="engineer"]')),
     };
   });
 
@@ -371,7 +371,7 @@ async function main() {
     ownsRedDot: state.save.armory.ownedParts.includes('red_dot'),
     prepProductCount: getShopEntries().filter(entry => ['prep_medkit', 'prep_surgical', 'prep_armor'].includes(entry.id)).length,
     emergencyFundingPresent: getShopEntries().some(entry => entry.id === 'emergency_funding'),
-    unlockButton: Boolean(document.querySelector('[data-engineer-unlock]')),
+    unlockButton: Boolean(document.querySelector('[data-operator-unlock="engineer"]')),
   }));
 
   const resetSecurity = await persistencePage.evaluate(() => {
@@ -435,13 +435,13 @@ async function main() {
     movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
     rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
     rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
-    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 90 || rangeAfter.moved < 5 ||
+    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 60 || rangeAfter.moved < 5 ||
     rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
     !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
     purchaseSetup.prepProductCount !== 3 || purchaseSetup.emergencyFundingPresent ||
     !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
-    purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
-    purchaseSetup.money >= 300000 || purchaseSetup.money < 250000 ||
+    purchaseSetup.engineerUnlockCost !== 100000 || !/100,000/.test(purchaseSetup.lockTextBefore) ||
+    purchaseSetup.money >= 400000 || purchaseSetup.money < 350000 ||
     !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
     !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
     purchaseReload.money !== purchaseSetup.money ||
