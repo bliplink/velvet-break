@@ -61,17 +61,32 @@ const { chromium } = require('playwright');
     const hunt = await page.evaluate(async () => {
       const raid = state.raid;
       const killed = [];
+      const modifiers = [];
       for (let stage = 0; stage < 3; stage++) {
         const target = raid.enemies.find(enemy => enemy.id === raid.contractHvtId);
         if (!target) break;
         killed.push(target.id);
+        modifiers.push(target.contractModifier ?? null);
         killEnemy(target);
-        await new Promise(resolve => setTimeout(resolve, 260));
+        await new Promise(resolve => setTimeout(resolve, stage === 2 ? 420 : 260));
       }
+      const blackFile = raid.enemies.find(enemy => enemy.id === raid.contractBlackFileId);
+      const blackFileBefore = blackFile ? {
+        id: blackFile.id,
+        name: blackFile.name,
+        maxHealth: blackFile.maxHealth,
+        damage: blackFile.damage,
+      } : null;
+      const bonusBeforeBlackFile = raid.bonusReward ?? 0;
+      if (blackFile) killEnemy(blackFile);
       for (let i = 0; i < 5; i++) advanceRaidObjective('kill', 1);
       const taskExit = raid.extractions.find(zone => zone.kind === 'task');
       return {
         killed,
+        modifiers,
+        blackFileBefore,
+        blackFileKilled: Boolean(blackFile?.dead),
+        blackFileBonus: (raid.bonusReward ?? 0) - bonusBeforeBlackFile,
         stage: raid.contractHvtStage,
         stageBonus: raid.contractStageBonus,
         bonusReward: raid.bonusReward,
@@ -115,6 +130,14 @@ const { chromium } = require('playwright');
       hunt.tasksComplete &&
       hunt.taskAvailable === true &&
       hunt.novelty?.contractHvtKills === 3 &&
+      hunt.modifiers.length === 3 &&
+      hunt.modifiers.every(Boolean) &&
+      Boolean(hunt.blackFileBefore) &&
+      /NULL/.test(hunt.blackFileBefore?.name ?? '') &&
+      hunt.blackFileKilled &&
+      hunt.blackFileBonus >= 5000 &&
+      hunt.novelty?.contractBlackFilesSpawned >= 1 &&
+      hunt.novelty?.contractBlackFilesKilled >= 1 &&
       errors.length === 0
     );
 
