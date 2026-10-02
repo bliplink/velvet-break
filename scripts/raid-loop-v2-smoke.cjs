@@ -40,7 +40,16 @@ const { chromium } = require('playwright');
       const debug = window.__sdrRaidLoopV2Debug;
       const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
       const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === 'center-depot') : null) ?? poi;
-      const container = state.raid.containers[0];
+      const container = state.raid.containers[0] ?? {
+        id: 'qa-risk-container',
+        name: 'QA Risk Container',
+        x: obstacle.x,
+        z: obstacle.z,
+        pool: 'valuable',
+        items: [],
+        opened: false,
+      };
+      if (!state.raid.containers.includes(container)) state.raid.containers.push(container);
       container.x = obstacle.x;
       container.z = obstacle.z;
       container.pool = 'valuable';
@@ -95,7 +104,16 @@ const { chromium } = require('playwright');
       const debug = window.__sdrRaidLoopV2Debug;
       const poi = window.__sdrRaidDesignConfig.poiDefs.find(entry => entry.id === 'center-depot');
       const obstacle = (typeof obstacleDefs !== 'undefined' ? obstacleDefs.find(entry => entry.id === 'center-depot') : null) ?? poi;
-      const container = state.raid.containers[0];
+      const container = state.raid.containers[0] ?? {
+        id: 'qa-alert-container',
+        name: 'QA Alert Container',
+        x: obstacle.x,
+        z: obstacle.z,
+        pool: 'valuable',
+        items: [],
+        opened: false,
+      };
+      if (!state.raid.containers.includes(container)) state.raid.containers.push(container);
       const enemy = state.raid.enemies.find(entry => !entry.dead && !entry.despawned && !entry.isNamelessBoss);
 
       container.x = obstacle.x;
