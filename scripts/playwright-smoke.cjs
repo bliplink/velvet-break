@@ -441,7 +441,7 @@ async function main() {
     purchaseSetup.prepProductCount !== 3 || purchaseSetup.emergencyFundingPresent ||
     !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
     purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
-    purchaseSetup.money >= 400000 || purchaseSetup.money < 350000 ||
+    purchaseSetup.money >= 300000 || purchaseSetup.money < 280000 ||
     !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
     !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
     purchaseReload.money !== purchaseSetup.money ||
