@@ -26,26 +26,26 @@
 
       for (const enemy of raid.enemies ?? []) {
         if (enemy.dead || enemy.despawned || enemy.isRangeTarget || enemy.mobilityAction || enemy.isProne) continue;
-        enemy.jumpDecisionTimer = Math.max(0, (enemy.jumpDecisionTimer ?? (0.8 + Math.random() * 1.8)) - dt);
+        enemy.jumpDecisionTimer = Math.max(0, (enemy.jumpDecisionTimer ?? (0.55 + Math.random() * 1.2)) - dt);
         const distance = distance2D(enemy.x, enemy.z, player.x, player.z);
         const engaged = (enemy.alertTimer ?? 0) > 0 || (enemy.investigateTimer ?? 0) > 0;
         const recentlyShot = (player.fireCooldown ?? 0) > 0.04 && distance < 48;
-        if (!engaged || distance < 5 || distance > 48 || enemy.jumpDecisionTimer > 0 || (!recentlyShot && Math.random() > 0.42)) continue;
+        if (!engaged || distance < 4.5 || distance > 52 || enemy.jumpDecisionTimer > 0 || (!recentlyShot && Math.random() > 0.58)) continue;
 
         const toward = normalize2D(player.x - enemy.x, player.z - enemy.z);
         const side = enemy.strafeDirection ?? 1;
         const direction = normalize2D(
-          toward.x * 0.62 - toward.z * side * 0.78,
-          toward.z * 0.62 + toward.x * side * 0.78,
+          toward.x * 0.52 - toward.z * side * 0.86,
+          toward.z * 0.52 + toward.x * side * 0.86,
         );
         const started = beginMobilityAction(enemy, 'jump', direction.x, direction.z, {
-          duration: 0.62,
-          speed: enemy.isNamelessBoss ? 10.8 : 8.9,
-          height: enemy.isNamelessBoss ? 1.15 : 1.02,
-          cooldown: enemy.isNamelessBoss ? 0.72 : 1.28,
+          duration: 0.54,
+          speed: enemy.isNamelessBoss ? 12.2 : 10.2,
+          height: enemy.isNamelessBoss ? 1.2 : 1.08,
+          cooldown: enemy.isNamelessBoss ? 0.62 : 1.0,
           spinDir: side,
         });
-        enemy.jumpDecisionTimer = started ? 2.6 + Math.random() * 2.2 : 0.45;
+        enemy.jumpDecisionTimer = started ? 1.8 + Math.random() * 1.5 : 0.32;
         if (started) enemy.strafeDirection = -side;
       }
       return result;
