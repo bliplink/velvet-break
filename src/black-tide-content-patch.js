@@ -40,14 +40,14 @@
     const MODE_ID = 'blacktide';
     const MAP_ID = 'black-tide-harbor';
     const OPERATOR_ID = 'lingshuang';
-    const OPERATOR_PRICE = 50000;
-    const PHASE_DURATION = 50;
-    const PHASE_MOVE_MULT = 1.6666667;
-    const PHASE_DAMAGE_MULT = 0.15;
-    const PRISM_MAX = 4;
-    const PRISM_REFILL = 10;
-    const PRISM_DURATION = 10;
-    const PRISM_HP = 1000;
+    const OPERATOR_PRICE = 120000;
+    const PHASE_DURATION = 30;
+    const PHASE_MOVE_MULT = 1.45;
+    const PHASE_DAMAGE_MULT = 0.45;
+    const PRISM_MAX = 2;
+    const PRISM_REFILL = 18;
+    const PRISM_DURATION = 8;
+    const PRISM_HP = 650;
     const THREAT_STEP = 90;
     const THREAT_MAX = 3;
 
@@ -160,18 +160,18 @@
       passiveEn: 'Female · Warden. Starts with greatly increased armor, much lower recoil and spread, faster reloads, and a powerful Prism Shield for burst protection.',
       skillNameZh: '相位推进',
       skillNameEn: 'Phase Drive',
-      skillTextZh: 'C 手动启动 50 秒：移动速度 +110%，受到伤害降低 85%。',
-      skillTextEn: 'C: activate for 50s to gain +66.7% phase movement speed and take 85% less damage.',
+      skillTextZh: 'C 手动启动 30 秒：移动速度提高 45%，受到伤害降低 55%。',
+      skillTextEn: 'C: activate for 30s to gain +45% movement speed and take 55% less damage.',
       itemNameZh: '棱镜盾',
       itemNameEn: 'Prism Shield',
-      moveMult: 1.2,
-      spreadMult: 0.58,
-      recoilMult: 0.55,
-      reloadMult: 0.68,
+      moveMult: 1.04,
+      spreadMult: 0.8,
+      recoilMult: 0.78,
+      reloadMult: 0.82,
       detectMult: 1,
       healBonus: 0,
       healCooldownMult: 1,
-      startArmorBonus: 250,
+      startArmorBonus: 120,
       startMedkitBonus: 0,
       utilityCharges: 3,
       abilityDuration: PHASE_DURATION,
@@ -206,7 +206,7 @@
     const selectBeforeWarden = setSelectedOperator;
     setSelectedOperator = function selectLingshuang(operatorId) {
       if (operatorId === OPERATOR_ID && !state.save.lingshuangUnlocked) {
-        notify(Ls('凌霜尚未解锁，需要 50,000 资金。', 'Lingshuang is locked. 50,000 funds are required.'), 'warning');
+        notify(Ls('凌霜尚未解锁，需要 120,000 资金。', 'Lingshuang is locked. 120,000 funds are required.'), 'warning');
         return;
       }
       const result = selectBeforeWarden(operatorId);
@@ -222,17 +222,17 @@
         const extra = operatorId === 'engineer'
           ? `<div class="item-meta">${Ls('速凝掩体：G；火焰弹：I；震撼弹：O。', 'Rapid Barrier: G; Incendiary: I; Stun Grenade: O.')}</div>`
           : operatorId === OPERATOR_ID
-            ? `<div class="item-meta">${Ls('棱镜盾：1000 点护盾，持续 10 秒；最多 4 个，每 10 秒补充 1 个，G 使用。', 'Prism Shield: 1000 shield for 10s; max 4, +1 every 10s, press G.')}</div>`
+            ? `<div class="item-meta">${Ls('棱镜盾：650 点护盾，持续 8 秒；最多 2 个，每 18 秒补充 1 个，G 使用。', 'Prism Shield: 650 shield for 8s; max 2, +1 every 18s, press G.')}</div>`
             : '';
         const lock = operatorId === 'engineer'
-          ? `<div class="item-meta operator-lock-note">${Ls('解锁价格：200,000 资金', 'Unlock cost: 200,000 funds')}</div>`
+          ? `<div class="item-meta operator-lock-note">${Ls('解锁价格：100,000 资金', 'Unlock cost: 100,000 funds')}</div>`
           : operatorId === OPERATOR_ID
-            ? `<div class="item-meta lingshuang-lock-note">${Ls('解锁价格：50,000 资金', 'Unlock cost: 50,000 funds')}</div>`
+            ? `<div class="item-meta lingshuang-lock-note">${Ls('解锁价格：120,000 资金', 'Unlock cost: 120,000 funds')}</div>`
             : '';
         const action = unlocked
           ? `<button class="${active ? 'primary-button' : 'ghost-button'} small" type="button" data-operator-id="${operatorId}">${active ? Ls('已选择', 'Selected') : Ls('选择', 'Select')}</button>`
           : operatorId === 'engineer'
-            ? `<button class="primary-button small" type="button" data-engineer-unlock ${state.save.money >= 200000 ? '' : 'disabled'}>${Ls('购买彦飞', 'Buy Yanfei')}</button>`
+            ? `<button class="primary-button small" type="button" data-engineer-unlock ${state.save.money >= 100000 ? '' : 'disabled'}>${Ls('购买彦飞', 'Buy Yanfei')}</button>`
             : `<button class="primary-button small" type="button" data-lingshuang-unlock ${state.save.money >= OPERATOR_PRICE ? '' : 'disabled'}>${Ls('购买凌霜', 'Buy Lingshuang')}</button>`;
         return `
           <article class="shop-row operator-card ${active ? 'is-active' : ''} ${unlocked ? '' : 'is-locked'}">
@@ -253,7 +253,7 @@
       const button = event.target.closest('[data-lingshuang-unlock]');
       if (!button || state.save.lingshuangUnlocked) return;
       if (state.save.money < OPERATOR_PRICE) {
-        notify(Ls('资金不足，需要 50,000。', 'Not enough funds. Need 50,000.'), 'danger');
+        notify(Ls('资金不足，需要 120,000。', 'Not enough funds. Need 120,000.'), 'danger');
         return;
       }
       state.save.money -= OPERATOR_PRICE;
@@ -483,7 +483,7 @@
       player.abilityActiveTimer = PHASE_DURATION;
       player.operatorEffectTimer = PHASE_DURATION;
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#7cecff', 0.17, 0.22);
-      notify(Ls(`相位推进启动：50 秒内移速提升至 3.0×，受到伤害降低 85%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +66.7% phase movement and 85% damage reduction for 50s. Uses left: ${player.skillUses}/4.`), 'success');
+      notify(Ls(`相位推进启动：30 秒内移速提高 45%，受到伤害降低 55%。剩余技能 ${player.skillUses}/4。`, `Phase Drive active: +45% movement and 55% damage reduction for 30s. Uses left: ${player.skillUses}/4.`), 'success');
       syncHud();
       return true;
     };
@@ -536,7 +536,7 @@
       player.phaseBarrierTimer = PRISM_DURATION;
       createPrismVisual(player);
       spawnPulse?.(new BABYLON.Vector3(player.x, 1, player.z), '#62e5ff', 0.2, 0.3);
-      notify(Ls('棱镜盾已展开：1000 点护盾，持续 10 秒。', 'Prism Shield deployed: 1000 shield for 10 seconds.'), 'success');
+      notify(Ls('棱镜盾已展开：650 点护盾，持续 8 秒。', 'Prism Shield deployed: 650 shield for 8 seconds.'), 'success');
       syncHud();
       return true;
     };
