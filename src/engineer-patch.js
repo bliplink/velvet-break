@@ -111,8 +111,8 @@
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        skillTextZh: '手动触发：恢复 650 生命、免伤 8 秒；随后 8 秒减伤一半且子弹伤害翻倍。增益烟雾持续 7 秒。',
-        skillTextEn: 'Manual: restore 800 HP and gain 12s immunity, then 8s of half incoming damage and double bullet damage. Recovery Smoke lasts 7s.',
+        skillTextZh: '手动触发：恢复 650 生命、免伤 8 秒；随后 8 秒减伤一半且子弹伤害提升至 1.6 倍。增益烟雾持续 7 秒。',
+        skillTextEn: 'Manual: restore 650 HP and gain 8s immunity, then 8s of half incoming damage and 1.6x bullet damage. Recovery Smoke lasts 7s.',
         spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
         abilityDuration: 20, abilityColor: '#74e0a0',
       });
@@ -403,7 +403,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：恢复 650 生命、免伤 8 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +650 HP, 8s immunity, then 8s of half damage taken and double bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：恢复 650 生命、免伤 8 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +650 HP, 8s immunity, then 8s of half damage taken and 1.6x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
@@ -610,7 +610,7 @@
         current.damageReductionMult = 0.5;
         current.supportFirepowerTimer = 8;
         spawnPulse(new BABYLON.Vector3(current.x, 1, current.z), '#d6ff98', 0.14, 0.16);
-        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害翻倍。', 'Immunity ended: 8 seconds of half damage taken and double bullet damage.'), 'success');
+        notify(L('免伤结束：接下来 8 秒伤害减半，子弹伤害提升至 1.6 倍。', 'Immunity ended: 8 seconds of half damage taken and 1.6x bullet damage.'), 'success');
       }
 
       const execution = currentRaid.engineerExecution;
