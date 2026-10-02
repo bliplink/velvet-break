@@ -462,10 +462,19 @@
         const remaining = distance2D(enemy.x, enemy.z, target.x, target.z);
         if (remaining > 1.4 && moved < Math.min(0.012, enemy.speed * dt * 0.2)) enemy.navStuckTimer = (enemy.navStuckTimer ?? 0) + dt;
         else enemy.navStuckTimer = 0;
-        if ((enemy.navStuckTimer ?? 0) > 0.7) {
+        if ((enemy.navStuckTimer ?? 0) > 0.55) {
           enemy.navPath = [];
           enemy.navRepathTimer = 0;
           enemy.navAvoidFrames = 0;
+          const towardTarget = normalize2D(target.x - enemy.x, target.z - enemy.z);
+          const side = enemy.navAvoidSide ?? (Math.random() < 0.5 ? -1 : 1);
+          moveEntityWithCollision(
+            enemy,
+            (-towardTarget.z * side + towardTarget.x * 0.18) * 0.9,
+            (towardTarget.x * side + towardTarget.z * 0.18) * 0.9,
+            enemy.radius ?? 0.7,
+          );
+          enemy.navAvoidSide = -side;
           enemy.navStuckTimer = 0;
           if (!active) {
             enemy.route = [];
@@ -484,7 +493,22 @@
           moveEntityWithCollision(enemy, -towardPlayer.z * side * strafeSpeed, towardPlayer.x * side * strafeSpeed, enemy.radius ?? 0.7);
           if (distance2D(beforeStrafeX, beforeStrafeZ, enemy.x, enemy.z) < 0.01) enemy.strafeDirection = -side;
           enemy.heading = Math.atan2(towardPlayer.x, towardPlayer.z);
-          enemy.tacticalStrafeTimer = enemy.isNamelessBoss ? 0.12 : 0.16 + Math.random() * 0.12;
+          if (Math.random() < 0.34) enemy.strafeDirection = -enemy.strafeDirection;
+          enemy.tacticalStrafeTimer = enemy.isNamelessBoss ? 0.10 : 0.12 + Math.random() * 0.10;
+        }
+
+        if (active && !enemy.isProne && !enemy.mobilityAction && (enemy.mobilityCooldown ?? 0) <= 0 &&
+          remaining >= 2.8 && remaining < 7 &&
+          !lineOfSightBlocked(player.x, player.z, enemy.x, enemy.z)) {
+          const away = normalize2D(enemy.x - player.x, enemy.z - player.z);
+          const side = enemy.strafeDirection ?? 1;
+          const retreatX = away.x * 0.74 - away.z * side * 0.66;
+          const retreatZ = away.z * 0.74 + away.x * side * 0.66;
+          if (beginMobilityAction(enemy, Math.random() < 0.55 ? 'slide' : 'dodge', retreatX, retreatZ, {
+            duration: enemy.isNamelessBoss ? 0.34 : 0.30,
+            speed: enemy.isNamelessBoss ? 13.6 : 10.8,
+            cooldown: enemy.isNamelessBoss ? 0.46 : 0.72,
+          })) enemy.strafeDirection = -side;
         }
 
         if (active && !enemy.isProne && (enemy.mobilityCooldown ?? 0) <= 0 &&
