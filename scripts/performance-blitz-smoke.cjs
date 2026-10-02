@@ -90,6 +90,15 @@ const { chromium } = require('playwright');
         opened.push(activeId);
         closeLootPanel();
       }
+      const courier = raid.enemies.find(enemy => enemy.id === raid.blitzCourierId);
+      const courierBefore = courier ? {
+        id: courier.id,
+        name: courier.name,
+        maxHealth: courier.maxHealth,
+        speed: courier.speed,
+      } : null;
+      const bonusBeforeCourier = raid.bonusReward ?? 0;
+      if (courier) killEnemy(courier);
       for (let i = 0; i < 4; i++) advanceRaidObjective('kill', 1);
       const taskExit = raid.extractions.find(zone => zone.kind === 'task');
       return {
@@ -105,6 +114,9 @@ const { chromium } = require('playwright');
         activeRelayId: raid.blitzActiveRelayId ?? null,
         overdrive: raid.player.blitzOverdriveTimer ?? 0,
         alertedEnemies: raid.enemies.filter(enemy => !enemy.dead && (enemy.alertTimer ?? 0) > 0).length,
+        courierBefore,
+        courierKilled: Boolean(courier?.dead),
+        courierBonus: (raid.bonusReward ?? 0) - bonusBeforeCourier,
         novelty: window.__sdrModeNoveltyDebug ?? null,
       };
     });
@@ -213,6 +225,12 @@ const { chromium } = require('playwright');
       objectiveCompletion.overdrive > 0 &&
       objectiveCompletion.alertedEnemies > 0 &&
       objectiveCompletion.novelty?.blitzRelayCompletions === 3 &&
+      Boolean(objectiveCompletion.courierBefore) &&
+      /404/.test(objectiveCompletion.courierBefore?.name ?? '') &&
+      objectiveCompletion.courierKilled &&
+      objectiveCompletion.courierBonus >= 3500 &&
+      objectiveCompletion.novelty?.blitzCouriersSpawned >= 1 &&
+      objectiveCompletion.novelty?.blitzCouriersKilled >= 1 &&
       effects.afterSpawn <= 72 &&
       effects.afterUpdate <= 72 &&
       effects.skippedSmoke > 0 &&
