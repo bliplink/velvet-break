@@ -440,7 +440,7 @@ async function main() {
     !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
     purchaseSetup.prepProductCount !== 3 || purchaseSetup.emergencyFundingPresent ||
     !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
-    purchaseSetup.engineerUnlockCost !== 100000 || !/100,000/.test(purchaseSetup.lockTextBefore) ||
+    purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
     purchaseSetup.money >= 400000 || purchaseSetup.money < 350000 ||
     !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
     !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
