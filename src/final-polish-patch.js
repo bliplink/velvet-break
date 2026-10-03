@@ -104,12 +104,19 @@
         mesh.visibility = 1;
         if ('isVisible' in mesh) mesh.isVisible = true;
         material.alpha = 1;
+        mesh.renderingGroupId = 0;
+        if ('alphaIndex' in mesh) mesh.alphaIndex = 0;
+        mesh.alwaysSelectAsActiveMesh = false;
         if ('useAlphaFromDiffuseTexture' in material) material.useAlphaFromDiffuseTexture = false;
         if ('opacityTexture' in material) material.opacityTexture = null;
         if ('alphaMode' in material && window.BABYLON?.Engine) material.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
         if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
         material.needDepthPrePass = false;
+        if ('disableDepthWrite' in material) material.disableDepthWrite = false;
+        if ('forceDepthWrite' in material) material.forceDepthWrite = true;
+        if ('separateCullingPass' in material) material.separateCullingPass = false;
         if ('backFaceCulling' in material) material.backFaceCulling = false;
+        if (material.diffuseTexture && 'hasAlpha' in material.diffuseTexture) material.diffuseTexture.hasAlpha = false;
       }
     };
     forceOpaqueBuildingMeshes();
