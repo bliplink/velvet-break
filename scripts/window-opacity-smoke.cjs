@@ -54,6 +54,27 @@ const { chromium } = require('playwright');
         player.z > obstacle.z - obstacle.d / 2 + 0.08 &&
         player.z < obstacle.z + obstacle.d / 2 - 0.08;
 
+      // From inside, drive hard into a solid side wall. The player must stay inside.
+      player.insideBuildingId = obstacle.id;
+      player.x = obstacle.x + obstacle.w / 2 - 1.2;
+      player.z = obstacle.z;
+      const beforeWallX = player.x;
+      for (let i = 0; i < 12; i++) moveEntityWithCollision(player, 0.45, 0, player.radius ?? 0.45);
+      const wallBlocked =
+        player.x < obstacle.x + obstacle.w / 2 - 0.02 &&
+        player.insideBuildingId === obstacle.id;
+      const wallAdvance = player.x - beforeWallX;
+
+      const liners = scene.meshes.filter(mesh => mesh.metadata?.solidBuildingLiner);
+      const badLiners = liners.filter(mesh =>
+        mesh.isEnabled?.() === false ||
+        mesh.isVisible === false ||
+        (mesh.visibility ?? 1) < 0.999 ||
+        (mesh.material?.alpha ?? 1) < 0.999 ||
+        mesh.renderingGroupId !== 0 ||
+        mesh.material?.disableDepthWrite === true
+      );
+
       const structural = scene.meshes.filter(mesh => {
         const name = String(mesh?.name ?? '');
         const parentName = String(mesh?.parent?.name ?? '');
@@ -86,6 +107,10 @@ const { chromium } = require('playwright');
         obstacleId: obstacle.id,
         insideId: player.insideBuildingId,
         insideGeom,
+        wallBlocked,
+        wallAdvance,
+        linerCount: liners.length,
+        badLinerCount: badLiners.length,
         x: player.x,
         z: player.z,
         transparentCount: transparent.length,
@@ -102,6 +127,10 @@ const { chromium } = require('playwright');
       !result.started ||
       result.insideId !== result.obstacleId ||
       !result.insideGeom ||
+      !result.wallBlocked ||
+      result.wallAdvance > 1.4 ||
+      result.linerCount < 8 ||
+      result.badLinerCount !== 0 ||
       result.structuralCount < 20 ||
       result.transparentCount !== 0 ||
       result.badDepthCount !== 0 ||
