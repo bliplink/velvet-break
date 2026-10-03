@@ -110,7 +110,7 @@
     setTimeout(forceOpaqueBuildingMeshes, 1800);
     setTimeout(forceOpaqueBuildingMeshes, 4200);
     const opaqueGuardTimer = window.setInterval(() => {
-      if (state.mode !== 'raid' || !scene || scene.isDisposed?.()) return;
+      if (state.mode !== 'raid' || !scene || scene._isDisposed === true || scene.isDisposed === true) return;
       forceOpaqueBuildingMeshes();
     }, 2200);
 
