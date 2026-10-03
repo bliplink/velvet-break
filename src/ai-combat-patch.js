@@ -218,8 +218,12 @@
         enemyUtilityDebug.stuns += 1;
         spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
         if (Math.hypot(player.x - targetX, player.z - targetZ) <= 5.2) {
-          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.85);
-          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.8);
+          player.engineerSlowTimer = Math.max(player.engineerSlowTimer ?? 0, 10);
+          player.engineerStunTimer = 0;
+          player.mobilityAction = null;
+          player.mobilityCooldown = Math.max(player.mobilityCooldown ?? 0, 10);
+          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.35);
+          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 2.4);
         }
         return true;
       }
@@ -320,6 +324,7 @@
 
     const mobilityBeforeReview = beginMobilityAction;
     beginMobilityAction = function beginStrengthenedEnemyMobility(actor, ...args) {
+      if ((actor?.engineerSlowTimer ?? 0) > 0) return false;
       const started = mobilityBeforeReview(actor, ...args);
       if (started && isEnemyActor(actor) && actor.mobilityAction) {
         actor.mobilityAction.speed *= actor.isNamelessBoss ? 1.32 : 1.26;
@@ -750,6 +755,8 @@
 
     const updateRaidBeforeReview = updateRaid;
     updateRaid = function updateStrengthenedRaid(dt) {
+      const player = state.raid?.player;
+      if (player) player.engineerSlowTimer = Math.max(0, (player.engineerSlowTimer ?? 0) - dt);
       const result = updateRaidBeforeReview(dt);
       updateEnemyUtilities(dt);
       const boss = state.raid?.enemies?.find(enemy => enemy.isNamelessBoss && !enemy.dead);
