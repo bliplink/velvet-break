@@ -47,6 +47,24 @@
     };
 
     // Echo is a permanent unlock: equip it automatically at the start of every raid.
+    const startRaidBeforeNamelessReset = typeof startRaid === 'function' ? startRaid : null;
+    if (startRaidBeforeNamelessReset) {
+      startRaid = function startRaidWithFreshNameless(...args) {
+        const result = startRaidBeforeNamelessReset.apply(this, args);
+        const raid = state.raid;
+        if (raid?.enemies) {
+          const leftovers = raid.enemies.filter(enemy => enemy?.isNamelessBoss || enemy?.isNamelessMinion);
+          for (const enemy of leftovers) enemy?.visual?.root?.dispose?.(false, true);
+          raid.enemies = raid.enemies.filter(enemy => !enemy?.isNamelessBoss && !enemy?.isNamelessMinion);
+          raid.namelessSpawned = false;
+          raid.namelessGuardResetToken = (raid.namelessGuardResetToken ?? 0) + 1;
+          raid.initialEnemyCount = raid.enemies.length;
+          raid.enemyCount = raid.enemies.length;
+        }
+        return result;
+      };
+    }
+
     const startRaidBeforeEchoUnlock = typeof startRaid === 'function' ? startRaid : null;
     if (startRaidBeforeEchoUnlock) {
       startRaid = function startRaidWithPermanentEcho(...args) {
