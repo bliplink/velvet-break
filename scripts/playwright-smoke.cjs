@@ -415,46 +415,84 @@ async function main() {
 
   console.log(JSON.stringify({ lobby, before, profile, after, shot: { ammoBeforeShot, ammoAfterShot }, stairSetup, stairs, enemyMovement, mobile, extractionSetup, extraction, stashSetup, stashSearch, stashCategory, stashSort, stashAmmoBulk, stashPartsBulk, movingSelected, rangeBefore, rangeAfter, purchaseSetup, purchaseReload, resetSecurity, errors, missingResources }, null, 2));
   await Promise.race([browser.close(), new Promise(resolve => setTimeout(resolve, 2000))]);
-  process.exit(errors.length || missingResources.length || before.mode !== 'raid' || !before.loadoutCollapsed ||
-    Math.hypot(after.x - before.x, after.z - before.z) < 0.1 || ammoAfterShot >= ammoBeforeShot || !stairs?.upStarted ||
-    stairs.upResult.roof !== stairSetup.id || !stairs.downStarted || stairs.downResult.roof ||
-    mobile.map.x + mobile.map.width > 390 || mobile.language.x + mobile.language.width > 390 ||
-    mobile.actionPad.x + mobile.actionPad.width > 390 || mobile.notices > 3 ||
-    !extraction?.sequenceStarted || !extraction.resultVisible || !extraction.survived ||
-    stashSetup.debug?.version !== '2026-09-25-stash-v2' ||
-    stashSetup.debug?.itemCount !== 3 || stashSetup.debug?.groupCount !== 3 || stashSetup.debug?.categoryCount !== 3 ||
-    !stashSetup.controls.search || !stashSetup.controls.category || !stashSetup.controls.sort ||
-    !stashSetup.controls.ammoBulk || !stashSetup.controls.partsBulk ||
-    !stashSetup.controls.echoLoadout || !stashSetup.controls.echoArmory ||
-    stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1 ||
-    stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo') ||
-    stashSort.sort !== 'name-asc' || stashSort.names.length !== 3 || !stashSort.isSorted ||
-    stashAmmoBulk.ammoGain !== 45 || stashAmmoBulk.ammoItemsLeft !== 0 || stashAmmoBulk.stashCount !== 2 ||
-    !stashPartsBulk.ownsPart || stashPartsBulk.partItemsLeft !== 0 || stashPartsBulk.stashCount !== 1 ||
-    stashPartsBulk.version !== '2026-09-25-stash-v2' ||
-    movingSelected !== 'true' || !rangeBefore.training || rangeBefore.motion !== 'moving' ||
-    rangeBefore.maxHealth !== 1500 || rangeBefore.health !== 1500 ||
-    rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000' ||
-    rangeBefore.attackers !== 0 || rangeBefore.kaiKillHeal !== 60 || rangeAfter.moved < 5 ||
-    rangeAfter.bossCount !== 0 || rangeAfter.healthAfterHit !== 1500 ||
-    !rangeAfter.startedHealing || rangeAfter.healthAfterMedkit !== 1250 ||
-    purchaseSetup.prepProductCount !== 3 || purchaseSetup.emergencyFundingPresent ||
-    !purchaseSetup.unlocked || purchaseSetup.selectedOperatorId !== 'engineer' ||
-    purchaseSetup.engineerUnlockCost !== 200000 || !/200,000/.test(purchaseSetup.lockTextBefore) ||
-    purchaseSetup.money >= 300000 || purchaseSetup.money < 280000 ||
-    !purchaseSetup.ownsSmg || !purchaseSetup.ownsRedDot || purchaseSetup.hasUnlockButtonAfter ||
-    !purchaseReload.unlocked || purchaseReload.selectedOperatorId !== 'engineer' ||
-    purchaseReload.money !== purchaseSetup.money ||
-    !purchaseReload.ownsSmg || !purchaseReload.ownsRedDot ||
-    purchaseReload.prepProductCount !== 3 || purchaseReload.emergencyFundingPresent || purchaseReload.unlockButton ||
-    resetSecurity.wrongResult !== false ||
-    resetSecurity.afterWrongMoney !== 345678 || resetSecurity.afterWrongDay !== null ||
-    resetSecurity.firstResult !== true ||
-    resetSecurity.afterFirstMoney !== resetSecurity.defaultMoney ||
-    !/^\d{4}-\d{2}-\d{2}$/.test(resetSecurity.dayAfterFirst ?? '') ||
-    resetSecurity.secondResult !== false ||
-    resetSecurity.afterSecondMoney !== 456789 ||
-    resetSecurity.dayAfterSecond !== resetSecurity.dayAfterFirst ? 1 : 0);
+  const failures = [
+    ['console-errors', errors.length > 0],
+    ['missing-resources', missingResources.length > 0],
+    ['raid-mode', before.mode !== 'raid'],
+    ['loadout-collapsed', !before.loadoutCollapsed],
+    ['movement', Math.hypot(after.x - before.x, after.z - before.z) < 0.1],
+    ['shooting', ammoAfterShot >= ammoBeforeShot],
+    ['stairs-up-start', !stairs?.upStarted],
+    ['stairs-up-roof', stairs?.upResult?.roof !== stairSetup?.id],
+    ['stairs-down-start', !stairs?.downStarted],
+    ['stairs-down-ground', Boolean(stairs?.downResult?.roof)],
+    ['mobile-map', mobile.map.x + mobile.map.width > 390],
+    ['mobile-language', mobile.language.x + mobile.language.width > 390],
+    ['mobile-actions', mobile.actionPad.x + mobile.actionPad.width > 390],
+    ['mobile-notices', mobile.notices > 3],
+    ['extraction-sequence', !extraction?.sequenceStarted],
+    ['extraction-result', !extraction?.resultVisible],
+    ['extraction-survived', !extraction?.survived],
+    ['stash-version', stashSetup.debug?.version !== '2026-09-25-stash-v2'],
+    ['stash-count', stashSetup.debug?.itemCount !== 3],
+    ['stash-group-count', stashSetup.debug?.groupCount !== 3],
+    ['stash-category-count', stashSetup.debug?.categoryCount !== 3],
+    ['stash-search-control', !stashSetup.controls.search],
+    ['stash-category-control', !stashSetup.controls.category],
+    ['stash-sort-control', !stashSetup.controls.sort],
+    ['stash-ammo-bulk-control', !stashSetup.controls.ammoBulk],
+    ['stash-parts-bulk-control', !stashSetup.controls.partsBulk],
+    ['stash-echo-loadout', !stashSetup.controls.echoLoadout],
+    ['stash-echo-armory', !stashSetup.controls.echoArmory],
+    ['stash-search-result', stashSearch.visibleGroups !== 1 || stashSearch.visibleRows !== 1],
+    ['stash-category-result', stashCategory.visibleGroups !== 1 || stashCategory.category !== encodeURIComponent('Ammo')],
+    ['stash-sort-result', stashSort.sort !== 'name-asc' || stashSort.names.length !== 3 || !stashSort.isSorted],
+    ['stash-ammo-bulk-result', stashAmmoBulk.ammoGain !== 45 || stashAmmoBulk.ammoItemsLeft !== 0 || stashAmmoBulk.stashCount !== 2],
+    ['stash-parts-bulk-result', !stashPartsBulk.ownsPart || stashPartsBulk.partItemsLeft !== 0 || stashPartsBulk.stashCount !== 1],
+    ['stash-parts-version', stashPartsBulk.version !== '2026-09-25-stash-v2'],
+    ['range-moving-selected', movingSelected !== 'true'],
+    ['range-training', !rangeBefore.training],
+    ['range-motion', rangeBefore.motion !== 'moving'],
+    ['range-max-health', rangeBefore.maxHealth !== 1500],
+    ['range-health', rangeBefore.health !== 1500],
+    ['range-target-health', rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000'],
+    ['range-attackers', rangeBefore.attackers !== 0],
+    ['range-kai-heal', rangeBefore.kaiKillHeal !== 60],
+    ['range-enemy-movement', rangeAfter.moved < 5],
+    ['range-boss-count', rangeAfter.bossCount !== 0],
+    ['range-hit-health', rangeAfter.healthAfterHit !== 1500],
+    ['range-heal-start', !rangeAfter.startedHealing],
+    ['range-heal-value', rangeAfter.healthAfterMedkit !== 1250],
+    ['shop-prep-count', purchaseSetup.prepProductCount !== 3],
+    ['shop-emergency-funding', purchaseSetup.emergencyFundingPresent],
+    ['engineer-unlock', !purchaseSetup.unlocked],
+    ['engineer-selected', purchaseSetup.selectedOperatorId !== 'engineer'],
+    ['engineer-price', purchaseSetup.engineerUnlockCost !== 200000],
+    ['engineer-lock-text', !/200,000/.test(purchaseSetup.lockTextBefore)],
+    ['engineer-money', purchaseSetup.money >= 300000 || purchaseSetup.money < 280000],
+    ['shop-smg', !purchaseSetup.ownsSmg],
+    ['shop-red-dot', !purchaseSetup.ownsRedDot],
+    ['shop-unlock-button-after', purchaseSetup.hasUnlockButtonAfter],
+    ['reload-engineer-unlock', !purchaseReload.unlocked],
+    ['reload-engineer-selected', purchaseReload.selectedOperatorId !== 'engineer'],
+    ['reload-money', purchaseReload.money !== purchaseSetup.money],
+    ['reload-smg', !purchaseReload.ownsSmg],
+    ['reload-red-dot', !purchaseReload.ownsRedDot],
+    ['reload-prep-count', purchaseReload.prepProductCount !== 3],
+    ['reload-emergency-funding', purchaseReload.emergencyFundingPresent],
+    ['reload-engineer-button', purchaseReload.unlockButton],
+    ['reset-wrong-result', resetSecurity.wrongResult !== false],
+    ['reset-wrong-money', resetSecurity.afterWrongMoney !== 345678],
+    ['reset-wrong-day', resetSecurity.afterWrongDay !== null],
+    ['reset-first-result', resetSecurity.firstResult !== true],
+    ['reset-first-money', resetSecurity.afterFirstMoney !== resetSecurity.defaultMoney],
+    ['reset-first-day', !/^\d{4}-\d{2}-\d{2}$/.test(resetSecurity.dayAfterFirst ?? '')],
+    ['reset-second-result', resetSecurity.secondResult !== false],
+    ['reset-second-money', resetSecurity.afterSecondMoney !== 456789],
+    ['reset-second-day', resetSecurity.dayAfterSecond !== resetSecurity.dayAfterFirst],
+  ].filter(([, failed]) => failed).map(([name]) => name);
+  if (failures.length) console.error('BROWSER_SMOKE_FAILURES:', failures.join(', '));
+  process.exit(failures.length ? 1 : 0);
 }
 
 main().catch(error => { console.error(error); process.exit(1); });
