@@ -23,7 +23,7 @@ const { chromium } = require('playwright');
       enemy.utilityCooldown = 0;
       raid.enemyUtilityGlobalCooldown = 0;
       const before = window.__sdrEnemyUtilityDebug?.throws ?? 0;
-      for (let i=0;i<240;i++) updateRaid(0.05);
+      for (let i=0;i<400;i++) updateRaid(0.05);
       const after = window.__sdrEnemyUtilityDebug?.throws ?? 0;
       const shells = scene.meshes.filter(m => m.metadata?.finalOpaqueBuildingShell);
       const badShells = shells.filter(m =>
@@ -36,6 +36,7 @@ const { chromium } = require('playwright');
       return {
         healths,
         utilityThrows: after - before,
+        playerSlowTimer: raid.player.engineerSlowTimer ?? 0,
         shellCount: shells.length,
         badShellCount: badShells.length,
         utilityDebug: window.__sdrEnemyUtilityDebug,
@@ -43,7 +44,7 @@ const { chromium } = require('playwright');
     });
     console.log(JSON.stringify({ result, errors }, null, 2));
     const healthOk = result.healths.every(row => row.maxHealth <= (row.type === 'bruiser' ? 390 : row.type === 'hunter' ? 290 : 210));
-    if (!healthOk || result.utilityThrows < 1 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
+    if (!healthOk || result.utilityThrows < 1 || result.utilityThrows > 4 || result.playerSlowTimer > 10.01 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
   } finally {
     await browser.close();
   }
