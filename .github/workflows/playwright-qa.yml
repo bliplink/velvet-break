@@ -84,6 +84,9 @@ jobs:
       - name: Verify visual overhaul
         run: node scripts/visual-overhaul-smoke.cjs
 
+      - name: Verify window entry and opaque lockdown buildings
+        run: node scripts/window-opacity-smoke.cjs
+
       - name: Verify performance visibility and repeat rescue
         run: node scripts/performance-rescue-smoke.cjs
 
