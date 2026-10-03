@@ -396,6 +396,10 @@
             player.windowCollisionGrace = Math.max(player.windowCollisionGrace ?? 0, 0.35);
           }
         }
+        if ((action.type === 'stairs' || action.type === 'ladder') && action.directionSign < 0) {
+          player.onRoofBuildingId = null;
+          player.insideBuildingId = null;
+        }
         spawnPulse(new BABYLON.Vector3(player.x, 0.82, player.z), '#b9ebff', 0.08, 0.12);
       }
       return true;
