@@ -95,6 +95,10 @@ async function main() {
       perspective: document.getElementById('deathReplayPerspective')?.textContent,
       impactText: document.getElementById('deathReplayImpactText')?.textContent,
       cameraFov: camera.fov,
+      tracerCoreGroup: scene.getMeshByName('death-replay-fatal-core')?.renderingGroupId ?? null,
+      tracerGlowGroup: scene.getMeshByName('death-replay-fatal-glow')?.renderingGroupId ?? null,
+      tracerImpactGroup: scene.getMeshByName('death-replay-fatal-impact')?.renderingGroupId ?? null,
+      tracerDepthAlways: scene.getMeshByName('death-replay-fatal-core')?.material?.depthFunction === (BABYLON.ALWAYS ?? 519),
     }));
 
     await page.screenshot({ path: 'screenshots/death-replay-killcam-v2.png' });
@@ -132,6 +136,10 @@ async function main() {
       !impact.perspective ||
       !impact.impactText ||
       !(impact.cameraFov <= 0.64) ||
+      impact.tracerCoreGroup !== 3 ||
+      impact.tracerGlowGroup !== 3 ||
+      impact.tracerImpactGroup !== 3 ||
+      !impact.tracerDepthAlways ||
       !impact.progress ||
       skipped.mode !== 'result' ||
       skipped.replay ||
