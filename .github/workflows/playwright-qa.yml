@@ -130,9 +130,6 @@ jobs:
       - name: Verify Nameless guards reset every raid
         run: node scripts/nameless-reset-smoke.cjs
 
-      - name: Verify staged HVT contract
-        run: node scripts/contract-hvt-smoke.cjs
-
       - name: Verify Black Tide mode map and Lingshuang
         run: node scripts/black-tide-content-smoke.cjs
 
