@@ -275,7 +275,7 @@
 
       if (actor.insideBuildingId) {
         const currentObstacle = getObstacleById(actor.insideBuildingId);
-        if (!currentObstacle || !actorInsideObstacle(actor, currentObstacle, -0.18)) {
+        if ((actor.windowCollisionGrace ?? 0) <= 0 && (!currentObstacle || !actorInsideObstacle(actor, currentObstacle, -0.18))) {
           actor.insideBuildingId = null;
         }
       }
@@ -319,8 +319,9 @@
           onRoofBuildingId: options.onRoofBuildingId,
           clearInsideBuilding: Boolean(options.clearInsideBuilding),
           clearRoofBuilding: Boolean(options.clearRoofBuilding),
-          windowTraversalObstacleId: options.windowTraversalObstacleId,
+            windowTraversalObstacleId: options.windowTraversalObstacleId,
           windowTraversalEntering: options.windowTraversalEntering,
+          windowCollisionGrace: options.windowCollisionGrace ?? 0,
         },
       };
       state.input.fireHeld = false;
@@ -383,8 +384,10 @@
         if (finalized.windowTraversalObstacleId) {
           if (finalized.windowTraversalEntering) {
             player.insideBuildingId = finalized.windowTraversalObstacleId;
+            player.windowCollisionGrace = Math.max(player.windowCollisionGrace ?? 0, finalized.windowCollisionGrace || 0.55);
           } else if (player.insideBuildingId === finalized.windowTraversalObstacleId) {
             player.insideBuildingId = null;
+            player.windowCollisionGrace = Math.max(player.windowCollisionGrace ?? 0, 0.35);
           }
         }
         spawnPulse(new BABYLON.Vector3(player.x, 0.82, player.z), '#b9ebff', 0.08, 0.12);
@@ -685,12 +688,15 @@
       const clampedAlong = clamp(along, -0.22, 0.22);
       const currentSide = (player.x - feature.x) * outward.x + (player.z - feature.z) * outward.z;
       const entering = currentSide >= 0;
-      const offset = entering ? 1.18 : 1.12;
-      return {
-        x: feature.x + tangent.x * clampedAlong + outward.x * (entering ? -offset : offset),
-        z: feature.z + tangent.z * clampedAlong + outward.z * (entering ? -offset : offset),
-        entering,
-      };
+      const interior = getInteriorTargetForFeature(feature, player);
+      const exteriorOffset = 1.32;
+      return entering && interior
+        ? { x: interior.x, z: interior.z, entering: true }
+        : {
+            x: feature.x + tangent.x * clampedAlong + outward.x * exteriorOffset,
+            z: feature.z + tangent.z * clampedAlong + outward.z * exteriorOffset,
+            entering: false,
+          };
     };
 
     const getInteriorTargetForFeature = (feature, player) => {
@@ -797,6 +803,7 @@
         clearInsideBuilding: leaving,
         windowTraversalObstacleId: windowFeature.obstacleId,
         windowTraversalEntering: !leaving,
+        windowCollisionGrace: 0.65,
       });
     };
 
@@ -1155,6 +1162,7 @@
         }
       }
       const structurePlayer = state.raid?.player;
+      if (structurePlayer) structurePlayer.windowCollisionGrace = Math.max(0, (structurePlayer.windowCollisionGrace ?? 0) - dt);
       const structureAction = structurePlayer?.structureAction;
       if (viewModel?.root && structureAction) {
         const p = clamp(1 - structureAction.timer / Math.max(0.001, structureAction.duration), 0, 1);
