@@ -188,18 +188,27 @@
     coreMat.emissiveColor = BABYLON.Color3.FromHexString('#fff1ad');
     coreMat.alpha = 0.98;
     coreMat.disableLighting = true;
+    coreMat.disableDepthWrite = true;
+    if ('depthFunction' in coreMat) coreMat.depthFunction = BABYLON.ALWAYS ?? 519;
+    if (BABYLON.Engine?.ALPHA_ADD !== undefined) coreMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
 
     const glowMat = new BABYLON.StandardMaterial('death-replay-fatal-glow-mat', scene);
     glowMat.diffuseColor = BABYLON.Color3.FromHexString('#ff8c66');
     glowMat.emissiveColor = BABYLON.Color3.FromHexString('#ff5e48');
     glowMat.alpha = 0.25;
     glowMat.disableLighting = true;
+    glowMat.disableDepthWrite = true;
+    if ('depthFunction' in glowMat) glowMat.depthFunction = BABYLON.ALWAYS ?? 519;
+    if (BABYLON.Engine?.ALPHA_ADD !== undefined) glowMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
 
     const impactMat = new BABYLON.StandardMaterial('death-replay-fatal-impact-mat', scene);
     impactMat.diffuseColor = BABYLON.Color3.FromHexString('#ffb073');
     impactMat.emissiveColor = BABYLON.Color3.FromHexString('#ff6047');
     impactMat.alpha = 0.75;
     impactMat.disableLighting = true;
+    impactMat.disableDepthWrite = true;
+    if ('depthFunction' in impactMat) impactMat.depthFunction = BABYLON.ALWAYS ?? 519;
+    if (BABYLON.Engine?.ALPHA_ADD !== undefined) impactMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
 
     const core = BABYLON.MeshBuilder.CreateTube('death-replay-fatal-core', {
       path: [from, to],
@@ -209,6 +218,8 @@
     }, scene);
     core.material = coreMat;
     core.isPickable = false;
+    core.renderingGroupId = 3;
+    core.alwaysSelectAsActiveMesh = true;
 
     const glow = BABYLON.MeshBuilder.CreateTube('death-replay-fatal-glow', {
       path: [from, to],
@@ -218,6 +229,8 @@
     }, scene);
     glow.material = glowMat;
     glow.isPickable = false;
+    glow.renderingGroupId = 3;
+    glow.alwaysSelectAsActiveMesh = true;
 
     const impact = BABYLON.MeshBuilder.CreateSphere('death-replay-fatal-impact', {
       diameter: 0.28,
@@ -226,6 +239,8 @@
     impact.position.copyFrom(to);
     impact.material = impactMat;
     impact.isPickable = false;
+    impact.renderingGroupId = 3;
+    impact.alwaysSelectAsActiveMesh = true;
 
     return { core, glow, impact, coreMat, glowMat, impactMat, age: 0 };
   };
@@ -603,7 +618,8 @@
             replay.fatalEvent.playerZ,
           )
         : new BABYLON.Vector3(player.x, player.y + 1.18, player.z);
-      replay.fatalTracer = makeFatalTracer(from, to);
+      const cameraSide = camera.position.subtract(from).normalize().scale(0.16);
+      replay.fatalTracer = makeFatalTracer(from.add(cameraSide), to.add(cameraSide.scale(0.35)));
       replay.tracerShown = Boolean(replay.fatalTracer);
     }
 
