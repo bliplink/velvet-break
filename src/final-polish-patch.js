@@ -339,14 +339,8 @@
       getPlayerMoveSpeed = function getStrengthenedPlayerMoveSpeed(player, sprinting = false) {
         let speed = getMoveSpeedBeforePowerPass.call(this, player, sprinting);
         if (!player) return speed;
-        if (player.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
-          // Earlier code already applies Claire's 1.25x; normalize to the stronger 1.35x target.
-          speed *= 1.35 / 1.25;
-        }
         if (player.operatorId === 'medic') {
-          if ((player.damageImmunityTimer ?? 0) > 0 || (player.abilityActiveTimer ?? 0) > 8) {
-            speed *= 1.45;
-          } else if ((player.damageReductionTimer ?? 0) > 0 || player.benjaminPostPhasePending) {
+          if ((player.damageReductionTimer ?? 0) > 0 && (player.medicSpeedBoostTimer ?? 0) <= 0) {
             speed *= 1.20;
           }
         }
