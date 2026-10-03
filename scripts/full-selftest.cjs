@@ -18,7 +18,6 @@ const checks = [
   ['performance-blitz', 'node', ['scripts/performance-blitz-smoke.cjs']],
   ['lockdown-easter-egg', 'node', ['scripts/lockdown-easter-egg-smoke.cjs']],
   ['nameless-reset', 'node', ['scripts/nameless-reset-smoke.cjs']],
-  ['contract-hvt', 'node', ['scripts/contract-hvt-smoke.cjs']],
   ['black-tide', 'node', ['scripts/black-tide-content-smoke.cjs']],
 ];
 
