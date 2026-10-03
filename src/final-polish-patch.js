@@ -98,6 +98,145 @@
       if (canonicalStamina && panel !== canonicalStamina && panel.id === 'staminaPanel') panel.remove();
     }
 
+    // Last-loaded solid shell reinforcement for Lockdown buildings.
+    // This does not trust earlier facade materials: it draws independent opaque wall panels
+    // around every large building and leaves only registered doors/windows as openings.
+    const buildFinalOpaqueLockdownShells = () => {
+      if (window.__sdrFinalOpaqueLockdownShellsBuilt || !window.BABYLON || !scene) return;
+      window.__sdrFinalOpaqueLockdownShellsBuilt = true;
+      const registry = window.__sdrStructureRegistry ?? { windows: [], doors: [] };
+      const buildings = (obstacleDefs ?? []).filter(obstacle =>
+        obstacle && obstacle.w >= 7 && obstacle.d >= 6 && obstacle.h >= 3.45 &&
+        !obstacle.structureId && !String(obstacle.id ?? '').includes('-wall-')
+      );
+      const mat = new BABYLON.StandardMaterial('final-lockdown-solid-shell-mat', scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString('#3a474d');
+      mat.emissiveColor = BABYLON.Color3.FromHexString('#10171b');
+      mat.specularColor = BABYLON.Color3.Black();
+      mat.alpha = 1;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = false;
+      if ('forceDepthWrite' in mat) mat.forceDepthWrite = true;
+      mat.needDepthPrePass = false;
+      if (BABYLON.Material) mat.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+      if (BABYLON.Engine?.ALPHA_DISABLE !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
+
+      const makePanel = (name, x, y, z, width, height, depth) => {
+        if (width <= 0.04 || height <= 0.04 || depth <= 0.04) return null;
+        const mesh = BABYLON.MeshBuilder.CreateBox(name, { width, height, depth }, scene);
+        mesh.position.set(x, y, z);
+        mesh.material = mat;
+        mesh.visibility = 1;
+        mesh.isVisible = true;
+        mesh.isPickable = true;
+        mesh.renderingGroupId = 0;
+        mesh.metadata = { raycastTarget: 'obstacle', finalOpaqueBuildingShell: true };
+        return mesh;
+      };
+
+      const splitFace = (obstacle, face) => {
+        const horizontal = face === 'north' || face === 'south';
+        const spanMin = horizontal ? obstacle.x - obstacle.w / 2 : obstacle.z - obstacle.d / 2;
+        const spanMax = horizontal ? obstacle.x + obstacle.w / 2 : obstacle.z + obstacle.d / 2;
+        const openings = [
+          ...(registry.windows ?? []),
+          ...(registry.doors ?? []),
+        ].filter(feature => feature?.obstacleId === obstacle.id && feature.face === face)
+          .map(feature => {
+            const center = horizontal ? feature.x : feature.z;
+            const width = Math.max(0.9, Number(feature.width ?? 1.2));
+            const height = Math.min(obstacle.h - 0.15, Math.max(0.8, Number(feature.height ?? (feature.type === 'door' ? 2.2 : 0.9))));
+            const centerY = Math.max(height / 2 + 0.04, Number(feature.y ?? (feature.type === 'door' ? height / 2 : 1.8)));
+            return {
+              left: Math.max(spanMin, center - width / 2),
+              right: Math.min(spanMax, center + width / 2),
+              bottom: Math.max(0, centerY - height / 2),
+              top: Math.min(obstacle.h, centerY + height / 2),
+            };
+          })
+          .sort((a, b) => a.left - b.left);
+
+        const wallX = face === 'west' ? obstacle.x - obstacle.w / 2 + 0.025 :
+          face === 'east' ? obstacle.x + obstacle.w / 2 - 0.025 : obstacle.x;
+        const wallZ = face === 'north' ? obstacle.z - obstacle.d / 2 + 0.025 :
+          face === 'south' ? obstacle.z + obstacle.d / 2 - 0.025 : obstacle.z;
+        const depth = horizontal ? 0.09 : obstacle.d;
+        const width = horizontal ? obstacle.w : 0.09;
+
+        if (!openings.length) {
+          makePanel(`final-solid-${obstacle.id}-${face}`, wallX, obstacle.h / 2, wallZ, width, obstacle.h, depth);
+          return;
+        }
+
+        let cursor = spanMin;
+        for (let index = 0; index < openings.length; index++) {
+          const opening = openings[index];
+          if (opening.left > cursor + 0.03) {
+            const span = opening.left - cursor;
+            makePanel(
+              `final-solid-${obstacle.id}-${face}-side-${index}`,
+              horizontal ? cursor + span / 2 : wallX,
+              obstacle.h / 2,
+              horizontal ? wallZ : cursor + span / 2,
+              horizontal ? span : 0.09,
+              obstacle.h,
+              horizontal ? 0.09 : span,
+            );
+          }
+          if (opening.bottom > 0.04) {
+            makePanel(
+              `final-solid-${obstacle.id}-${face}-lower-${index}`,
+              horizontal ? (opening.left + opening.right) / 2 : wallX,
+              opening.bottom / 2,
+              horizontal ? wallZ : (opening.left + opening.right) / 2,
+              horizontal ? opening.right - opening.left : 0.09,
+              opening.bottom,
+              horizontal ? 0.09 : opening.right - opening.left,
+            );
+          }
+          if (opening.top < obstacle.h - 0.04) {
+            const h = obstacle.h - opening.top;
+            makePanel(
+              `final-solid-${obstacle.id}-${face}-upper-${index}`,
+              horizontal ? (opening.left + opening.right) / 2 : wallX,
+              opening.top + h / 2,
+              horizontal ? wallZ : (opening.left + opening.right) / 2,
+              horizontal ? opening.right - opening.left : 0.09,
+              h,
+              horizontal ? 0.09 : opening.right - opening.left,
+            );
+          }
+          cursor = Math.max(cursor, opening.right);
+        }
+        if (cursor < spanMax - 0.03) {
+          const span = spanMax - cursor;
+          makePanel(
+            `final-solid-${obstacle.id}-${face}-tail`,
+            horizontal ? cursor + span / 2 : wallX,
+            obstacle.h / 2,
+            horizontal ? wallZ : cursor + span / 2,
+            horizontal ? span : 0.09,
+            obstacle.h,
+            horizontal ? 0.09 : span,
+          );
+        }
+      };
+
+      for (const obstacle of buildings) {
+        for (const face of ['north', 'south', 'east', 'west']) splitFace(obstacle, face);
+        makePanel(
+          `final-solid-${obstacle.id}-roof`,
+          obstacle.x,
+          obstacle.h + 0.055,
+          obstacle.z,
+          obstacle.w + 0.1,
+          0.11,
+          obstacle.d + 0.1,
+        );
+      }
+    };
+    buildFinalOpaqueLockdownShells();
+
     // Final building opacity guard. Glass panes are the only structural meshes allowed to stay transparent.
     const forceOpaqueBuildingMeshes = () => {
       const structures = window.__sdrInteractiveBuildingStructures;
