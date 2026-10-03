@@ -103,6 +103,9 @@ jobs:
       - name: Verify operator balance regression
         run: node scripts/operator-regression.cjs
 
+      - name: Verify live operator power effects
+        run: node scripts/operator-power-smoke.cjs
+
       - name: Verify combat polish
         run: node scripts/combat-polish-smoke.cjs
 
