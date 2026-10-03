@@ -395,7 +395,12 @@
       return true;
     };
 
-    const isStructurePassable = () => false;
+    const isStructurePassable = (feature) => {
+      if (!feature) return false;
+      if (feature.type === 'window') return Boolean(feature.broken);
+      if (feature.type === 'door') return Boolean(feature.open);
+      return false;
+    };
 
     const isPointInsideFeaturePassage = (x, z, feature, padding = 0) => {
       if (!isStructurePassable(feature)) {
@@ -433,6 +438,10 @@
         z <= obstacle.z - obstacle.d / 2 - padding ||
         z >= obstacle.z + obstacle.d / 2 + padding
       ) {
+        return false;
+      }
+      const passages = getPassableFeaturesForObstacle(obstacle.id);
+      if (passages.some((feature) => isPointInsideFeaturePassage(x, z, feature, Math.max(0.06, padding)))) {
         return false;
       }
       return true;
