@@ -75,6 +75,10 @@ jobs:
             sleep 0.2
           done
 
+      - name: Run comprehensive self-test audit
+        continue-on-error: true
+        run: node scripts/full-selftest.cjs
+
       - name: Run full Playwright game smoke test
         run: npm run test:browser
 
