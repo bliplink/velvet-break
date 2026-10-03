@@ -308,6 +308,8 @@
         endZ,
         path: options.path ?? null,
         stairEyeLift: options.stairEyeLift ?? 0,
+        visualLift: options.visualLift ?? 0,
+        directionSign: options.directionSign ?? 1,
         timer: duration,
         duration,
         statusZh: messages.statusZh,
@@ -350,7 +352,8 @@
         player.x = lerp(segment.from.x, segment.to.x, section);
         player.z = lerp(segment.from.z, segment.to.z, section);
         action.stairEyeLift = lerp(segment.from.y, segment.to.y, section);
-        player.velocityBob += dt * 21;
+        action.visualLift = action.stairEyeLift;
+        player.velocityBob += dt * (action.type === 'ladder' ? 15 : 21);
       } else {
         player.x = lerp(action.startX, action.endX, eased);
         player.z = lerp(action.startZ, action.endZ, eased);
@@ -764,12 +767,23 @@
       const target = getTraverseTargetForWallFeature(windowFeature, player);
       if (!target) return false;
       const leaving = player.insideBuildingId === windowFeature.obstacleId;
-      return beginStructureTraverse(player, 'window', target.x, target.z, 0.5, {
+      const midX = (player.x + target.x) * 0.5;
+      const midZ = (player.z + target.z) * 0.5;
+      const path = [
+        { x: player.x, z: player.z, y: 0 },
+        { x: lerp(player.x, midX, 0.72), z: lerp(player.z, midZ, 0.72), y: 0.36 },
+        { x: midX, z: midZ, y: 0.68 },
+        { x: lerp(midX, target.x, 0.72), z: lerp(midZ, target.z, 0.72), y: 0.32 },
+        { x: target.x, z: target.z, y: 0 },
+      ];
+      return beginStructureTraverse(player, 'window', target.x, target.z, 0.76, {
         labelZh: leaving ? '翻窗离开建筑。' : '翻窗进入建筑。',
         labelEn: leaving ? 'Vaulted out through the window.' : 'Vaulted in through the window.',
         statusZh: '翻窗中...',
         statusEn: 'Vaulting...',
       }, {
+        path,
+        directionSign: leaving ? -1 : 1,
         insideBuildingId: leaving ? null : windowFeature.obstacleId,
         clearInsideBuilding: leaving,
       });
@@ -804,20 +818,37 @@
       if (!target) {
         return false;
       }
+      const roof = getObstacleById(ladder.obstacleId);
+      if (!roof) return false;
+      const groundPoint = getLadderTraverseTarget(ladder, false);
+      const roofPoint = getLadderTraverseTarget(ladder, true);
+      const ladderBase = { x: ladder.x, z: ladder.z, y: 0.08 };
+      const ladderTop = { x: ladder.x, z: ladder.z, y: roof.h - 0.08 };
+      const path = onRoof
+        ? [
+            { x: player.x, z: player.z, y: roof.h },
+            { x: roofPoint.x, z: roofPoint.z, y: roof.h },
+            ladderTop,
+            ladderBase,
+            { x: groundPoint.x, z: groundPoint.z, y: 0 },
+          ]
+        : [
+            { x: player.x, z: player.z, y: 0 },
+            { x: groundPoint.x, z: groundPoint.z, y: 0 },
+            ladderBase,
+            ladderTop,
+            { x: roofPoint.x, z: roofPoint.z, y: roof.h },
+          ];
       player.safeRoofExitTimer = 0.9;
-      beginMobilityAction(player, 'jump', target.x - player.x, target.z - player.z, {
-        duration: 0.76,
-        speed: 5.8,
-        height: 0.48,
-        cooldown: 0.5,
-      });
       playSwitchAudio({ x: ladder.x, z: ladder.z }, false);
-      return beginStructureTraverse(player, 'ladder', target.x, target.z, 0.82, {
+      return beginStructureTraverse(player, 'ladder', target.x, target.z, Math.max(1.9, roof.h * 0.46), {
         labelZh: onRoof ? '沿梯子下地。' : '沿梯子上屋顶。',
         labelEn: onRoof ? 'Climbing down.' : 'Climbing to rooftop.',
-        statusZh: '爬梯中...',
-        statusEn: 'Climbing ladder...',
+        statusZh: onRoof ? '下梯中...' : '上梯中...',
+        statusEn: onRoof ? 'Climbing down...' : 'Climbing up...',
       }, {
+        path,
+        directionSign: onRoof ? -1 : 1,
         insideBuildingId: onRoof ? null : ladder.obstacleId,
         onRoofBuildingId: onRoof ? null : ladder.obstacleId,
         clearInsideBuilding: onRoof,
@@ -1112,6 +1143,36 @@
           door.panel.rotation.y = door.rotY + door.openAmount * DOOR_SWING_ANGLE * swingSign;
         }
       }
+      const structurePlayer = state.raid?.player;
+      const structureAction = structurePlayer?.structureAction;
+      if (viewModel?.root && structureAction) {
+        const p = clamp(1 - structureAction.timer / Math.max(0.001, structureAction.duration), 0, 1);
+        if (structureAction.type === 'window') {
+          const lift = Math.sin(p * Math.PI);
+          const tuck = Math.sin(Math.min(1, p * 1.25) * Math.PI);
+          viewModel.root.position.y -= lift * 0.16;
+          viewModel.root.position.z -= lift * 0.13;
+          viewModel.root.rotation.x += 0.34 * lift - 0.12 * Math.sin(p * Math.PI * 2);
+          viewModel.root.rotation.z += (structureAction.directionSign ?? 1) * 0.16 * Math.sin(p * Math.PI);
+          viewModel.root.rotation.y += 0.08 * tuck;
+        } else if (structureAction.type === 'ladder') {
+          const cycle = Math.sin(p * Math.PI * 10);
+          const alternate = Math.sin(p * Math.PI * 10 + Math.PI / 2);
+          viewModel.root.position.x += cycle * 0.045;
+          viewModel.root.position.y += Math.abs(alternate) * 0.025;
+          viewModel.root.position.z -= 0.10;
+          viewModel.root.rotation.x += 0.11;
+          viewModel.root.rotation.z += cycle * 0.10;
+          viewModel.root.rotation.y += alternate * 0.045;
+        } else if (structureAction.type === 'stairs') {
+          const cycle = Math.sin(p * Math.PI * 14);
+          viewModel.root.position.y += Math.abs(cycle) * 0.018;
+          viewModel.root.position.x += cycle * 0.018;
+          viewModel.root.rotation.z += cycle * 0.025;
+          viewModel.root.rotation.x += 0.035;
+        }
+      }
+
       for (const windowFeature of registry.windows) {
         if (!windowFeature.pane) {
           continue;
@@ -1135,8 +1196,17 @@
     getPlayerViewHeight = function patchedGetPlayerViewHeight(player = state.raid?.player) {
       const base = originalGetPlayerViewHeight(player);
       if (player?.structureAction?.type === 'stairs') {
-        const step = Math.sin(player.structureAction.stairEyeLift * Math.PI / 0.22) * 0.018;
+        const phase = (1 - player.structureAction.timer / Math.max(0.001, player.structureAction.duration)) * Math.PI * 16;
+        const step = Math.sin(phase) * 0.035;
         return base + player.structureAction.stairEyeLift + step;
+      }
+      if (player?.structureAction?.type === 'ladder') {
+        const phase = (1 - player.structureAction.timer / Math.max(0.001, player.structureAction.duration)) * Math.PI * 12;
+        return base + (player.structureAction.visualLift ?? 0) + Math.sin(phase) * 0.025;
+      }
+      if (player?.structureAction?.type === 'window') {
+        const progress = 1 - player.structureAction.timer / Math.max(0.001, player.structureAction.duration);
+        return base + Math.sin(progress * Math.PI) * 0.34;
       }
       if (!player?.onRoofBuildingId) return base;
       const roof = scene.getMeshByName(`roof-${player.onRoofBuildingId}`);
