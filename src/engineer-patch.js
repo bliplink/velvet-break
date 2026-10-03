@@ -393,9 +393,9 @@
         player.abilityCharges = player.skillUses;
         player.abilityActiveTimer = 20;
         player.operatorEffectTimer = 20;
-        player.health = Math.min(player.maxHealth, player.health + 650);
-        player.damageImmunityTimer = 8;
-        player.medicSpeedBoostTimer = 0;
+        player.health = Math.min(player.maxHealth, player.health + 800);
+        player.damageImmunityTimer = 12;
+        player.medicSpeedBoostTimer = 12;
         player.damageReductionTimer = 0;
         player.damageReductionMult = 1;
         player.supportFirepowerTimer = 0;
@@ -403,7 +403,7 @@
         player.medicPostShieldPending = false;
         player.supportFirepowerPending = false;
         spawnPulse(new BABYLON.Vector3(player.x, 1, player.z), '#74e0a0', 0.18, 0.22);
-        notify(L(`战术增益启动：恢复 650 生命、免伤 8 秒；随后 8 秒伤害减半且子弹伤害翻倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +650 HP, 8s immunity, then 8s of half damage taken and 1.6x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
+        notify(L(`战术增益启动：恢复 800 生命、免伤 12 秒并提高 45% 移速；随后 8 秒伤害减半、移速 +20% 且子弹伤害 1.6 倍。剩余技能 ${player.skillUses}/4。`, `Tactical Surge: +800 HP, 12s immunity and +45% movement; then 8s half damage, +20% movement, and 1.6x bullet damage. Uses left: ${player.skillUses}/4.`), 'success');
         return;
       }
       if (player?.operatorId !== ENGINEER_ID) return abilityBeforeEngineer();
