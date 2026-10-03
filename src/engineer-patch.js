@@ -111,9 +111,10 @@
         passiveZh: '男 · 战术支援员，额外携带 3 个医疗包；瞬间处决，每累计击败 5 人获得 2.5 秒无敌。',
         passiveEn: 'Male · Support specialist with 3 extra medkits, instant executions, and 2.5s invulnerability every 5 kills.',
         skillNameZh: '战术增益', skillNameEn: 'Tactical Surge',
-        skillTextZh: '手动触发：恢复 650 生命、免伤 8 秒；随后 8 秒减伤一半且子弹伤害提升至 1.6 倍。增益烟雾持续 7 秒。',
-        skillTextEn: 'Manual: restore 650 HP and gain 8s immunity, then 8s of half incoming damage and 1.6x bullet damage. Recovery Smoke lasts 7s.',
-        spreadMult: 1, reloadMult: 0.96, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
+        skillTextZh: '手动触发：恢复 800 生命、免伤 12 秒并提高 45% 移速；随后 8 秒减伤一半、移速 +20% 且子弹伤害提升至 1.6 倍。增益烟雾持续 7 秒。',
+        skillTextEn: 'Manual: restore 800 HP, gain 12s immunity and +45% movement, then 8s half damage, +20% movement and 1.6x bullet damage. Recovery Smoke lasts 7s.',
+        spreadMult: 0.88, recoilMult: 0.90, reloadMult: 0.88, healCooldownMult: 0.72, startArmorBonus: 6, startMedkitBonus: 3,
+        speedBoostMult: 1.45, postSpeedBoostMult: 1.20, baseDamageMult: 1.18,
         abilityDuration: 20, abilityColor: '#74e0a0',
       });
       defs[ENGINEER_ID] = { ...engineerDef };
