@@ -68,6 +68,21 @@ const { chromium } = require('playwright');
         (mesh.visibility ?? 1) < 0.999 ||
         (mesh.material && (mesh.material.alpha ?? 1) < 0.999)
       );
+      const badDepth = structural.filter(mesh =>
+        mesh.renderingGroupId !== 0 ||
+        mesh.material?.disableDepthWrite === true ||
+        mesh.material?.diffuseTexture?.hasAlpha === true
+      );
+
+      const wall = structural.find(mesh => String(mesh.metadata?.structureId ?? '') === obstacle.id && /wall/i.test(String(mesh.name)));
+      let wallRayHit = null;
+      if (wall) {
+        const center = wall.getAbsolutePosition();
+        const dir = new BABYLON.Vector3(obstacle.x - center.x, 0, obstacle.z - center.z).normalize();
+        const origin = center.subtract(dir.scale(3));
+        const pick = scene.pickWithRay(new BABYLON.Ray(origin, dir, 8), mesh => structural.includes(mesh));
+        wallRayHit = pick?.pickedMesh?.name ?? null;
+      }
 
       return {
         started,
@@ -78,6 +93,9 @@ const { chromium } = require('playwright');
         z: player.z,
         transparentCount: transparent.length,
         transparentNames: transparent.slice(0, 12).map(m => m.name),
+        badDepthCount: badDepth.length,
+        badDepthNames: badDepth.slice(0, 12).map(m => m.name),
+        wallRayHit,
         structuralCount: structural.length,
       };
     });
@@ -89,6 +107,8 @@ const { chromium } = require('playwright');
       !result.insideGeom ||
       result.structuralCount < 20 ||
       result.transparentCount !== 0 ||
+      result.badDepthCount !== 0 ||
+      !result.wallRayHit ||
       errors.length
     ) process.exitCode = 1;
   } finally {
