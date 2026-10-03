@@ -124,6 +124,9 @@ jobs:
       - name: Verify Lockdown ghost cache easter egg
         run: node scripts/lockdown-easter-egg-smoke.cjs
 
+      - name: Verify Nameless guards reset every raid
+        run: node scripts/nameless-reset-smoke.cjs
+
       - name: Verify staged HVT contract
         run: node scripts/contract-hvt-smoke.cjs
 
