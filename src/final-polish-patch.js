@@ -366,6 +366,17 @@
       };
     }
 
+    const weaponDamageBeforePowerPass = typeof getWeaponDamage === 'function' ? getWeaponDamage : null;
+    if (weaponDamageBeforePowerPass) {
+      getWeaponDamage = function getStrengthenedWeaponDamage(weaponId = 'rifle', options = {}) {
+        const base = weaponDamageBeforePowerPass.call(this, weaponId, options);
+        const player = options?.player ?? state.raid?.player;
+        if (!player) return base;
+        const operator = getPlayerOperatorDef(player);
+        return base * (operator?.baseDamageMult ?? 1);
+      };
+    }
+
     const currentStatsBeforePowerPass = typeof getCurrentPlayerWeaponStats === 'function' ? getCurrentPlayerWeaponStats : null;
     if (currentStatsBeforePowerPass) {
       getCurrentPlayerWeaponStats = function getStrengthenedCurrentWeaponStats(player = state.raid?.player) {
