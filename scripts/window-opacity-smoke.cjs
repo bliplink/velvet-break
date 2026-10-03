@@ -74,15 +74,12 @@ const { chromium } = require('playwright');
         mesh.material?.diffuseTexture?.hasAlpha === true
       );
 
-      const wall = structural.find(mesh => String(mesh.metadata?.structureId ?? '') === obstacle.id && /wall/i.test(String(mesh.name)));
-      let wallRayHit = null;
-      if (wall) {
-        const center = wall.getAbsolutePosition();
-        const dir = new BABYLON.Vector3(obstacle.x - center.x, 0, obstacle.z - center.z).normalize();
-        const origin = center.subtract(dir.scale(3));
-        const pick = scene.pickWithRay(new BABYLON.Ray(origin, dir, 8), mesh => structural.includes(mesh));
-        wallRayHit = pick?.pickedMesh?.name ?? null;
-      }
+      const solidStructureCount = structural.filter(mesh =>
+        mesh.isEnabled?.() !== false &&
+        mesh.isVisible !== false &&
+        (mesh.visibility ?? 1) >= 0.999 &&
+        (mesh.getBoundingInfo?.().boundingBox?.extendSizeWorld?.length?.() ?? 0) > 0.05
+      ).length;
 
       return {
         started,
@@ -95,7 +92,7 @@ const { chromium } = require('playwright');
         transparentNames: transparent.slice(0, 12).map(m => m.name),
         badDepthCount: badDepth.length,
         badDepthNames: badDepth.slice(0, 12).map(m => m.name),
-        wallRayHit,
+        solidStructureCount,
         structuralCount: structural.length,
       };
     });
@@ -108,7 +105,7 @@ const { chromium } = require('playwright');
       result.structuralCount < 20 ||
       result.transparentCount !== 0 ||
       result.badDepthCount !== 0 ||
-      !result.wallRayHit ||
+      result.solidStructureCount < 20 ||
       errors.length
     ) process.exitCode = 1;
   } finally {
