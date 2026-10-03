@@ -9500,11 +9500,15 @@ function loadSave() {
     const isLegacySave = Number(parsed.version ?? 0) < SAVE_SCHEMA_VERSION;
     const startingMoney = Number.isFinite(parsed.money) ? parsed.money : fallback.money;
     return {
+      // Preserve extension fields added by later patches (operator unlocks,
+      // permanent weapons, reset metadata, extra modes, easter eggs, etc.).
+      // Core fields below are still normalized explicitly.
+      ...parsed,
       version: SAVE_SCHEMA_VERSION,
       money: isLegacySave ? Math.max(startingMoney, fallback.money) : startingMoney,
       stash,
-      selectedOperatorId: sanitizeOperatorId(parsed.selectedOperatorId),
-      selectedModeId: sanitizeLobbyModeId(parsed.selectedModeId),
+      selectedOperatorId: typeof parsed.selectedOperatorId === 'string' ? parsed.selectedOperatorId : getDefaultOperatorId(),
+      selectedModeId: typeof parsed.selectedModeId === 'string' ? parsed.selectedModeId : 'raid',
       upgrades: {
         bagLevel: clamp(Number(parsed.upgrades?.bagLevel ?? 0), 0, MAX_BAG_LEVEL),
         weaponLevel: clamp(Number(parsed.upgrades?.weaponLevel ?? 0), 0, MAX_WEAPON_LEVEL),
