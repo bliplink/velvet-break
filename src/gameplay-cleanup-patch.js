@@ -18,6 +18,15 @@
     if (window.__sdrGameplayCleanupPatchApplied) return;
     window.__sdrGameplayCleanupPatchApplied = true;
 
+    const getModesBeforeCleanup = getLobbyModeDefs;
+    getLobbyModeDefs = function getModesWithoutPurgeContract() {
+      const modes = getModesBeforeCleanup();
+      if (modes && Object.prototype.hasOwnProperty.call(modes, 'contract')) {
+        delete modes.contract;
+      }
+      return modes;
+    };
+
     const addSolidProp = (id, x, z, w, d, h) => {
       if (!Number.isFinite(x) || !Number.isFinite(z) || obstacleDefs.some((entry) => entry.id === id)) return;
       obstacleDefs.push({ id, x, z, w, d, h, hiddenOnMap: true, temporaryProp: true });
@@ -83,6 +92,10 @@
     };
     window.__sdrPatchedStartRaid = startRaid;
 
+    if (state.save?.selectedModeId === 'contract') {
+      state.save.selectedModeId = 'raid';
+      persistSave();
+    }
     if (state.mode === 'base') renderBasePanel();
   };
 
