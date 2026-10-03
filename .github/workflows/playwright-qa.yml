@@ -97,6 +97,10 @@ jobs:
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
 
+      - name: Verify tactical AI utilities and final opaque buildings
+        run: node scripts/ai-utility-building-smoke.cjs
+
+
       - name: Verify rescue Benjamin balance xray and original model
         run: node scripts/polish-v2-smoke.cjs
 
