@@ -212,7 +212,7 @@
           count += 1;
         }
         spawnPulse(new BABYLON.Vector3(player.x, PLAYER_HEIGHT, player.z), '#72d9ff', 0.16, 0.2);
-        notify(`全域扫描：冻结 ${count} 名敌人 20 秒，并暴露 30 秒。剩余 ${player.claireScanCharges} 次。`, 'success');
+        notify(`全域扫描：冻结 ${count} 名敌人 20 秒、暴露 30 秒；30 秒内移速 +35%、换弹更快、后坐/散布降低并获得 35% 减伤。剩余 ${player.claireScanCharges} 次。`, 'success');
         syncHud();
       };
     }
@@ -279,8 +279,136 @@
       };
     }
 
+
+    // Final operator power pass. This lives in the last-loaded authority patch so
+    // earlier operator/engineer/warden definitions cannot weaken it later.
+    const getOperatorDefsBeforePowerPass = typeof getOperatorDefs === 'function' ? getOperatorDefs : null;
+    if (getOperatorDefsBeforePowerPass) {
+      getOperatorDefs = function getStrengthenedOperatorDefs() {
+        const defs = getOperatorDefsBeforePowerPass.apply(this, arguments);
+        if (defs.assault) Object.assign(defs.assault, {
+          moveMult: Math.max(defs.assault.moveMult ?? 1, 1.08),
+          spreadMult: Math.min(defs.assault.spreadMult ?? 1, 0.68),
+          recoilMult: Math.min(defs.assault.recoilMult ?? 1, 0.68),
+          reloadMult: Math.min(defs.assault.reloadMult ?? 1, 0.70),
+          baseDamageMult: 1.18,
+          startArmorBonus: Math.max(defs.assault.startArmorBonus ?? 0, 170),
+        });
+        if (defs.recon) Object.assign(defs.recon, {
+          moveMult: Math.max(defs.recon.moveMult ?? 1, 1.15),
+          spreadMult: Math.min(defs.recon.spreadMult ?? 1, 0.82),
+          recoilMult: Math.min(defs.recon.recoilMult ?? 1, 0.84),
+          reloadMult: Math.min(defs.recon.reloadMult ?? 1, 0.84),
+          baseDamageMult: 1.16,
+          scanDamageMult: Math.max(defs.recon.scanDamageMult ?? 1, 2.5),
+          abilityMoveMult: 1.35,
+          abilitySpreadMult: 0.70,
+          abilityRecoilMult: 0.75,
+          abilityReloadMult: 0.75,
+          abilityDamageTakenMult: 0.65,
+        });
+        if (defs.medic) Object.assign(defs.medic, {
+          moveMult: Math.max(defs.medic.moveMult ?? 1, 1.08),
+          spreadMult: Math.min(defs.medic.spreadMult ?? 1, 0.88),
+          recoilMult: Math.min(defs.medic.recoilMult ?? 1, 0.90),
+          reloadMult: Math.min(defs.medic.reloadMult ?? 1, 0.88),
+          baseDamageMult: 1.18,
+          speedBoostMult: 1.45,
+          postSpeedBoostMult: 1.20,
+        });
+        if (defs.engineer) Object.assign(defs.engineer, {
+          moveMult: Math.max(defs.engineer.moveMult ?? 1, 1.06),
+          spreadMult: Math.min(defs.engineer.spreadMult ?? 1, 0.50),
+          recoilMult: Math.min(defs.engineer.recoilMult ?? 1, 0.50),
+          reloadMult: Math.min(defs.engineer.reloadMult ?? 1, 0.86),
+          baseDamageMult: 1.20,
+        });
+        if (defs.lingshuang) Object.assign(defs.lingshuang, {
+          moveMult: Math.max(defs.lingshuang.moveMult ?? 1, 1.08),
+          spreadMult: Math.min(defs.lingshuang.spreadMult ?? 1, 0.74),
+          recoilMult: Math.min(defs.lingshuang.recoilMult ?? 1, 0.74),
+          reloadMult: Math.min(defs.lingshuang.reloadMult ?? 1, 0.78),
+          baseDamageMult: 1.18,
+        });
+        return defs;
+      };
+    }
+
+    const getMoveSpeedBeforePowerPass = typeof getPlayerMoveSpeed === 'function' ? getPlayerMoveSpeed : null;
+    if (getMoveSpeedBeforePowerPass) {
+      getPlayerMoveSpeed = function getStrengthenedPlayerMoveSpeed(player, sprinting = false) {
+        let speed = getMoveSpeedBeforePowerPass.call(this, player, sprinting);
+        if (!player) return speed;
+        if (player.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
+          // Earlier code already applies Claire's 1.25x; normalize to the stronger 1.35x target.
+          speed *= 1.35 / 1.25;
+        }
+        if (player.operatorId === 'medic') {
+          if ((player.damageImmunityTimer ?? 0) > 0 || (player.abilityActiveTimer ?? 0) > 8) {
+            speed *= 1.45;
+          } else if ((player.damageReductionTimer ?? 0) > 0 || player.benjaminPostPhasePending) {
+            speed *= 1.20;
+          }
+        }
+        return speed;
+      };
+    }
+
+    const currentStatsBeforePowerPass = typeof getCurrentPlayerWeaponStats === 'function' ? getCurrentPlayerWeaponStats : null;
+    if (currentStatsBeforePowerPass) {
+      getCurrentPlayerWeaponStats = function getStrengthenedCurrentWeaponStats(player = state.raid?.player) {
+        const raw = currentStatsBeforePowerPass.call(this, player);
+        if (!raw || !player) return raw;
+        const stats = { ...raw };
+        const operator = getPlayerOperatorDef(player);
+        const baseDamageMult = operator?.baseDamageMult ?? 1;
+        stats.projectileDamage = (stats.projectileDamage ?? stats.damage ?? 0) * baseDamageMult;
+        stats.damage = (stats.damage ?? stats.projectileDamage ?? 0) * baseDamageMult;
+        if (player.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
+          stats.projectileDamage *= operator.scanDamageMult ?? 2.5;
+          stats.damage *= operator.scanDamageMult ?? 2.5;
+          stats.spread *= operator.abilitySpreadMult ?? 0.70;
+          stats.reload *= operator.abilityReloadMult ?? 0.75;
+        }
+        return stats;
+      };
+    }
+
+    const damageBeforeClairePowerPass = typeof applyDamageToPlayer === 'function' ? applyDamageToPlayer : null;
+    if (damageBeforeClairePowerPass) {
+      applyDamageToPlayer = function applyOperatorPowerDamageReduction(amount, ...args) {
+        const player = state.raid?.player;
+        let incoming = amount;
+        if (player?.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
+          incoming *= 0.65;
+        }
+        return damageBeforeClairePowerPass.call(this, incoming, ...args);
+      };
+    }
+
+    const useAbilityBeforeBenjaminSpeed = typeof useOperatorAbility === 'function' ? useOperatorAbility : null;
+    if (useAbilityBeforeBenjaminSpeed) {
+      useOperatorAbility = function useOperatorAbilityWithBenjaminSpeed(...args) {
+        const player = state.raid?.player;
+        const medic = player?.operatorId === 'medic';
+        const beforeUses = player?.skillUses ?? player?.abilityCharges ?? 0;
+        const result = useAbilityBeforeBenjaminSpeed.apply(this, args);
+        if (medic) {
+          const afterUses = player?.skillUses ?? player?.abilityCharges ?? beforeUses;
+          if (afterUses < beforeUses || (player?.damageImmunityTimer ?? 0) > 0) {
+            player.medicSpeedBoostTimer = Math.max(player.medicSpeedBoostTimer ?? 0, player.damageImmunityTimer ?? 8);
+            notify(
+              L('战术增益：免伤阶段移速提高 45%，后续减伤阶段仍保持 20% 移速加成。', 'Tactical Surge: +45% movement during immunity, then +20% during the damage-reduction phase.'),
+              'success',
+            );
+          }
+        }
+        return result;
+      };
+    }
+
     window.__sdrFinalPolishDebug = {
-      version: '20260927-final6',
+      version: '20261003-operator-power7',
       nonSolidLoot: true,
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
