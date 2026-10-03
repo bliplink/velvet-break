@@ -150,7 +150,7 @@
 
 
     const enemyUtilityDebug = window.__sdrEnemyUtilityDebug ?? {
-      version: '2026-10-03-ai-utility-v1',
+      version: '2026-10-03-ai-utility-v2-balanced',
       throws: 0,
       grenades: 0,
       smokes: 0,
@@ -198,7 +198,11 @@
       if (dist < 4 || dist > 34) return false;
       if (lineOfSightBlocked(enemy.x, enemy.z, player.x, player.z) && type !== 'grenade') return false;
 
-      enemy.utilityCooldown = type === 'smoke' ? 12 + Math.random() * 4 : 9 + Math.random() * 4;
+      enemy.utilityCooldown = type === 'smoke'
+        ? 14 + Math.random() * 5
+        : type === 'stun'
+          ? 18 + Math.random() * 4
+          : 16 + Math.random() * 5;
       enemy.utilityThrows = (enemy.utilityThrows ?? 0) + 1;
       enemyUtilityDebug.throws += 1;
       const targetX = player.x + (player.lastMoveX ?? 0) * 0.25;
@@ -208,8 +212,8 @@
         enemyUtilityDebug.smokes += 1;
         spawnEnemyUtilityPulse(enemy.x, enemy.z, '#a9b8bd', 0.7);
         raid.enemySmokeFields ??= [];
-        raid.enemySmokeFields.push({ x: enemy.x, z: enemy.z, radius: 5.5, timer: 5.5 });
-        enemy.smokeScreenTimer = 5.5;
+        raid.enemySmokeFields.push({ x: enemy.x, z: enemy.z, radius: 4.8, timer: 4.5 });
+        enemy.smokeScreenTimer = 4.5;
         enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
         return true;
       }
@@ -217,7 +221,7 @@
       if (type === 'stun') {
         enemyUtilityDebug.stuns += 1;
         spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
-        if (Math.hypot(player.x - targetX, player.z - targetZ) <= 5.2) {
+        if ((player.engineerSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 4.4) {
           player.engineerSlowTimer = Math.max(player.engineerSlowTimer ?? 0, 10);
           player.engineerStunTimer = 0;
           player.mobilityAction = null;
@@ -230,8 +234,8 @@
 
       enemyUtilityDebug.grenades += 1;
       spawnEnemyUtilityPulse(targetX, targetZ, '#ff9b5a', 0.95);
-      if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.8) {
-        const damage = enemy.type === 'bruiser' ? 55 : enemy.type === 'hunter' ? 42 : 34;
+      if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
+        const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
         applyDamageToPlayer(damage);
       }
       return true;
@@ -259,15 +263,15 @@
 
         const healthRatio = (enemy.health ?? 1) / Math.max(1, enemy.maxHealth ?? 1);
         let type = null;
-        if (healthRatio < 0.42 && dist < 28) type = 'smoke';
-        else if (dist >= 9 && dist <= 20 && Math.random() < 0.46) type = 'stun';
-        else if (dist >= 12 && dist <= 32 && Math.random() < 0.38) type = 'grenade';
+        if (healthRatio < 0.38 && dist < 24 && Math.random() < 0.72) type = 'smoke';
+        else if ((player.engineerSlowTimer ?? 0) <= 0 && dist >= 10 && dist <= 18 && Math.random() < 0.22) type = 'stun';
+        else if (dist >= 14 && dist <= 28 && Math.random() < 0.16) type = 'grenade';
         if (!type) {
-          enemy.utilityCooldown = 1.2 + Math.random() * 1.8;
+          enemy.utilityCooldown = 2.5 + Math.random() * 3.5;
           continue;
         }
         if (throwEnemyUtility(enemy, player, type)) {
-          raid.enemyUtilityGlobalCooldown = 1.8 + Math.random() * 0.8;
+          raid.enemyUtilityGlobalCooldown = 5 + Math.random() * 2;
         }
       }
     };
