@@ -152,9 +152,10 @@
       const echoUnlocked = Boolean(state.save.echoUnlocked);
       const echoEntry = {
         id: 'echo_unlock',
-        kind: 'prep',
+        kind: 'melee',
+        meleeId: 'echo',
         name: L('回声', 'Echo'),
-        description: L('永久解锁近战武器「回声」：12 米攻击范围、200 伤害、0.5 秒一刀，命中使目标暴露 5 秒；购买后每局都会自动携带。', 'Permanently unlock Echo: 12m range, 200 damage, 0.5s slash, reveals hit targets for 5s. Once purchased, Echo is carried into every raid.'),
+        description: L('商店永久武器：近战武器「回声」。12 米攻击范围、200 伤害、0.5 秒一刀，命中暴露 5 秒；购买后所有模式永久携带。', 'Permanent shop weapon: Echo. 12m range, 200 damage, 0.5s slash, 5s reveal; permanently carried in every mode after purchase.'),
         price: 100000,
         status: echoUnlocked ? L('永久拥有', 'Permanently owned') : L('永久解锁', 'Permanent unlock'),
         disabled: echoUnlocked,
@@ -192,15 +193,6 @@
         return true;
       };
     }
-
-    const basePanelEchoUnlockHandler = (event) => {
-      const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
-       if (!button || echoUnlocked()) return;
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      buyShopEntry('echo_unlock');
-    };
-    refs?.basePanel?.addEventListener?.('click', basePanelEchoUnlockHandler, true);
 
     const syncEchoBaseInfo = () => {
       // Echo controls are intentionally not repeated in the in-raid/loadout hint area.
