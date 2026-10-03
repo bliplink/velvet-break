@@ -7,6 +7,7 @@ const checks = [
   ['window-opacity', 'node', ['scripts/window-opacity-smoke.cjs']],
   ['performance-rescue', 'node', ['scripts/performance-rescue-smoke.cjs']],
   ['fair-vision-canister', 'node', ['scripts/fair-vision-canister-smoke.cjs']],
+  ['ai-utility-building', 'node', ['scripts/ai-utility-building-smoke.cjs']],
   ['polish-v2', 'node', ['scripts/polish-v2-smoke.cjs']],
   ['operator-regression', 'node', ['scripts/operator-regression.cjs']],
   ['operator-power-live', 'node', ['scripts/operator-power-smoke.cjs']],
