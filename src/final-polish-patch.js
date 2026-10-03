@@ -86,20 +86,30 @@
       const candidates = new Set([
         ...(world?.obstacleMeshes ?? []),
         ...(structures?.meshes ?? []),
-        ...(scene?.meshes ?? []).filter(mesh =>
-          /(?:wall|roof|floor|building|obstacle|stair|ladder|awning|door|cover|divider|window-frame)/i.test(mesh?.name ?? '') &&
-          !/window-pane|lamp|beacon|halo|glow/i.test(mesh?.name ?? '')
-        ),
+        ...(scene?.meshes ?? []).filter(mesh => {
+          const name = String(mesh?.name ?? '');
+          const parentName = String(mesh?.parent?.name ?? '');
+          const metadata = mesh?.metadata ?? {};
+          const structural =
+            Boolean(metadata.structureId || metadata.obstacleId || metadata.raycastTarget === 'obstacle') ||
+            /(?:wall|roof|floor|building|obstacle|stair|ladder|awning|door|cover|divider|window-frame|facade|warehouse|hangar|bunker|depot|silo|office|apartment)/i.test(name) ||
+            /^decor-/.test(parentName);
+          const intentionallyTransparent = /window-pane|lamp|beacon|halo|glow|smoke|glass/i.test(name);
+          return structural && !intentionallyTransparent;
+        }),
       ]);
       for (const mesh of candidates) {
         const material = mesh?.material;
         if (!material) continue;
+        mesh.visibility = 1;
+        if ('isVisible' in mesh) mesh.isVisible = true;
         material.alpha = 1;
         if ('useAlphaFromDiffuseTexture' in material) material.useAlphaFromDiffuseTexture = false;
         if ('opacityTexture' in material) material.opacityTexture = null;
         if ('alphaMode' in material && window.BABYLON?.Engine) material.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
         if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
         material.needDepthPrePass = false;
+        if ('backFaceCulling' in material) material.backFaceCulling = false;
       }
     };
     forceOpaqueBuildingMeshes();
