@@ -150,7 +150,7 @@
 
 
     const enemyUtilityDebug = window.__sdrEnemyUtilityDebug ?? {
-      version: '2026-10-03-ai-utility-v2-balanced',
+      version: '2026-10-03-ai-utility-v3-soft-stun',
       throws: 0,
       grenades: 0,
       smokes: 0,
@@ -221,13 +221,12 @@
       if (type === 'stun') {
         enemyUtilityDebug.stuns += 1;
         spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
-        if ((player.engineerSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 4.4) {
-          player.engineerSlowTimer = Math.max(player.engineerSlowTimer ?? 0, 10);
-          player.engineerStunTimer = 0;
+        if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
+          player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
+          player.aiStunMobilityLockTimer = Math.max(player.aiStunMobilityLockTimer ?? 0, 2.5);
           player.mobilityAction = null;
-          player.mobilityCooldown = Math.max(player.mobilityCooldown ?? 0, 10);
-          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.35);
-          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 2.4);
+          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.2);
+          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.4);
         }
         return true;
       }
@@ -264,7 +263,7 @@
         const healthRatio = (enemy.health ?? 1) / Math.max(1, enemy.maxHealth ?? 1);
         let type = null;
         if (healthRatio < 0.38 && dist < 24 && Math.random() < 0.72) type = 'smoke';
-        else if ((player.engineerSlowTimer ?? 0) <= 0 && dist >= 10 && dist <= 18 && Math.random() < 0.22) type = 'stun';
+        else if ((player.aiStunSlowTimer ?? 0) <= 0 && dist >= 10 && dist <= 18 && Math.random() < 0.18) type = 'stun';
         else if (dist >= 14 && dist <= 28 && Math.random() < 0.16) type = 'grenade';
         if (!type) {
           enemy.utilityCooldown = 2.5 + Math.random() * 3.5;
@@ -275,6 +274,14 @@
         }
       }
     };
+
+    const playerSpeedBeforeAiStun = typeof getPlayerMoveSpeed === 'function' ? getPlayerMoveSpeed : null;
+    if (playerSpeedBeforeAiStun) {
+      getPlayerMoveSpeed = function getPlayerMoveSpeedWithAiStun(player, sprinting = false) {
+        const speed = playerSpeedBeforeAiStun.call(this, player, sprinting);
+        return player && (player.aiStunSlowTimer ?? 0) > 0 ? speed * 0.45 : speed;
+      };
+    }
 
     const createEnemyBeforeReview = createEnemy;
     createEnemy = function createStrengthenedEnemy(spawn, index) {
@@ -328,7 +335,7 @@
 
     const mobilityBeforeReview = beginMobilityAction;
     beginMobilityAction = function beginStrengthenedEnemyMobility(actor, ...args) {
-      if ((actor?.engineerSlowTimer ?? 0) > 0) return false;
+      if ((actor?.engineerSlowTimer ?? 0) > 0 || (actor?.aiStunMobilityLockTimer ?? 0) > 0) return false;
       const started = mobilityBeforeReview(actor, ...args);
       if (started && isEnemyActor(actor) && actor.mobilityAction) {
         actor.mobilityAction.speed *= actor.isNamelessBoss ? 1.32 : 1.26;
@@ -760,7 +767,11 @@
     const updateRaidBeforeReview = updateRaid;
     updateRaid = function updateStrengthenedRaid(dt) {
       const player = state.raid?.player;
-      if (player) player.engineerSlowTimer = Math.max(0, (player.engineerSlowTimer ?? 0) - dt);
+      if (player) {
+        player.engineerSlowTimer = Math.max(0, (player.engineerSlowTimer ?? 0) - dt);
+        player.aiStunSlowTimer = Math.max(0, (player.aiStunSlowTimer ?? 0) - dt);
+        player.aiStunMobilityLockTimer = Math.max(0, (player.aiStunMobilityLockTimer ?? 0) - dt);
+      }
       const result = updateRaidBeforeReview(dt);
       updateEnemyUtilities(dt);
       const boss = state.raid?.enemies?.find(enemy => enemy.isNamelessBoss && !enemy.dead);
