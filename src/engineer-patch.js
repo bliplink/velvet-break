@@ -844,7 +844,7 @@
         system.maxLifeTime = smoke ? 3.4 : 1.05;
         system.minSize = smoke ? 1.1 : 0.45;
         system.maxSize = smoke ? 3.2 : 2.15;
-        system.emitRate = smoke ? 16 : 128;
+        system.emitRate = smoke ? 4 : 30;
         system.minEmitPower = smoke ? 0.35 : 1.1;
         system.maxEmitPower = smoke ? 0.85 : 3.1;
         system.updateSpeed = 0.012;
@@ -875,12 +875,12 @@
         system.start();
         return system;
       };
-      const systems = [makeSystem('incendiary-flame-particles', 420), makeSystem('incendiary-smoke-particles', 120, true)];
+      const systems = [makeSystem('incendiary-flame-particles', 96), makeSystem('incendiary-smoke-particles', 40, true)];
       const light = new BABYLON.PointLight('incendiary-fire-light', new BABYLON.Vector3(0, 1.2, 0), scene);
       light.parent = root;
       light.diffuse = BABYLON.Color3.FromHexString('#ff6a25');
-      light.range = 24;
-      light.intensity = 0.56;
+      light.range = 12;
+      light.intensity = 0.42;
       raid.incendiaryFields ??= [];
       const field = { ...target, root, systems, light, particlesActive: true, phase: 0, life: FIRE_DURATION };
       raid.incendiaryFields.push(field);
@@ -1135,29 +1135,37 @@
           for (const system of field.systems) shouldRun ? system.start() : system.stop();
           field.particlesActive = shouldRun;
         }
-        if (field.systems?.[0]) field.systems[0].emitRate = distance > 55 ? 42 : 128;
-        if (field.systems?.[1]) field.systems[1].emitRate = distance > 55 ? 5 : 16;
-        if (field.light) field.light.intensity = distance > 60 ? 0 : 0.48 + Math.sin(field.phase * 8.4) * 0.1;
+        if (field.systems?.[0]) field.systems[0].emitRate = distance > 45 ? 10 : 30;
+        if (field.systems?.[1]) field.systems[1].emitRate = distance > 45 ? 1 : 4;
+        if (field.light) field.light.intensity = distance > 42 ? 0 : 0.34 + Math.sin(field.phase * 7.2) * 0.07;
       }
-      for (const enemy of raid.enemies ?? []) {
-        if (enemy.dead || enemy.despawned) continue;
-        const inside = (raid.incendiaryGrid?.at(enemy.x, enemy.z) ?? []).some(field => rules.fireContains(field, enemy, actorFeet, geometryBlocked));
-        if (inside) {
-          enemy.incendiaryAfterburn = 3;
-          enemy.incendiaryOutsideTick = 0;
-          enemy.incendiaryInsideTick = (enemy.incendiaryInsideTick ?? 0) + dt;
-          while (enemy.incendiaryInsideTick >= 1 && !enemy.dead) {
-            enemy.incendiaryInsideTick -= 1;
-            damageEnemy(enemy, 100, { utilityKind: 'incendiary', ignoreSmoke: true, bypassArmor: true });
-          }
-        } else {
-          enemy.incendiaryInsideTick = 0;
-          const burning = Math.min(dt, enemy.incendiaryAfterburn ?? 0);
-          enemy.incendiaryAfterburn = Math.max(0, (enemy.incendiaryAfterburn ?? 0) - dt);
-          enemy.incendiaryOutsideTick = (enemy.incendiaryOutsideTick ?? 0) + burning;
-          while (enemy.incendiaryOutsideTick >= 1 - 1e-8 && !enemy.dead) {
-            enemy.incendiaryOutsideTick = Math.max(0, enemy.incendiaryOutsideTick - 1);
-            damageEnemy(enemy, 50, { utilityKind: 'incendiary', ignoreSmoke: true, bypassArmor: true });
+
+      // Fire containment/geometry checks are expensive. Run them at 5 Hz while
+      // preserving the same 1-second damage cadence and afterburn totals.
+      raid.incendiaryDamageAccumulator = (raid.incendiaryDamageAccumulator ?? 0) + dt;
+      if (raid.incendiaryDamageAccumulator >= 0.2) {
+        const fireDt = raid.incendiaryDamageAccumulator;
+        raid.incendiaryDamageAccumulator = 0;
+        for (const enemy of raid.enemies ?? []) {
+          if (enemy.dead || enemy.despawned) continue;
+          const inside = (raid.incendiaryGrid?.at(enemy.x, enemy.z) ?? []).some(field => rules.fireContains(field, enemy, actorFeet, geometryBlocked));
+          if (inside) {
+            enemy.incendiaryAfterburn = 3;
+            enemy.incendiaryOutsideTick = 0;
+            enemy.incendiaryInsideTick = (enemy.incendiaryInsideTick ?? 0) + fireDt;
+            while (enemy.incendiaryInsideTick >= 1 && !enemy.dead) {
+              enemy.incendiaryInsideTick -= 1;
+              damageEnemy(enemy, 100, { utilityKind: 'incendiary', ignoreSmoke: true, bypassArmor: true });
+            }
+          } else {
+            enemy.incendiaryInsideTick = 0;
+            const burning = Math.min(fireDt, enemy.incendiaryAfterburn ?? 0);
+            enemy.incendiaryAfterburn = Math.max(0, (enemy.incendiaryAfterburn ?? 0) - fireDt);
+            enemy.incendiaryOutsideTick = (enemy.incendiaryOutsideTick ?? 0) + burning;
+            while (enemy.incendiaryOutsideTick >= 1 - 1e-8 && !enemy.dead) {
+              enemy.incendiaryOutsideTick = Math.max(0, enemy.incendiaryOutsideTick - 1);
+              damageEnemy(enemy, 50, { utilityKind: 'incendiary', ignoreSmoke: true, bypassArmor: true });
+            }
           }
         }
       }
