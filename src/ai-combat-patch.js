@@ -100,8 +100,10 @@
       if (enemy.aiStrengthProfile === 'normal') return enemy;
       enemy.aiStrengthProfile = 'normal';
       const ratio = enemy.maxHealth > 0 ? enemy.health / enemy.maxHealth : 1;
-      enemy.maxHealth = Math.round((enemy.maxHealth ?? enemy.health ?? 100) * 1.35);
-      enemy.health = Math.round(enemy.maxHealth * ratio);
+      const baseHealth = enemy.maxHealth ?? enemy.health ?? 100;
+      const healthMult = enemy.type === 'bruiser' ? 0.78 : enemy.type === 'hunter' ? 0.72 : 0.68;
+      enemy.maxHealth = Math.max(120, Math.round(baseHealth * healthMult));
+      enemy.health = Math.max(1, Math.round(enemy.maxHealth * ratio));
       enemy.damage = Math.round((enemy.damage ?? 10) * 1.22);
       enemy.speed = (enemy.speed ?? 2.5) * 1.35;
       enemy.preferredRange = (enemy.preferredRange ?? 16) * 1.22;
@@ -137,7 +139,133 @@
       enemy.strafeDirection = 1;
       enemy.routeIndex = 0;
       enemy.despawned = false;
+      enemy.utilityCooldown = 2.5 + Math.random() * 3.5;
+      enemy.utilityThrowTimer = 0;
+      enemy.utilityType = null;
+      enemy.utilityTargetX = 0;
+      enemy.utilityTargetZ = 0;
+      enemy.utilityThrows = 0;
       return enemy;
+    };
+
+
+    const enemyUtilityDebug = window.__sdrEnemyUtilityDebug ?? {
+      version: '2026-10-03-ai-utility-v1',
+      throws: 0,
+      grenades: 0,
+      smokes: 0,
+      stuns: 0,
+    };
+    window.__sdrEnemyUtilityDebug = enemyUtilityDebug;
+
+    const spawnEnemyUtilityPulse = (x, z, color, size = 1.1) => {
+      if (typeof BABYLON === 'undefined' || !scene) return null;
+      const mat = new BABYLON.StandardMaterial(`enemy-utility-mat-${Date.now()}-${Math.random()}`, scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString(color);
+      mat.emissiveColor = mat.diffuseColor.scale(1.25);
+      mat.alpha = 0.86;
+      mat.disableLighting = true;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = true;
+      const mesh = BABYLON.MeshBuilder.CreateSphere(`enemy-utility-fx-${Date.now()}-${Math.random()}`, {
+        diameter: size,
+        segments: 8,
+      }, scene);
+      mesh.position.set(x, 0.42, z);
+      mesh.material = mat;
+      mesh.isPickable = false;
+      mesh.renderingGroupId = 2;
+      world.effects ??= [];
+      world.effects.push({
+        mesh,
+        material: mat,
+        timer: 0.42,
+        duration: 0.42,
+        update(progress) {
+          mesh.scaling.setAll(0.55 + progress * 1.9);
+          mat.alpha = (1 - progress) * 0.86;
+        },
+      });
+      return mesh;
+    };
+
+    const throwEnemyUtility = (enemy, player, type) => {
+      const raid = state.raid;
+      if (!raid || !enemy || !player || enemy.dead || enemy.despawned) return false;
+      const dx = player.x - enemy.x;
+      const dz = player.z - enemy.z;
+      const dist = Math.hypot(dx, dz);
+      if (dist < 4 || dist > 34) return false;
+      if (lineOfSightBlocked(enemy.x, enemy.z, player.x, player.z) && type !== 'grenade') return false;
+
+      enemy.utilityCooldown = type === 'smoke' ? 12 + Math.random() * 4 : 9 + Math.random() * 4;
+      enemy.utilityThrows = (enemy.utilityThrows ?? 0) + 1;
+      enemyUtilityDebug.throws += 1;
+      const targetX = player.x + (player.lastMoveX ?? 0) * 0.25;
+      const targetZ = player.z + (player.lastMoveZ ?? 0) * 0.25;
+
+      if (type === 'smoke') {
+        enemyUtilityDebug.smokes += 1;
+        spawnEnemyUtilityPulse(enemy.x, enemy.z, '#a9b8bd', 0.7);
+        raid.enemySmokeFields ??= [];
+        raid.enemySmokeFields.push({ x: enemy.x, z: enemy.z, radius: 5.5, timer: 5.5 });
+        enemy.smokeScreenTimer = 5.5;
+        enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
+        return true;
+      }
+
+      if (type === 'stun') {
+        enemyUtilityDebug.stuns += 1;
+        spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
+        if (Math.hypot(player.x - targetX, player.z - targetZ) <= 5.2) {
+          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.85);
+          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.8);
+        }
+        return true;
+      }
+
+      enemyUtilityDebug.grenades += 1;
+      spawnEnemyUtilityPulse(targetX, targetZ, '#ff9b5a', 0.95);
+      if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.8) {
+        const damage = enemy.type === 'bruiser' ? 55 : enemy.type === 'hunter' ? 42 : 34;
+        applyDamageToPlayer(damage);
+      }
+      return true;
+    };
+
+    const updateEnemyUtilities = (dt) => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (!raid || !player) return;
+      raid.enemyUtilityGlobalCooldown = Math.max(0, (raid.enemyUtilityGlobalCooldown ?? 0) - dt);
+      for (let i = (raid.enemySmokeFields?.length ?? 0) - 1; i >= 0; i--) {
+        const field = raid.enemySmokeFields[i];
+        field.timer -= dt;
+        if (field.timer <= 0) raid.enemySmokeFields.splice(i, 1);
+      }
+      for (const enemy of raid.enemies ?? []) {
+        if (enemy.dead || enemy.despawned || enemy.isRangeTarget || enemy.isNamelessBoss) continue;
+        enemy.utilityCooldown = Math.max(0, (enemy.utilityCooldown ?? 0) - dt);
+        enemy.smokeScreenTimer = Math.max(0, (enemy.smokeScreenTimer ?? 0) - dt);
+        if ((enemy.utilityCooldown ?? 0) > 0 || (raid.enemyUtilityGlobalCooldown ?? 0) > 0) continue;
+
+        const dist = distance2D(enemy.x, enemy.z, player.x, player.z);
+        const active = (enemy.alertTimer ?? 0) > 0 || enemy.combatState === 'combat' || enemy.combatState === 'search';
+        if (!active || dist < 4 || dist > 34) continue;
+
+        const healthRatio = (enemy.health ?? 1) / Math.max(1, enemy.maxHealth ?? 1);
+        let type = null;
+        if (healthRatio < 0.42 && dist < 28) type = 'smoke';
+        else if (dist >= 9 && dist <= 20 && Math.random() < 0.46) type = 'stun';
+        else if (dist >= 12 && dist <= 32 && Math.random() < 0.38) type = 'grenade';
+        if (!type) {
+          enemy.utilityCooldown = 1.2 + Math.random() * 1.8;
+          continue;
+        }
+        if (throwEnemyUtility(enemy, player, type)) {
+          raid.enemyUtilityGlobalCooldown = 1.8 + Math.random() * 0.8;
+        }
+      }
     };
 
     const createEnemyBeforeReview = createEnemy;
@@ -623,6 +751,7 @@
     const updateRaidBeforeReview = updateRaid;
     updateRaid = function updateStrengthenedRaid(dt) {
       const result = updateRaidBeforeReview(dt);
+      updateEnemyUtilities(dt);
       const boss = state.raid?.enemies?.find(enemy => enemy.isNamelessBoss && !enemy.dead);
       if (boss) {
         strengthenEnemy(boss);
