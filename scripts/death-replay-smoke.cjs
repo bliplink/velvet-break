@@ -32,7 +32,25 @@ async function main() {
         );
       }
 
-      for (let i = 0; i < 28; i++) update(0.08);
+      state.input.fireHeld = true;
+      state.raid.player.fireCooldown = 0.12;
+      for (let i = 0; i < 10; i++) update(0.06);
+      state.input.fireHeld = false;
+
+      state.raid.player.reloadTimer = 0.9;
+      for (let i = 0; i < 8; i++) update(0.06);
+
+      state.raid.player.mobilityAction = {
+        type: 'dodge',
+        timer: 0.42,
+        duration: 0.42,
+        dirX: 1,
+        dirZ: 0,
+      };
+      for (let i = 0; i < 5; i++) update(0.06);
+      state.raid.player.mobilityAction = null;
+
+      for (let i = 0; i < 10; i++) update(0.06);
       finishRaid(false, 'player_killed', false);
     });
 
@@ -46,6 +64,10 @@ async function main() {
       result: !refs.resultOverlay.classList.contains('hidden'),
       version: window.__sdrReplayDebug?.version,
       duration: window.__sdrReplayDebug?.duration,
+      recordedActions: window.__sdrReplayDebug?.recordedPlayerActions ?? [],
+      currentAction: window.__sdrReplayDebug?.currentPlayerAction ?? null,
+      phase: document.getElementById('deathReplayPhase')?.textContent,
+      impactText: document.getElementById('deathReplayImpactText')?.textContent,
     }));
 
     await page.evaluate(() => {
@@ -94,8 +116,13 @@ async function main() {
       !active.visible ||
       !active.title.includes('淘汰回放') ||
       active.result ||
-      active.version !== '2026-09-19-killcam-v3' ||
+      active.version !== '2026-10-03-killcam-v4' ||
       active.duration < 3.5 ||
+      !active.recordedActions.some(action => /开火|FIRING/.test(action)) ||
+      !active.recordedActions.some(action => /换弹|RELOADING/.test(action)) ||
+      !active.recordedActions.some(action => /闪避|DODGING/.test(action)) ||
+      !active.phase?.includes('玩家当时') ||
+      !active.impactText ||
       !impact.impactShown ||
       !impact.tracerShown ||
       !impact.freezeShown ||
