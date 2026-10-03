@@ -95,14 +95,24 @@
         const material = mesh?.material;
         if (!material) continue;
         material.alpha = 1;
+        if ('useAlphaFromDiffuseTexture' in material) material.useAlphaFromDiffuseTexture = false;
+        if ('opacityTexture' in material) material.opacityTexture = null;
+        if ('alphaMode' in material && window.BABYLON?.Engine) material.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
         if (window.BABYLON?.Material) material.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+        material.needDepthPrePass = false;
       }
     };
     forceOpaqueBuildingMeshes();
-    // Catch late-created shells during startup without a permanent whole-scene polling loop.
+    // Keep a low-frequency structural opacity guard alive. Several late patches
+    // replace or clone building materials after startup; without this, those
+    // meshes can become transparent again on longer sessions.
     setTimeout(forceOpaqueBuildingMeshes, 600);
     setTimeout(forceOpaqueBuildingMeshes, 1800);
     setTimeout(forceOpaqueBuildingMeshes, 4200);
+    const opaqueGuardTimer = window.setInterval(() => {
+      if (state.mode !== 'raid' || !scene || scene.isDisposed?.()) return;
+      forceOpaqueBuildingMeshes();
+    }, 2200);
 
     // Lightweight danger readout: nearby living enemies only; no wallhack positions.
     const ensureDangerBadge = () => {
