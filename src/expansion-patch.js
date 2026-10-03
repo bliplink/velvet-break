@@ -2320,6 +2320,17 @@
       if (!raid) return;
       const actors = [raid.player, ...(raid.enemies ?? [])].filter(Boolean);
       for (const actor of actors) {
+        const currentInsideId = actor.insideBuildingId;
+        const currentInsideObstacle = currentInsideId ? obstacleDefs.find((entry) => entry.id === currentInsideId) : null;
+        if (
+          currentInsideObstacle &&
+          actor.x > currentInsideObstacle.x - currentInsideObstacle.w / 2 + 0.05 &&
+          actor.x < currentInsideObstacle.x + currentInsideObstacle.w / 2 - 0.05 &&
+          actor.z > currentInsideObstacle.z - currentInsideObstacle.d / 2 + 0.05 &&
+          actor.z < currentInsideObstacle.z + currentInsideObstacle.d / 2 - 0.05
+        ) {
+          continue;
+        }
         actor.insideBuildingId = null;
         for (const id of INTERACTIVE_BUILDING_IDS) {
           const walls = obstacleDefs.filter((entry) => entry.structureId === id && String(entry.id).includes('-wall-'));
