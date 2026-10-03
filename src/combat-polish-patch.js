@@ -24,7 +24,7 @@
     window.__sdrCombatPolishApplied = true;
 
     const debug = {
-      version: '2026-09-19-combat-polish-v4',
+      version: '2026-10-03-combat-polish-v5',
       shotCount: 0,
       hitCount: 0,
       killCount: 0,
@@ -163,23 +163,42 @@
         .filter((entry) => entry.id !== 'emergency_funding');
     };
 
-    state.save.echoUnlocked = Boolean(state.save.echoUnlocked);
+    let persistedEchoUnlocked = false;
+    try {
+      const rawSave = JSON.parse(localStorage.getItem('iron-extraction-save-v1') || '{}');
+      persistedEchoUnlocked = Boolean(rawSave.echoUnlocked || rawSave.armory?.echoUnlocked);
+    } catch (_) {}
+    state.save.echoUnlocked = Boolean(state.save.echoUnlocked || persistedEchoUnlocked);
     state.save.echoSmokeUnlocked = false;
     persistSave();
     const echoUnlocked = () => Boolean(state.save.echoUnlocked || state.raid?.player?.echoKnifeEquipped);
 
+    const buyBeforeEcho = typeof buyShopEntry === 'function' ? buyShopEntry : null;
+    if (buyBeforeEcho) {
+      buyShopEntry = function buyShopEntryWithEcho(id, ...args) {
+        if (id !== 'echo_unlock') return buyBeforeEcho.call(this, id, ...args);
+        if (state.save.echoUnlocked) return false;
+        const price = 100000;
+        if ((state.save.money ?? 0) < price) {
+          notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
+          return false;
+        }
+        state.save.money -= price;
+        state.save.echoUnlocked = true;
+        if (state.raid?.player) state.raid.player.echoKnifeEquipped = true;
+        persistSave();
+        renderBasePanel();
+        notify(L('回声已永久解锁：所有模式都会自动携带。', 'Echo permanently unlocked and carried in every mode.'), 'success');
+        return true;
+      };
+    }
+
     const basePanelEchoUnlockHandler = (event) => {
       const button = event.target?.closest?.('[data-shop-id="echo_unlock"]');
        if (!button || echoUnlocked()) return;
-      if ((state.save.money ?? 0) < 100000) {
-        notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
-        return;
-      }
-      state.save.money -= 100000;
-      state.save.echoUnlocked = true;
-      persistSave();
-      renderBasePanel();
-      notify(L('回声已永久解锁：之后每局都会自动携带。', 'Echo permanently unlocked and will be carried into every raid.'), 'success');
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      buyShopEntry('echo_unlock');
     };
     refs?.basePanel?.addEventListener?.('click', basePanelEchoUnlockHandler, true);
 
@@ -359,6 +378,73 @@
       };
     }
 
+    const echoSlashEffects = [];
+
+    const spawnEchoSlashEffect = (player, target = null) => {
+      if (!player || !scene?.activeCamera) return null;
+      const cameraRef = scene.activeCamera;
+      const forward = cameraRef.getForwardRay?.(1)?.direction?.normalize?.()
+        ?? new BABYLON.Vector3(Math.sin(player.yaw ?? 0), 0, Math.cos(player.yaw ?? 0));
+      const right = BABYLON.Vector3.Cross(BABYLON.Axis.Y, forward).normalize();
+      const up = BABYLON.Axis.Y;
+      const center = cameraRef.position
+        .add(forward.scale(1.25))
+        .add(up.scale(-0.08));
+      const points = [];
+      for (let i = 0; i <= 10; i += 1) {
+        const t = i / 10;
+        const angle = -1.05 + t * 2.1;
+        points.push(
+          center
+            .add(right.scale(Math.sin(angle) * 0.72))
+            .add(up.scale(Math.cos(angle) * 0.38)),
+        );
+      }
+      const mat = new BABYLON.StandardMaterial(`echo-slash-mat-${Date.now()}`, scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString('#7cecff');
+      mat.emissiveColor = BABYLON.Color3.FromHexString('#35d9ff').scale(1.45);
+      mat.specularColor = BABYLON.Color3.FromHexString('#ffffff');
+      mat.disableLighting = true;
+      mat.alpha = 0.92;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = true;
+      if (BABYLON.Engine?.ALPHA_ADD !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+
+      const slash = BABYLON.MeshBuilder.CreateTube(`echo-slash-${Date.now()}`, {
+        path: points,
+        radius: 0.026,
+        tessellation: 8,
+        cap: BABYLON.Mesh.CAP_ALL,
+      }, scene);
+      slash.material = mat;
+      slash.isPickable = false;
+      slash.renderingGroupId = 3;
+      slash.alwaysSelectAsActiveMesh = true;
+
+      let impact = null;
+      let impactMat = null;
+      if (target) {
+        impactMat = new BABYLON.StandardMaterial(`echo-impact-mat-${Date.now()}`, scene);
+        impactMat.diffuseColor = BABYLON.Color3.FromHexString('#b9f8ff');
+        impactMat.emissiveColor = BABYLON.Color3.FromHexString('#42dbff').scale(1.3);
+        impactMat.disableLighting = true;
+        impactMat.alpha = 0.78;
+        impactMat.disableDepthWrite = true;
+        impact = BABYLON.MeshBuilder.CreateTorus(`echo-impact-ring-${Date.now()}`, {
+          diameter: 0.9,
+          thickness: 0.055,
+          tessellation: 32,
+        }, scene);
+        impact.position.set(target.x, 1.08, target.z);
+        impact.rotation.x = Math.PI / 2;
+        impact.material = impactMat;
+        impact.isPickable = false;
+        impact.renderingGroupId = 3;
+      }
+      echoSlashEffects.push({ slash, mat, impact, impactMat, age: 0, duration: 0.26 });
+      return slash;
+    };
+
     const makeEchoKnifeVisual = () => {
       const root = new BABYLON.TransformNode('echo-knife-view', scene);
       root.parent = scene.activeCamera;
@@ -499,7 +585,8 @@
       marker.classList.toggle('is-boss', Boolean(target.isNamelessBoss));
       marker.hidden = false;
       marker.textContent = `${enemyLabel(target)} · ${target.echoRevealTimer.toFixed(1)}s`;
-      if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(target.x, 1.1, target.z), '#72d9ff', 0.9, 'hard');
+      spawnEchoSlashEffect(player, target);
+      if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(target.x, 1.1, target.z), '#72d9ff', 1.2, 'hard');
       if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(target.x, 1, target.z), 'hard');
       // No in-raid Echo text prompt; hit feedback stays visual/audio only.
       return target;
@@ -520,6 +607,7 @@
       }
       player.echoKnifeCooldown = ECHO_COOLDOWN;
       player.echoKnifeAction = { timer: 0, duration: ECHO_SWING_DURATION, applied: false, visual: makeEchoKnifeVisual() };
+      spawnEchoSlashEffect(player);
       state.input.fireHeld = false;
       debug.echoSwingCount += 1;
       return true;
@@ -580,6 +668,23 @@
       for (const enemy of state.raid?.enemies ?? []) {
         enemy.echoRevealTimer = Math.max(0, (enemy.echoRevealTimer ?? 0) - dt);
       }
+      for (let i = echoSlashEffects.length - 1; i >= 0; i -= 1) {
+        const fx = echoSlashEffects[i];
+        fx.age += dt;
+        const p = Math.min(1, fx.age / Math.max(0.001, fx.duration));
+        if (fx.mat) fx.mat.alpha = (1 - p) * 0.92;
+        if (fx.slash) fx.slash.scaling.setAll(1 + p * 0.28);
+        if (fx.impactMat) fx.impactMat.alpha = (1 - p) * 0.78;
+        if (fx.impact) fx.impact.scaling.setAll(0.8 + p * 1.1);
+        if (p >= 1) {
+          fx.slash?.dispose?.();
+          fx.impact?.dispose?.();
+          fx.mat?.dispose?.();
+          fx.impactMat?.dispose?.();
+          echoSlashEffects.splice(i, 1);
+        }
+      }
+
       const player = state.raid?.player;
       if (player) {
         player.echoKnifeCooldown = Math.max(0, (player.echoKnifeCooldown ?? 0) - dt);
@@ -650,6 +755,12 @@
       player?.echoKnifeInspect?.visual?.dispose(false, true);
       for (const marker of echoMarkers.values()) marker.remove();
       echoMarkers.clear();
+      for (const fx of echoSlashEffects.splice(0)) {
+        fx.slash?.dispose?.();
+        fx.impact?.dispose?.();
+        fx.mat?.dispose?.();
+        fx.impactMat?.dispose?.();
+      }
       return clearBeforeEcho();
     };
 
