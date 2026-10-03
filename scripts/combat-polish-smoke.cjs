@@ -296,7 +296,7 @@ const { chromium } = require('playwright');
       rareLoot.last?.rarity === 'legendary' &&
       rareLoot.bannerActive &&
       /QA Legendary Core/.test(rareLoot.bannerText) &&
-      rareLoot.version === '2026-09-19-combat-polish-v4' &&
+      rareLoot.version === '2026-10-03-combat-polish-v5' &&
       echo.actionStarted &&
       echo.damage >= 199 && echo.damage <= 201 &&
       echo.revealTimer >= 4.99 && echo.revealTimer <= 5.01 &&
