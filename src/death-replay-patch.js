@@ -45,6 +45,25 @@
         yaw: player.yaw ?? 0,
         pitch: player.pitch ?? 0,
         health: player.health ?? 0,
+        armor: player.armor ?? 0,
+        weapon: player.weapon ?? 'rifle',
+        ammoInMag: player.ammoInMag ?? 0,
+        fireCooldown: player.fireCooldown ?? 0,
+        reloadTimer: player.reloadTimer ?? 0,
+        healTimer: player.healTimer ?? 0,
+        extractionProgress: player.extractionProgress ?? 0,
+        sprinting: Boolean(state.input?.sprintHeld),
+        firing: Boolean(state.input?.fireHeld) || (player.fireCooldown ?? 0) > 0.03,
+        aiming: Boolean(state.input?.aimHeld),
+        prone: Boolean(player.isProne),
+        mobilityType: player.mobilityAction?.type ?? null,
+        mobilityProgress: player.mobilityAction
+          ? clamp01(1 - (player.mobilityAction.timer ?? 0) / Math.max(0.001, player.mobilityAction.duration ?? 1))
+          : 0,
+        structureType: player.structureAction?.type ?? null,
+        structureProgress: player.structureAction
+          ? clamp01(1 - (player.structureAction.timer ?? 0) / Math.max(0.001, player.structureAction.duration ?? 1))
+          : 0,
       },
       enemies: raid.enemies.filter((enemy) => !enemy.despawned &&
         (Math.hypot(enemy.x - player.x, enemy.z - player.z) < 86 || enemy.id === raid.replayAttackerId))
@@ -253,6 +272,26 @@
   }, true);
 
   const findFrameEnemy = (frame, id) => frame?.enemies?.find((entry) => entry.id === id) ?? null;
+  const getPlayerActionLabel = (player) => {
+    if (!player) return L('移动中', 'MOVING');
+    if ((player.health ?? 1) <= 0) return L('被击倒', 'DOWNED');
+    if (player.structureType === 'window') return L('翻窗', 'VAULTING');
+    if (player.structureType === 'ladder') return L('攀爬梯子', 'CLIMBING LADDER');
+    if (player.structureType === 'stairs') return L('上下楼梯', 'USING STAIRS');
+    if (player.mobilityType === 'slide') return L('滑铲', 'SLIDING');
+    if (player.mobilityType === 'roll') return L('翻滚', 'ROLLING');
+    if (player.mobilityType === 'dodge') return L('闪避', 'DODGING');
+    if (player.mobilityType === 'jump') return L('跳跃', 'JUMPING');
+    if ((player.reloadTimer ?? 0) > 0) return L('换弹', 'RELOADING');
+    if ((player.healTimer ?? 0) > 0) return L('治疗 / 使用物品', 'HEALING / USING ITEM');
+    if ((player.extractionProgress ?? 0) > 0) return L('撤离读条', 'EXTRACTING');
+    if (player.firing) return L('开火', 'FIRING');
+    if (player.aiming) return L('瞄准', 'AIMING');
+    if (player.prone) return L('趴下', 'PRONE');
+    if (player.sprinting) return L('冲刺', 'SPRINTING');
+    return L('移动 / 观察', 'MOVING / LOOKING');
+  };
+
 
   const startReplay = (frames, attackerId) => {
     if (!frames.length || !state.raid) return;
@@ -367,10 +406,62 @@
       yaw: interpolateAngle(current.player.yaw, next.player.yaw, blend),
       pitch: interpolate(current.player.pitch ?? 0, next.player.pitch ?? 0, blend),
       health: interpolate(current.player.health ?? 0, next.player.health ?? 0, blend),
+      armor: interpolate(current.player.armor ?? 0, next.player.armor ?? 0, blend),
+      weapon: current.player.weapon,
+      ammoInMag: current.player.ammoInMag ?? 0,
+      fireCooldown: current.player.fireCooldown ?? 0,
+      reloadTimer: current.player.reloadTimer ?? 0,
+      healTimer: current.player.healTimer ?? 0,
+      extractionProgress: current.player.extractionProgress ?? 0,
+      sprinting: current.player.sprinting,
+      firing: current.player.firing,
+      aiming: current.player.aiming,
+      prone: current.player.prone,
+      mobilityType: current.player.mobilityType,
+      mobilityProgress: interpolate(current.player.mobilityProgress ?? 0, next.player.mobilityProgress ?? current.player.mobilityProgress ?? 0, blend),
+      structureType: current.player.structureType,
+      structureProgress: interpolate(current.player.structureProgress ?? 0, next.player.structureProgress ?? current.player.structureProgress ?? 0, blend),
     };
 
     replay.avatar.root.position.set(player.x, player.y, player.z);
     replay.avatar.root.rotation.y = player.yaw;
+
+    const actionPhase = replay.elapsed * 12;
+    const legs = [replay.avatar.leftLeg, replay.avatar.rightLeg].filter(Boolean);
+    if (replay.avatar.leftLeg) replay.avatar.leftLeg.rotation.x = 0;
+    if (replay.avatar.rightLeg) replay.avatar.rightLeg.rotation.x = 0;
+    if (replay.avatar.leftArm) replay.avatar.leftArm.rotation.x = 0;
+    if (replay.avatar.rightArm) replay.avatar.rightArm.rotation.x = 0;
+    replay.avatar.root.rotation.x = 0;
+
+    if (player.structureType === 'window') {
+      const vault = Math.sin((player.structureProgress ?? 0) * Math.PI);
+      replay.avatar.root.position.y += vault * 0.34;
+      replay.avatar.root.rotation.x = -0.28 * vault;
+      if (replay.avatar.leftLeg) replay.avatar.leftLeg.rotation.x = 0.72 * vault;
+      if (replay.avatar.rightLeg) replay.avatar.rightLeg.rotation.x = -0.48 * vault;
+    } else if (player.structureType === 'ladder') {
+      const climb = Math.sin(actionPhase);
+      if (replay.avatar.leftLeg) replay.avatar.leftLeg.rotation.x = climb * 0.72;
+      if (replay.avatar.rightLeg) replay.avatar.rightLeg.rotation.x = -climb * 0.72;
+      if (replay.avatar.leftArm) replay.avatar.leftArm.rotation.x = -climb * 0.65;
+      if (replay.avatar.rightArm) replay.avatar.rightArm.rotation.x = climb * 0.65;
+    } else if (player.structureType === 'stairs' || player.sprinting) {
+      const stride = Math.sin(actionPhase) * (player.sprinting ? 0.78 : 0.46);
+      if (replay.avatar.leftLeg) replay.avatar.leftLeg.rotation.x = stride;
+      if (replay.avatar.rightLeg) replay.avatar.rightLeg.rotation.x = -stride;
+    } else if (player.mobilityType === 'slide') {
+      replay.avatar.root.rotation.x = 0.34;
+      replay.avatar.root.position.y -= 0.28;
+    } else if (player.mobilityType === 'roll' || player.mobilityType === 'dodge') {
+      replay.avatar.root.rotation.z = Math.sin((player.mobilityProgress ?? 0) * Math.PI) * 0.42;
+    } else if (player.prone) {
+      replay.avatar.root.rotation.x = 1.18;
+      replay.avatar.root.position.y -= 0.42;
+    }
+    if (player.reloadTimer > 0 && replay.avatar.rightArm) replay.avatar.rightArm.rotation.x = -0.82;
+    if (player.healTimer > 0 && replay.avatar.leftArm) replay.avatar.leftArm.rotation.x = -1.02;
+    if (player.firing && replay.avatar.rightArm) replay.avatar.rightArm.rotation.x -= 0.18;
 
     const fallProgress = smoothstep((replayProgress - 0.84) / 0.14);
     replay.avatar.root.rotation.z = fallProgress * 1.02;
@@ -473,12 +564,14 @@
     overlay.classList.toggle('impact', fatalWindow);
     overlay.classList.toggle('freeze', freezeWindow);
 
+    const actionLabel = getPlayerActionLabel(player);
     if (replayProgress >= 0.76) {
       phaseEl.textContent = L('致命一击', 'FATAL SHOT');
     } else if (replayProgress >= 0.50) {
       phaseEl.textContent = L('击杀者视角', 'KILLER VIEW');
     } else {
-      phaseEl.textContent = L('最后交战', 'FINAL ENGAGEMENT');
+      phaseEl.textContent = L(`玩家当时：${actionLabel}`, `PLAYER ACTION: ${actionLabel}`);
+      perspectiveEl.textContent = L('玩家动作追踪', 'PLAYER ACTION TRACK');
     }
 
     if (freezeWindow) {
@@ -487,7 +580,12 @@
     } else if (fatalWindow) {
       impactTextEl.textContent = L('致命弹道', 'FATAL TRAJECTORY');
     } else {
-      impactTextEl.textContent = '';
+      impactTextEl.textContent = replayProgress < 0.50
+        ? L(
+            `${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} 发`,
+            `${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} rounds`,
+          )
+        : '';
     }
 
     if (!replay.fatalTracer && replayProgress >= 0.815 && attackerFrame) {
@@ -603,7 +701,7 @@
   };
 
   window.__sdrReplayDebug = {
-    version: '2026-09-19-killcam-v3',
+    version: '2026-10-03-killcam-v4',
     get active() { return Boolean(replay); },
     get frames() { return history.length; },
     get elapsed() { return replay?.elapsed ?? 0; },
@@ -615,6 +713,18 @@
     get killerViewShown() { return replay?.killerViewShown ?? false; },
     get cameraCollisionChecks() { return replay?.cameraCollisionChecks ?? 0; },
     get cameraCollisionAvoided() { return replay?.cameraCollisionAvoided ?? 0; },
+    get currentPlayerAction() {
+      if (!replay?.frames?.length) return null;
+      const progress = clamp01(replay.elapsed / Math.max(0.001, replay.duration));
+      const sourceProgress = clamp01(replaySourceProgress(progress));
+      const time = replay.frames[0].time + sourceProgress * replay.recordedDuration;
+      let index = 0;
+      while (index < replay.frames.length - 2 && replay.frames[index + 1].time < time) index++;
+      return getPlayerActionLabel(replay.frames[index]?.player);
+    },
+    get recordedPlayerActions() {
+      return [...new Set(history.map(frame => getPlayerActionLabel(frame.player)))];
+    },
     get lastDamage() { return lastDamageEvent; },
     skip: endReplay,
   };
