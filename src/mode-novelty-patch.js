@@ -22,14 +22,10 @@
     const debug = {
       version: '2026-10-02-mode-novelty-v2',
       blitzRelayCompletions: 0,
-      contractHvtKills: 0,
       lockdownGhostCaches: 0,
       blitzCouriersSpawned: 0,
       blitzCouriersKilled: 0,
-      contractBlackFilesSpawned: 0,
-      contractBlackFilesKilled: 0,
       lastRelayId: null,
-      lastHvtId: null,
     };
     window.__sdrModeNoveltyDebug = debug;
     const Ls = (zh, en) => typeof L === 'function' ? L(zh, en) : en;
@@ -261,16 +257,7 @@
         markRelay(raid);
       }
 
-      if (raid.modeId === 'contract') {
-        raid.objectives = [
-          { id: 'hvt', label: 'HVT', target: 3, progress: 0 },
-          { id: 'kill', label: Ls('击倒', 'Eliminate'), target: 8, progress: 0 },
-        ];
-        raid.tasksComplete = false;
-        raid.contractHvtStage = 0;
-        raid.contractStageBonus = 0;
-        assignContractHvt(raid);
-      }
+
       return result;
     };
 
@@ -386,7 +373,7 @@
         player.blitzOverdriveTimer = Math.max(0, (player.blitzOverdriveTimer ?? 0) - dt);
         if (!raid.tasksComplete && !raid.blitzActiveRelayId && (raid.blitzRelayIndex ?? 0) < 3) markRelay(raid);
       }
-      if (raid.modeId === 'contract' && !raid.tasksComplete && !raid.contractHvtId) assignContractHvt(raid);
+
       return result;
     };
 
