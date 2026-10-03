@@ -30,7 +30,7 @@
     const ENGINEER_UTILITY_MAX = 6;
     const STUN_RADIUS = 10;
     const STUN_SLOW_DURATION = 10;
-    const STUN_SLOW_MULT = 0.45;
+    const STUN_SLOW_MULT = 0.10;
     const STUN_ITEM_MAX = 2;
     const STUN_REFILL = 20;
     // One metre from an enemy's body edge. Actor coordinates are body centres,
@@ -216,7 +216,7 @@
     const moveBeforeEngineer = moveEntityWithCollision;
     moveEntityWithCollision = function moveWithEngineerBarriers(entity, dx, dz, radius) {
       if ((entity.engineerStunTimer ?? 0) > 0) return;
-      const slowMult = entity !== state.raid?.player && (entity.engineerSlowTimer ?? 0) > 0 ? STUN_SLOW_MULT : 1;
+      const slowMult = (entity.engineerSlowTimer ?? 0) > 0 ? STUN_SLOW_MULT : 1;
       const before = { x: entity.x, z: entity.z };
       moveBeforeEngineer(entity, dx * slowMult, dz * slowMult, radius);
       if (entity !== state.raid?.player && collidesWithBarrier(entity.x, entity.z, radius)) {
@@ -979,13 +979,15 @@
         const enemyPoint = { x: enemy.x, y: actorFeet(enemy) + 0.85, z: enemy.z };
         if (geometryBlocked(center, enemyPoint)) continue;
         enemy.engineerSlowTimer = Math.max(enemy.engineerSlowTimer ?? 0, STUN_SLOW_DURATION);
+        enemy.mobilityAction = null;
+        enemy.mobilityCooldown = Math.max(enemy.mobilityCooldown ?? 0, STUN_SLOW_DURATION);
         hits += 1;
       }
       spawnImpactBurst(new BABYLON.Vector3(target.x, target.y + 0.5, target.z), '#dff7ff', 2.4, 'hard');
       spawnPulse(new BABYLON.Vector3(target.x, target.y + 0.35, target.z), '#9fe8ff', 0.34, 0.28);
       playImpactAudio(new BABYLON.Vector3(target.x, target.y + 0.4, target.z), 'hard');
       notify(
-        L(`震撼弹命中 ${hits} 名敌人：移动速度降低至 45%，持续 10 秒。`, `Stun Grenade hit ${hits} enemies: movement reduced to 45% for 10s.`),
+        L(`震撼弹命中 ${hits} 名敌人：10 秒内移速降至 10%，且无法跳跃、滑铲、翻滚或躲闪。`, `Stun Grenade hit ${hits} enemies: 10% movement speed for 10s and no jump, slide, roll, or dodge.`),
         hits ? 'success' : 'warning',
       );
     };
