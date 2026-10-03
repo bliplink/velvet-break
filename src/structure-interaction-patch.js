@@ -319,6 +319,8 @@
           onRoofBuildingId: options.onRoofBuildingId,
           clearInsideBuilding: Boolean(options.clearInsideBuilding),
           clearRoofBuilding: Boolean(options.clearRoofBuilding),
+          windowTraversalObstacleId: options.windowTraversalObstacleId,
+          windowTraversalEntering: options.windowTraversalEntering,
         },
       };
       state.input.fireHeld = false;
@@ -375,8 +377,16 @@
         if (action.finalize.onRoofBuildingId !== undefined) {
           player.onRoofBuildingId = action.finalize.onRoofBuildingId;
         }
+        const finalized = action.finalize;
         player.structureAction = null;
         syncActorStructureState(player);
+        if (finalized.windowTraversalObstacleId) {
+          if (finalized.windowTraversalEntering) {
+            player.insideBuildingId = finalized.windowTraversalObstacleId;
+          } else if (player.insideBuildingId === finalized.windowTraversalObstacleId) {
+            player.insideBuildingId = null;
+          }
+        }
         spawnPulse(new BABYLON.Vector3(player.x, 0.82, player.z), '#b9ebff', 0.08, 0.12);
       }
       return true;
@@ -668,19 +678,18 @@
 
     const getTraverseTargetForWallFeature = (feature, player) => {
       const obstacle = getObstacleById(feature.obstacleId);
-      if (!obstacle) {
-        return null;
-      }
+      if (!obstacle) return null;
       const outward = getFaceNormal(feature.face);
       const tangent = getFaceTangent(feature.face);
       const along = (player.x - feature.x) * tangent.x + (player.z - feature.z) * tangent.z;
       const clampedAlong = clamp(along, -0.22, 0.22);
       const currentSide = (player.x - feature.x) * outward.x + (player.z - feature.z) * outward.z;
-      const targetSide = currentSide >= 0 ? -1 : 1;
-      const corridorDepth = feature.face === 'north' || feature.face === 'south' ? obstacle.d : obstacle.w;
+      const entering = currentSide >= 0;
+      const offset = entering ? 1.18 : 1.12;
       return {
-        x: feature.x + tangent.x * clampedAlong + outward.x * (corridorDepth / 2 + 1.05) * targetSide,
-        z: feature.z + tangent.z * clampedAlong + outward.z * (corridorDepth / 2 + 1.05) * targetSide,
+        x: feature.x + tangent.x * clampedAlong + outward.x * (entering ? -offset : offset),
+        z: feature.z + tangent.z * clampedAlong + outward.z * (entering ? -offset : offset),
+        entering,
       };
     };
 
@@ -766,7 +775,7 @@
       if (!windowFeature.broken) return breakWindow(windowFeature);
       const target = getTraverseTargetForWallFeature(windowFeature, player);
       if (!target) return false;
-      const leaving = player.insideBuildingId === windowFeature.obstacleId;
+      const leaving = !target.entering;
       const midX = (player.x + target.x) * 0.5;
       const midZ = (player.z + target.z) * 0.5;
       const path = [
@@ -786,6 +795,8 @@
         directionSign: leaving ? -1 : 1,
         insideBuildingId: leaving ? null : windowFeature.obstacleId,
         clearInsideBuilding: leaving,
+        windowTraversalObstacleId: windowFeature.obstacleId,
+        windowTraversalEntering: !leaving,
       });
     };
 
