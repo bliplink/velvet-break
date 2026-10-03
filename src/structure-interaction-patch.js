@@ -166,7 +166,13 @@
       );
     };
 
-    const getPassableFeaturesForObstacle = () => [];
+    const getPassableFeaturesForObstacle = (obstacleId) => {
+      if (!obstacleId) return [];
+      return [
+        ...(registry.doors ?? []).filter((feature) => feature.obstacleId === obstacleId && feature.open),
+        ...(registry.windows ?? []).filter((feature) => feature.obstacleId === obstacleId && feature.broken),
+      ];
+    };
 
     const ensureStaminaUi = () => {
       if (staminaUi?.panel?.isConnected) {
