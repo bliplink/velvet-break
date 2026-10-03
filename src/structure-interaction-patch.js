@@ -174,6 +174,104 @@
       ];
     };
 
+    const getStructureFeaturesForObstacle = (obstacleId) => [
+      ...(registry.doors ?? []).filter((feature) => feature.obstacleId === obstacleId),
+      ...(registry.windows ?? []).filter((feature) => feature.obstacleId === obstacleId),
+    ];
+
+    const BUILDING_WALL_THICKNESS = 0.42;
+    const isShellBuildingObstacle = (obstacle) =>
+      Boolean(obstacle && obstacle.w >= 7 && obstacle.d >= 6 && obstacle.h >= 3.45 &&
+        getStructureFeaturesForObstacle(obstacle.id).length);
+
+    const nearestShellFace = (obstacle, x, z) => {
+      const candidates = [
+        { face: 'west', distance: Math.abs(x - (obstacle.x - obstacle.w / 2)) },
+        { face: 'east', distance: Math.abs(x - (obstacle.x + obstacle.w / 2)) },
+        { face: 'north', distance: Math.abs(z - (obstacle.z - obstacle.d / 2)) },
+        { face: 'south', distance: Math.abs(z - (obstacle.z + obstacle.d / 2)) },
+      ];
+      candidates.sort((a, b) => a.distance - b.distance);
+      return candidates[0]?.face ?? 'south';
+    };
+
+    const pointInShellBand = (obstacle, x, z, padding = 0) => {
+      const minX = obstacle.x - obstacle.w / 2 - padding;
+      const maxX = obstacle.x + obstacle.w / 2 + padding;
+      const minZ = obstacle.z - obstacle.d / 2 - padding;
+      const maxZ = obstacle.z + obstacle.d / 2 + padding;
+      if (x <= minX || x >= maxX || z <= minZ || z >= maxZ) return false;
+      const inner = BUILDING_WALL_THICKNESS + Math.max(0, padding);
+      const deepInterior =
+        x > obstacle.x - obstacle.w / 2 + inner &&
+        x < obstacle.x + obstacle.w / 2 - inner &&
+        z > obstacle.z - obstacle.d / 2 + inner &&
+        z < obstacle.z + obstacle.d / 2 - inner;
+      return !deepInterior;
+    };
+
+    const createOpaqueBuildingLiners = () => {
+      if (window.__sdrOpaqueBuildingLinersApplied) return;
+      window.__sdrOpaqueBuildingLinersApplied = true;
+      for (const obstacle of obstacleDefs) {
+        if (!isShellBuildingObstacle(obstacle)) continue;
+        const existing = scene.getTransformNodeByName?.(`solid-liner-${obstacle.id}`);
+        if (existing) continue;
+        const root = new BABYLON.TransformNode(`solid-liner-${obstacle.id}`, scene);
+        const mat = new BABYLON.StandardMaterial(`solid-liner-mat-${obstacle.id}`, scene);
+        mat.diffuseColor = BABYLON.Color3.FromHexString('#39474d');
+        mat.emissiveColor = BABYLON.Color3.FromHexString('#11191d');
+        mat.specularColor = BABYLON.Color3.Black();
+        mat.alpha = 1;
+        mat.backFaceCulling = false;
+        mat.disableDepthWrite = false;
+        if ('forceDepthWrite' in mat) mat.forceDepthWrite = true;
+        if (BABYLON.Material) mat.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+        if (BABYLON.Engine?.ALPHA_DISABLE !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
+
+        const makePanel = (name, x, y, z, w, h, d) => {
+          if (w <= 0.04 || h <= 0.04 || d <= 0.04) return;
+          const mesh = BABYLON.MeshBuilder.CreateBox(name, { width: w, height: h, depth: d }, scene);
+          mesh.parent = root;
+          mesh.position.set(x, y, z);
+          mesh.material = mat;
+          mesh.isPickable = true;
+          mesh.renderingGroupId = 0;
+          mesh.metadata = { raycastTarget: 'obstacle', structureId: obstacle.id, solidBuildingLiner: true };
+        };
+
+        // East/west are always solid in the current building layout.
+        makePanel(`solid-liner-${obstacle.id}-west`, obstacle.x - obstacle.w / 2 + 0.03, obstacle.h / 2, obstacle.z, 0.10, obstacle.h, obstacle.d);
+        makePanel(`solid-liner-${obstacle.id}-east`, obstacle.x + obstacle.w / 2 - 0.03, obstacle.h / 2, obstacle.z, 0.10, obstacle.h, obstacle.d);
+
+        for (const face of ['north', 'south']) {
+          const feature = getStructureFeaturesForObstacle(obstacle.id).find((entry) => entry.face === face);
+          const wallZ = face === 'north' ? obstacle.z - obstacle.d / 2 + 0.03 : obstacle.z + obstacle.d / 2 - 0.03;
+          if (!feature) {
+            makePanel(`solid-liner-${obstacle.id}-${face}`, obstacle.x, obstacle.h / 2, wallZ, obstacle.w, obstacle.h, 0.10);
+            continue;
+          }
+          const openingWidth = Math.max(0.9, feature.width ?? 1.18);
+          const openingHeight = Math.max(0.8, feature.height ?? 0.86);
+          const openingY = Math.max(openingHeight / 2 + 0.25, feature.y ?? 1.6);
+          const leftEdge = obstacle.x - obstacle.w / 2;
+          const rightEdge = obstacle.x + obstacle.w / 2;
+          const openLeft = feature.x - openingWidth / 2;
+          const openRight = feature.x + openingWidth / 2;
+          const leftWidth = Math.max(0, openLeft - leftEdge);
+          const rightWidth = Math.max(0, rightEdge - openRight);
+          const lowerHeight = Math.max(0, openingY - openingHeight / 2);
+          const upperBottom = openingY + openingHeight / 2;
+          const upperHeight = Math.max(0, obstacle.h - upperBottom);
+          makePanel(`solid-liner-${obstacle.id}-${face}-left`, leftEdge + leftWidth / 2, obstacle.h / 2, wallZ, leftWidth, obstacle.h, 0.10);
+          makePanel(`solid-liner-${obstacle.id}-${face}-right`, openRight + rightWidth / 2, obstacle.h / 2, wallZ, rightWidth, obstacle.h, 0.10);
+          makePanel(`solid-liner-${obstacle.id}-${face}-lower`, feature.x, lowerHeight / 2, wallZ, openingWidth, lowerHeight, 0.10);
+          makePanel(`solid-liner-${obstacle.id}-${face}-upper`, feature.x, upperBottom + upperHeight / 2, wallZ, openingWidth, upperHeight, 0.10);
+        }
+      }
+    };
+    createOpaqueBuildingLiners();
+
     const ensureStaminaUi = () => {
       if (staminaUi?.panel?.isConnected) {
         return staminaUi;
@@ -425,19 +523,24 @@
           ? Math.max(DOOR_CORRIDOR_HALF, feature.width * 0.55)
           : Math.max(WINDOW_CORRIDOR_HALF, feature.width * 0.58)
       ) + padding;
+      const wallBand = BUILDING_WALL_THICKNESS + padding + 0.28;
       if (feature.face === 'north' || feature.face === 'south') {
+        const wallZ = feature.face === 'north'
+          ? obstacle.z - obstacle.d / 2
+          : obstacle.z + obstacle.d / 2;
         return (
           x >= feature.x - halfBand &&
           x <= feature.x + halfBand &&
-          z >= obstacle.z - obstacle.d / 2 - padding &&
-          z <= obstacle.z + obstacle.d / 2 + padding
+          Math.abs(z - wallZ) <= wallBand
         );
       }
+      const wallX = feature.face === 'west'
+        ? obstacle.x - obstacle.w / 2
+        : obstacle.x + obstacle.w / 2;
       return (
         z >= feature.z - halfBand &&
         z <= feature.z + halfBand &&
-        x >= obstacle.x - obstacle.w / 2 - padding &&
-        x <= obstacle.x + obstacle.w / 2 + padding
+        Math.abs(x - wallX) <= wallBand
       );
     };
 
@@ -448,6 +551,9 @@
         z <= obstacle.z - obstacle.d / 2 - padding ||
         z >= obstacle.z + obstacle.d / 2 + padding
       ) {
+        return false;
+      }
+      if (isShellBuildingObstacle(obstacle) && !pointInShellBand(obstacle, x, z, padding)) {
         return false;
       }
       const passages = getPassableFeaturesForObstacle(obstacle.id);
@@ -499,13 +605,37 @@
 
     resolveObstacleCollisions = function patchedResolveObstacleCollisions(entity, radius) {
       for (const obstacle of obstacleDefs) {
-        if (entity?.onRoofBuildingId === obstacle.id || entity?.insideBuildingId === obstacle.id) {
+        if (entity?.onRoofBuildingId === obstacle.id) continue;
+
+        if (isShellBuildingObstacle(obstacle)) {
+          const padding = radius * 0.2;
+          const passable = getPassableFeaturesForObstacle(obstacle.id)
+            .some((feature) => isPointInsideFeaturePassage(entity.x, entity.z, feature, Math.max(0.06, padding)));
+          const deepInside =
+            actorInsideObstacle(entity, obstacle, BUILDING_WALL_THICKNESS + radius * 0.25);
+          if (deepInside) {
+            entity.insideBuildingId = obstacle.id;
+            continue;
+          }
+          if (passable) continue;
+          if (!pointInShellBand(obstacle, entity.x, entity.z, radius * 0.35)) continue;
+
+          const face = nearestShellFace(obstacle, entity.x, entity.z);
+          const inside = entity.insideBuildingId === obstacle.id;
+          const minX = obstacle.x - obstacle.w / 2;
+          const maxX = obstacle.x + obstacle.w / 2;
+          const minZ = obstacle.z - obstacle.d / 2;
+          const maxZ = obstacle.z + obstacle.d / 2;
+          const inset = BUILDING_WALL_THICKNESS + radius + 0.02;
+          const outset = radius + 0.04;
+          if (face === 'west') entity.x = inside ? minX + inset : minX - outset;
+          else if (face === 'east') entity.x = inside ? maxX - inset : maxX + outset;
+          else if (face === 'north') entity.z = inside ? minZ + inset : minZ - outset;
+          else entity.z = inside ? maxZ - inset : maxZ + outset;
           continue;
         }
-        if (actorInsideObstacle(entity, obstacle, -0.08) && getPassableFeaturesForObstacle(obstacle.id).length) {
-          entity.insideBuildingId = obstacle.id;
-          continue;
-        }
+
+        if (entity?.insideBuildingId === obstacle.id) continue;
         if (!obstacleBlocksPoint(obstacle, entity.x, entity.z, radius * 0.2)) {
           continue;
         }
