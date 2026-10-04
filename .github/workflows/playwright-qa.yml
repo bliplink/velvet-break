@@ -126,6 +126,10 @@ jobs:
       - name: Verify Kai, Echo form, and utility resistance
         run: node scripts/kai-echo-utility-regression.cjs
 
+      - name: Verify utility impacts use no spherical FX
+        run: node scripts/utility-fx-shape-smoke.cjs
+
+
 
       - name: Verify final Kai Echo AI utility and battlefield features
         run: node scripts/final-feature-regression.cjs
