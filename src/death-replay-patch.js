@@ -369,6 +369,13 @@
       duration: Math.max(MIN_REPLAY_DURATION, Math.min(MAX_REPLAY_DURATION, recordedDuration + 0.95)),
       recordedDuration,
       finalDistance,
+      lastAttackerFrame: finalAttackerFrame ? { ...finalAttackerFrame } : (attacker ? {
+        x: attacker.x,
+        y: floorHeight(attacker),
+        z: attacker.z,
+        heading: attacker.heading ?? 0,
+        dead: false,
+      } : null),
       impactShown: false,
       tracerShown: false,
       freezeShown: false,
@@ -504,9 +511,11 @@
       visual.rotation.x = from.dead ? 1.1 : 0;
     }
 
-    const attackerFrame = replay.attackerId
+    const sampledAttackerFrame = replay.attackerId
       ? sampleEnemy(current, next, replay.attackerId, blend)
       : null;
+    if (sampledAttackerFrame) replay.lastAttackerFrame = { ...sampledAttackerFrame };
+    const attackerFrame = sampledAttackerFrame ?? replay.lastAttackerFrame;
 
     const markerVisible = Boolean(attackerFrame && replayProgress >= 0.43);
     replay.marker.root.setEnabled(markerVisible);
@@ -521,8 +530,8 @@
     }
 
     const playerChest = new BABYLON.Vector3(player.x, player.y + 1.22, player.z);
-    let desiredCamera = playerChest.clone();
-    let cameraTarget = playerChest.clone();
+    let desiredCamera = null;
+    let cameraTarget = null;
     let targetFov = 0.76;
 
     if (attackerFrame) {
@@ -565,6 +574,18 @@
     }
 
     replay.marker.root.setEnabled(false);
+    if (!desiredCamera || !cameraTarget) {
+      const fatal = replay.fatalEvent;
+      const heading = replay.attacker?.heading ?? 0;
+      const forward = new BABYLON.Vector3(Math.sin(heading), 0, Math.cos(heading));
+      const x = fatal?.attackerX ?? replay.attacker?.x ?? player.x;
+      const z = fatal?.attackerZ ?? replay.attacker?.z ?? player.z;
+      const y = fatal?.attackerY ?? (replay.attacker ? floorHeight(replay.attacker) + 1.72 : player.y + 1.72);
+      desiredCamera = new BABYLON.Vector3(x + forward.x * 0.18, y, z + forward.z * 0.18);
+      cameraTarget = playerChest;
+      replay.killerViewShown = true;
+      replay.killerCameraFrontDot = 1;
+    }
     camera.position.copyFrom(desiredCamera);
     camera.setTarget(cameraTarget);
     camera.fov = targetFov;
