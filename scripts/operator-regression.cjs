@@ -58,12 +58,12 @@ function raid(operatorId = 'engineer') {
 function key(code) { for (const callback of listeners) callback({ code, preventDefault: noop, stopImmediatePropagation: noop }); }
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 let r = raid();
-assert.equal(context.getOperatorDefs().assault.abilityDuration, 20);
-assert.equal(context.getOperatorDefs().assault.killHeal, 60);
-assert.equal(context.getOperatorDefs().assault.killExtendSeconds, 1.5);
-close(context.getOperatorDefs().assault.spreadMult, 0.78);
-close(context.getOperatorDefs().assault.recoilMult, 0.80);
-close(context.getOperatorDefs().assault.reloadMult, 0.82);
+assert.equal(context.getOperatorDefs().assault.abilityDuration, 16);
+assert.equal(context.getOperatorDefs().assault.killHeal, 40);
+assert.equal(context.getOperatorDefs().assault.killExtendSeconds, 1.0);
+close(context.getOperatorDefs().assault.spreadMult, 0.82);
+close(context.getOperatorDefs().assault.recoilMult, 0.84);
+close(context.getOperatorDefs().assault.reloadMult, 0.86);
 assert.equal(context.getOperatorDefs().assault.startArmorBonus, 170);
 close(context.getOperatorDefs().assault.armorDurabilityCostMult, 0.5);
 assert.equal(context.getOperatorDefs().medic.abilityDuration, 20);
@@ -87,7 +87,7 @@ const boss = { id: 'boss', x: 15, z: 0, health: 1500, isNamelessBoss: true };
 r.enemies.push(enemy, boss);
 context.useOperatorAbility();
 assert.equal(r.player.skillUses, 3);
-assert.equal(r.player.abilityActiveTimer, 20);
+assert.equal(r.player.abilityActiveTimer, 16);
 assert.equal(boss.engineerStunTimer, 5);
 context.useOperatorAbility();
 assert.equal(r.player.skillUses, 3);
