@@ -155,7 +155,7 @@
         return { label: L('正在处决目标', 'Executing target'), detail: L('保持警戒 · 处决期间仍会受伤', 'Stay alert · you can still take damage'), color: '#ff765f', remaining: action?.timer, duration: action?.duration };
       }
       if (player.echoKnifeInspect) {
-        return { label: L('正在检视：回声', 'Inspecting: Echo'), detail: getEchoForm?.() === 2 ? L('相位形态', 'Phase Form') : L('标准形态', 'Standard Form'), color: getEchoForm?.() === 2 ? '#a985ff' : '#70e8ff', remaining: Math.max(0, player.echoKnifeInspect.duration - player.echoKnifeInspect.timer), duration: player.echoKnifeInspect.duration };
+        return { label: L('正在检视：回声', 'Inspecting: Echo'), detail: window.__sdrEchoKnifeConfig?.form === 2 ? L('相位形态', 'Phase Form') : L('标准形态', 'Standard Form'), color: getEchoForm?.() === 2 ? '#a985ff' : '#70e8ff', remaining: Math.max(0, player.echoKnifeInspect.duration - player.echoKnifeInspect.timer), duration: player.echoKnifeInspect.duration };
       }
       if (player.echoKnifeAction) {
         return { label: L('正在挥击：回声', 'Striking: Echo'), detail: L('近战攻击', 'Melee strike'), color: player.echoKnifeAction.form === 2 ? '#a985ff' : '#70e8ff', remaining: Math.max(0, player.echoKnifeAction.duration - player.echoKnifeAction.timer), duration: player.echoKnifeAction.duration };
@@ -244,7 +244,10 @@
     syncHud = function syncFinalStaminaHud(...args) {
       const result = syncHudBeforeFinal.apply(this, args);
       const player = state.raid?.player;
-      if (!player) return result;
+      if (!player) {
+        syncFinalCombatFeedback();
+        return result;
+      }
       const max = Math.max(1, Number(player.maxStamina ?? (player.operatorId === 'lingshuang' ? 650 : 500)));
       player.stamina = Math.max(0, Math.min(max, Number(player.stamina ?? max)));
       const value = document.getElementById('staminaValue');
