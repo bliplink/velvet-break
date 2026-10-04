@@ -548,18 +548,23 @@
       // Show the killer from the front/three-quarter side. A rear shoulder
       // camera hides the firing animation and feels like spectating behind the AI.
       const frontSideCamera = attackerHead
-        .add(attackerForward.scale(2.65))
-        .add(attackerRight.scale(1.35))
-        .add(new BABYLON.Vector3(0, 0.22, 0));
+        .add(attackerForward.scale(3.25))
+        .add(attackerRight.scale(0.95))
+        .add(new BABYLON.Vector3(0, 0.32, 0));
       const closeFrontCamera = attackerHead
-        .add(attackerForward.scale(1.45))
-        .add(attackerRight.scale(0.72))
-        .add(new BABYLON.Vector3(0, 0.08, 0));
+        .add(attackerForward.scale(1.85))
+        .add(attackerRight.scale(0.48))
+        .add(new BABYLON.Vector3(0, 0.12, 0));
 
       const shoulderBlend = smoothstep((replayProgress - 0.48) / 0.22);
       const eyeBlend = smoothstep((replayProgress - 0.72) / 0.12);
       desiredCamera = BABYLON.Vector3.Lerp(playerCamera, frontSideCamera, shoulderBlend);
       desiredCamera = BABYLON.Vector3.Lerp(desiredCamera, closeFrontCamera, eyeBlend * 0.72);
+      const cameraFromAttacker = desiredCamera.subtract(attackerHead);
+      replay.killerCameraFrontDot = BABYLON.Vector3.Dot(
+        new BABYLON.Vector3(cameraFromAttacker.x, 0, cameraFromAttacker.z).normalize(),
+        attackerForward,
+      );
       const attackerChest = attackerHead.add(new BABYLON.Vector3(0, -0.48, 0));
       cameraTarget = BABYLON.Vector3.Lerp(playerChest, attackerChest, Math.max(shoulderBlend * 0.72, eyeBlend));
       targetFov = interpolate(0.84, 0.64, Math.max(shoulderBlend * 0.72, eyeBlend));
@@ -721,7 +726,7 @@
   };
 
   window.__sdrReplayDebug = {
-    version: '2026-10-04-killcam-v5',
+    version: '2026-10-04-killcam-v6-front',
     get active() { return Boolean(replay); },
     get frames() { return history.length; },
     get elapsed() { return replay?.elapsed ?? 0; },
@@ -733,6 +738,7 @@
     get killerViewShown() { return replay?.killerViewShown ?? false; },
     get cameraCollisionChecks() { return replay?.cameraCollisionChecks ?? 0; },
     get cameraCollisionAvoided() { return replay?.cameraCollisionAvoided ?? 0; },
+    get killerCameraFrontDot() { return replay?.killerCameraFrontDot ?? null; },
     get currentPlayerAction() {
       if (!replay?.frames?.length) return null;
       const progress = clamp01(replay.elapsed / Math.max(0.001, replay.duration));
