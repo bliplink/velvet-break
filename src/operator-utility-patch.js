@@ -618,11 +618,10 @@
                 : enemy.type === 'hunter'
                   ? 0.15
                   : 0.10;
-          const grenadeDamage = Math.round(GRENADE_DAMAGE * (1 - grenadeReduction));
           const savedReduction = enemy.damageReduction;
-          enemy.damageReduction = 0;
+          enemy.damageReduction = Math.max(Number(savedReduction ?? 0), grenadeReduction);
           try {
-            damageEnemy(enemy, grenadeDamage, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
+            damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
           } finally {
             enemy.damageReduction = savedReduction;
           }
