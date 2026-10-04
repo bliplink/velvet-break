@@ -242,6 +242,28 @@
       if ((player.extractionProgress ?? 0) > 0) {
         return { label: L('正在撤离', 'Extracting'), detail: `${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME.toFixed(1)}s`, color: '#8fffc1', remaining: Math.max(0, EXTRACTION_HOLD_TIME - player.extractionProgress), duration: EXTRACTION_HOLD_TIME };
       }
+      if (player.structureAction) {
+        const type = player.structureAction.type;
+        const label = type === 'window' ? L('正在翻越窗户', 'Vaulting window')
+          : type === 'ladder' ? L('正在攀爬梯子', 'Climbing ladder')
+          : type === 'stairs' ? L('正在使用楼梯', 'Using stairs')
+          : L('正在交互', 'Interacting');
+        return { label, detail: L('机动交互', 'Traversal action'), color: '#9ccfff' };
+      }
+      const mobilityType = player.mobilityAction?.type;
+      if (mobilityType && mobilityType !== 'jump' && mobilityType !== 'prone') {
+        const label = mobilityType === 'slide' ? L('正在滑铲', 'Sliding')
+          : mobilityType === 'roll' ? L('正在翻滚', 'Rolling')
+          : mobilityType === 'dodge' ? L('正在躲闪', 'Dodging')
+          : L('正在机动', 'Mobility action');
+        return { label, detail: L('战术机动', 'Tactical movement'), color: '#9ccfff' };
+      }
+      if (player.isAiming) {
+        return { label: L('正在瞄准', 'Aiming'), detail: L('精确射击状态', 'Precision fire state'), color: '#ffd48a' };
+      }
+      if (state.input?.fireHeld || (player.fireCooldown ?? 0) > 0.02) {
+        return { label: L('正在开火', 'Firing'), detail: L('武器射击', 'Weapon fire'), color: '#ffb06f' };
+      }
       return null;
     };
 
