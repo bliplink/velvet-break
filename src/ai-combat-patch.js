@@ -200,18 +200,15 @@
         raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: smokeRadius, timer: 6.5 });
         enemy.smokeScreenTimer = 6.5;
         enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
-        if (typeof spawnSmokePuff === 'function') {
-          for (let i = 0; i < 18; i += 1) {
-            const angle = Math.PI * 2 * i / 18 + Math.random() * 0.2;
-            const radius = Math.sqrt(Math.random()) * smokeRadius;
-            spawnSmokePuff(
-              new BABYLON.Vector3(targetX + Math.cos(angle) * radius, 0.45 + Math.random() * 1.2, targetZ + Math.sin(angle) * radius),
-              '#8d989d',
-              0.55 + Math.random() * 0.45,
-              1.8 + Math.random() * 1.3,
-              new BABYLON.Vector3((Math.random() - 0.5) * 0.12, 0.08 + Math.random() * 0.12, (Math.random() - 0.5) * 0.12),
-            );
-          }
+        if (typeof window.__sdrSpawnUtilityImpactFx === 'function') {
+          window.__sdrSpawnUtilityImpactFx(
+            new BABYLON.Vector3(targetX, 0.08, targetZ),
+            '#8d989d',
+            1.15,
+            'smoke',
+            smokeRadius,
+            6.5,
+          );
         }
         if (Math.hypot(player.x - targetX, player.z - targetZ) <= smokeRadius) {
           notify(L('敌方烟雾已覆盖当前位置。', 'Enemy smoke is covering your position.'), 'warning');
@@ -222,11 +219,15 @@
       if (type === 'stun') {
         enemyUtilityDebug.stuns += 1;
         if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(targetX, 0.7, targetZ), 'hard');
-        if (typeof spawnSmokePuff === 'function') {
-          for (let i = 0; i < 7; i++) {
-            const angle = i / 7 * Math.PI * 2;
-            spawnSmokePuff(new BABYLON.Vector3(targetX + Math.cos(angle) * 0.7, 0.35 + (i % 2) * 0.18, targetZ + Math.sin(angle) * 0.7), '#e7edf0', 0.18, 0.28);
-          }
+        if (typeof window.__sdrSpawnUtilityImpactFx === 'function') {
+          window.__sdrSpawnUtilityImpactFx(
+            new BABYLON.Vector3(targetX, 0.08, targetZ),
+            '#e7edf0',
+            1.2,
+            'impact',
+            3.8,
+            0.52,
+          );
         }
         if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
           player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
@@ -241,12 +242,15 @@
 
       enemyUtilityDebug.grenades += 1;
       if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(targetX, 0.55, targetZ), 'hard');
-      if (typeof spawnSmokePuff === 'function') {
-        for (let i = 0; i < 10; i++) {
-          const angle = i / 10 * Math.PI * 2;
-          const radius = 0.45 + (i % 3) * 0.28;
-          spawnSmokePuff(new BABYLON.Vector3(targetX + Math.cos(angle) * radius, 0.28 + (i % 2) * 0.22, targetZ + Math.sin(angle) * radius), '#9c6b58', 0.24, 0.42);
-        }
+      if (typeof window.__sdrSpawnUtilityImpactFx === 'function') {
+        window.__sdrSpawnUtilityImpactFx(
+          new BABYLON.Vector3(targetX, 0.08, targetZ),
+          '#ff8a57',
+          1.35,
+          'impact',
+          4.2,
+          0.58,
+        );
       }
       if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
         const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
