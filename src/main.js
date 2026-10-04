@@ -2789,7 +2789,7 @@ function chooseRaidEnemySpawns(playerSpawn) {
   const modeId = typeof getSelectedLobbyModeId === 'function' ? getSelectedLobbyModeId() : 'raid';
   const requestedCount =
     modeId === 'battlefield' ? 44 :
-    28;
+    20;
   const targetCount = Math.min(candidates.length, requestedCount);
   const selected = [];
   const minSpacing = 11;
