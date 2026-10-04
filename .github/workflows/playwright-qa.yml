@@ -109,6 +109,10 @@ jobs:
       - name: Verify enemies cannot xray through buildings
         run: node scripts/enemy-occlusion-smoke.cjs
 
+      - name: Verify latest gameplay requirements
+        run: node scripts/current-requirements-smoke.cjs
+
+
       - name: Verify latest combat and utility regressions
         run: node scripts/latest-combat-regression.cjs
 
