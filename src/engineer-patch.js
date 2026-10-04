@@ -622,10 +622,11 @@
         } else {
           execution.timer = Math.max(0, execution.timer - dt);
           const progress = 1 - execution.timer / execution.duration;
-          const approach = Math.max(0, Math.min(1, progress / 0.28));
-          const strike = Math.max(0, Math.min(1, (progress - 0.24) / 0.34));
-          const impactWave = Math.sin(Math.max(0, Math.min(1, (progress - 0.34) / 0.34)) * Math.PI);
-          const recover = Math.max(0, Math.min(1, (progress - 0.64) / 0.36));
+          const fastExecution = Boolean(execution.fast);
+          const approach = Math.max(0, Math.min(1, progress / (fastExecution ? 0.20 : 0.28)));
+          const strike = Math.max(0, Math.min(1, (progress - (fastExecution ? 0.14 : 0.24)) / (fastExecution ? 0.28 : 0.34)));
+          const impactWave = Math.sin(Math.max(0, Math.min(1, (progress - (fastExecution ? 0.24 : 0.34)) / (fastExecution ? 0.28 : 0.34))) * Math.PI);
+          const recover = Math.max(0, Math.min(1, (progress - (fastExecution ? 0.56 : 0.64)) / (fastExecution ? 0.44 : 0.36)));
           const swing = Math.sin(Math.min(1, progress) * Math.PI);
 
           if (enemy.visual?.root) {
@@ -647,7 +648,7 @@
           overlay.style.setProperty('--execution-progress', progress.toFixed(3));
           overlay.classList.toggle('is-impact', progress >= 0.44 && progress <= 0.70);
           overlay.classList.add('is-active');
-          if (!execution.applied && progress >= 0.52) {
+          if (!execution.applied && progress >= (execution.fast ? 0.42 : 0.50)) {
             execution.applied = true;
             spawnImpactBurst(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), execution.color, 1.9, 'flesh');
             playImpactAudio(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), 'flesh');
@@ -703,13 +704,15 @@
       }
       const player = state.raid.player;
       const fast = player.operatorId === 'medic';
-      if (fast) {
-        spawnImpactBurst(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), '#7fe2a2', 1.55, 'flesh');
-        playImpactAudio(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), 'flesh');
-        killEnemy(enemy);
-        return;
-      }
-      state.raid.engineerExecution = { enemyId: enemy.id, duration: fast ? 0.24 : 1.22, timer: fast ? 0.24 : 1.22, applied: false, color: fast ? '#7fe2a2' : player.operatorId === ENGINEER_ID ? '#58c8ff' : '#ff8f62' };
+      const executionDuration = fast ? 0.38 : 1.34;
+      state.raid.engineerExecution = {
+        enemyId: enemy.id,
+        duration: executionDuration,
+        timer: executionDuration,
+        applied: false,
+        fast,
+        color: fast ? '#7fe2a2' : player.operatorId === ENGINEER_ID ? '#58c8ff' : '#ff8f62',
+      };
       enemy.executionFrozen = true;
       enemy.shootCooldown = Number.POSITIVE_INFINITY;
       player.executionLocked = true;
