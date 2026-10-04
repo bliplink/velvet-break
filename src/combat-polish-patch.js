@@ -471,6 +471,35 @@
       slash.isPickable = false;
       slash.renderingGroupId = 3;
       slash.alwaysSelectAsActiveMesh = true;
+      let secondarySlash = null;
+      let secondaryMat = null;
+      if (phaseForm) {
+        const mirrored = points.map((point, index) => {
+          const t = index / Math.max(1, points.length - 1);
+          return point
+            .add(right.scale((0.5 - t) * 0.22))
+            .add(up.scale(Math.sin(t * Math.PI) * 0.08 - 0.05));
+        });
+        secondaryMat = new BABYLON.StandardMaterial(`echo-secondary-slash-mat-${Date.now()}`, scene);
+        secondaryMat.diffuseColor = BABYLON.Color3.FromHexString('#72efff');
+        secondaryMat.emissiveColor = BABYLON.Color3.FromHexString('#65d7ff').scale(1.8);
+        secondaryMat.specularColor = BABYLON.Color3.White();
+        secondaryMat.disableLighting = true;
+        secondaryMat.alpha = 0.78;
+        secondaryMat.backFaceCulling = false;
+        secondaryMat.disableDepthWrite = true;
+        if (BABYLON.Engine?.ALPHA_ADD !== undefined) secondaryMat.alphaMode = BABYLON.Engine.ALPHA_ADD;
+        secondarySlash = BABYLON.MeshBuilder.CreateTube(`echo-secondary-slash-${Date.now()}`, {
+          path: mirrored,
+          radius: 0.024,
+          tessellation: 8,
+          cap: BABYLON.Mesh.CAP_ALL,
+        }, scene);
+        secondarySlash.material = secondaryMat;
+        secondarySlash.isPickable = false;
+        secondarySlash.renderingGroupId = 3;
+        secondarySlash.alwaysSelectAsActiveMesh = true;
+      }
 
       let impact = null;
       let impactMat = null;
@@ -513,7 +542,7 @@
         phaseRing.isPickable = false;
         phaseRing.renderingGroupId = 3;
       }
-      echoSlashEffects.push({ slash, mat, impact, impactMat, phaseRing, phaseRingMat, age: 0, duration: phaseForm ? 0.34 : 0.26 });
+      echoSlashEffects.push({ slash, mat, secondarySlash, secondaryMat, impact, impactMat, phaseRing, phaseRingMat, age: 0, duration: phaseForm ? 0.38 : 0.26 });
       return slash;
     };
 
@@ -805,7 +834,12 @@
         fx.age += dt;
         const p = Math.min(1, fx.age / Math.max(0.001, fx.duration));
         if (fx.mat) fx.mat.alpha = (1 - p) * 0.92;
+        if (fx.secondaryMat) fx.secondaryMat.alpha = (1 - p) * 0.78;
         if (fx.slash) fx.slash.scaling.setAll(1 + p * 0.28);
+        if (fx.secondarySlash) {
+          fx.secondarySlash.scaling.setAll(1 + p * 0.36);
+          fx.secondarySlash.rotation.z += dt * 1.8;
+        }
         if (fx.impactMat) fx.impactMat.alpha = (1 - p) * 0.78;
         if (fx.impact) fx.impact.scaling.setAll(0.8 + p * 1.1);
         if (fx.phaseRingMat) fx.phaseRingMat.alpha = (1 - p) * 0.68;
@@ -815,9 +849,11 @@
         }
         if (p >= 1) {
           fx.slash?.dispose?.();
+          fx.secondarySlash?.dispose?.();
           fx.impact?.dispose?.();
           fx.phaseRing?.dispose?.();
           fx.mat?.dispose?.();
+          fx.secondaryMat?.dispose?.();
           fx.impactMat?.dispose?.();
           fx.phaseRingMat?.dispose?.();
           echoSlashEffects.splice(i, 1);
@@ -903,9 +939,11 @@
       echoMarkers.clear();
       for (const fx of echoSlashEffects.splice(0)) {
         fx.slash?.dispose?.();
+        fx.secondarySlash?.dispose?.();
         fx.impact?.dispose?.();
         fx.phaseRing?.dispose?.();
         fx.mat?.dispose?.();
+        fx.secondaryMat?.dispose?.();
         fx.impactMat?.dispose?.();
         fx.phaseRingMat?.dispose?.();
       }
