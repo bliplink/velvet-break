@@ -280,6 +280,8 @@
       return true;
     };
 
+    window.__sdrBeginEnemyUtilityThrow = beginEnemyUtilityThrow;
+
     const updateEnemyUtilityThrows = (dt) => {
       const raid = state.raid;
       const player = raid?.player;
