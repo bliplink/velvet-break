@@ -286,6 +286,7 @@ function expandEnemySpawns(baseSpawns) {
     const variants = [
       { ox: 0, oz: 0, bias: 0 },
       { ox: index % 2 === 0 ? offsetScale : -offsetScale, oz: index % 3 === 0 ? -offsetScale : offsetScale, bias: 0.8 },
+      { ox: index % 3 === 0 ? offsetScale * 1.7 : -offsetScale * 1.35, oz: index % 2 === 0 ? offsetScale * 1.45 : -offsetScale * 1.65, bias: 1.55 },
     ];
     return variants.map((variant, variantIndex) => ({
       x: Math.max(-PLAYABLE_HALF + 10, Math.min(PLAYABLE_HALF - 10, scaleWorldValue(spawn.x) + variant.ox)),
@@ -2787,9 +2788,9 @@ function chooseRaidEnemySpawns(playerSpawn) {
   // enough hostiles to complete their kill targets without flooding the map.
   const modeId = typeof getSelectedLobbyModeId === 'function' ? getSelectedLobbyModeId() : 'raid';
   const requestedCount =
-    modeId === 'blacktide' ? 16 :
-    modeId === 'blitz' ? 14 :
-    30;
+    modeId === 'blacktide' ? 24 :
+    modeId === 'blitz' ? 22 :
+    36;
   const targetCount = Math.min(candidates.length, requestedCount);
   const selected = [];
   const minSpacing = 11;
