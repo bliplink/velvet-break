@@ -599,6 +599,9 @@
         state.save.selectedModeId = 'raid';
         if (typeof persistSave === 'function') persistSave();
       }
+      if (state.mode === 'base' && typeof renderBasePanel === 'function') {
+        renderBasePanel();
+      }
     }
 
     // Final operator power pass. This lives in the last-loaded authority patch so
