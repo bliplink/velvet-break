@@ -587,6 +587,20 @@
     }
 
 
+    // Final deploy authority for Vehicle Battlefield. Route the lobby deploy button
+    // through the latest wrapped startRaid so battlefield initialization cannot be skipped.
+    if (refs?.deployButton && !refs.deployButton.dataset.finalBattlefieldDeployBound) {
+      refs.deployButton.dataset.finalBattlefieldDeployBound = 'true';
+      refs.deployButton.addEventListener('click', (event) => {
+        if (state.mode !== 'base' || getSelectedLobbyModeId?.() !== 'battlefield') return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        state.save.selectedModeId = 'battlefield';
+        persistSave?.();
+        startRaid();
+      }, true);
+    }
+
     // Final mode authority: only Lockdown and Vehicle Battlefield are selectable.
     const getLobbyModeDefsBeforeFinalModeTrim = typeof getLobbyModeDefs === 'function' ? getLobbyModeDefs : null;
     if (getLobbyModeDefsBeforeFinalModeTrim) {
@@ -679,6 +693,8 @@
       };
     }
 
+    const GLOBAL_FIREARM_DAMAGE_MULT = 1.30;
+
     const weaponDamageBeforePowerPass = typeof getWeaponDamage === 'function' ? getWeaponDamage : null;
     if (weaponDamageBeforePowerPass) {
       getWeaponDamage = function getStrengthenedWeaponDamage(weaponId = 'rifle', options = {}) {
@@ -686,7 +702,7 @@
         const player = options?.player ?? state.raid?.player;
         if (!player) return base;
         const operator = getPlayerOperatorDef(player);
-        return base * (operator?.baseDamageMult ?? 1);
+        return base * GLOBAL_FIREARM_DAMAGE_MULT * (operator?.baseDamageMult ?? 1);
       };
     }
 
@@ -698,8 +714,8 @@
         const stats = { ...raw };
         const operator = getPlayerOperatorDef(player);
         const baseDamageMult = operator?.baseDamageMult ?? 1;
-        stats.projectileDamage = (stats.projectileDamage ?? stats.damage ?? 0) * baseDamageMult;
-        stats.damage = (stats.damage ?? stats.projectileDamage ?? 0) * baseDamageMult;
+        stats.projectileDamage = (stats.projectileDamage ?? stats.damage ?? 0) * GLOBAL_FIREARM_DAMAGE_MULT * baseDamageMult;
+        stats.damage = (stats.damage ?? stats.projectileDamage ?? 0) * GLOBAL_FIREARM_DAMAGE_MULT * baseDamageMult;
         if (player.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
           stats.projectileDamage *= operator.scanDamageMult ?? 2.5;
           stats.damage *= operator.scanDamageMult ?? 2.5;
