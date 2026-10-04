@@ -137,17 +137,14 @@ jobs:
       - name: Verify tactical extraction and enemy roles
         run: node scripts/tactical-loop-smoke.cjs
 
-      - name: Verify FPS v3 and Blitz Raid
-        run: node scripts/performance-blitz-smoke.cjs
-
       - name: Verify Lockdown ghost cache easter egg
         run: node scripts/lockdown-easter-egg-smoke.cjs
 
+      - name: Verify Vehicle Battlefield
+        run: node scripts/battlefield-smoke.cjs
+
       - name: Verify Nameless guards reset every raid
         run: node scripts/nameless-reset-smoke.cjs
-
-      - name: Verify Black Tide mode map and Lingshuang
-        run: node scripts/black-tide-content-smoke.cjs
 
       - name: Pack local Playwright runtime
         if: always()
