@@ -18,7 +18,8 @@ const { chromium } = require('playwright');
       state.raid.player.dropTimer = 0;
       state.raid.player.health = 9999;
     });
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(1800);
+    await page.waitForFunction(() => window.__sdrFinalOpaqueInteractiveShellsBuilt === true, null, { timeout: 5000 });
 
     const result = await page.evaluate(() => {
       const raid = state.raid;
@@ -76,6 +77,23 @@ const { chromium } = require('playwright');
       );
 
       const interactiveOpaque = scene.meshes.filter(mesh => mesh.metadata?.finalInteractiveOpaqueShell);
+      const interactiveStructureIds = new Set(interactiveOpaque.map(mesh => mesh.metadata?.structureId).filter(Boolean));
+      const requiredInteractiveIds = ['center-depot','west-barracks','east-hangar','west-bunker','north-silo','south-yard-2'];
+      const allInteractiveStructuresCovered = requiredInteractiveIds.every(id => interactiveStructureIds.has(id));
+
+      let rayBlockedCount = 0;
+      for (const id of requiredInteractiveIds) {
+        const walls = interactiveOpaque.filter(mesh => mesh.metadata?.structureId === id && /wall|solid/i.test(String(mesh.name)));
+        if (!walls.length) continue;
+        const obstacle = obstacleDefs.find(o => o.id === id) ||
+          obstacleDefs.find(o => o.structureId === id);
+        if (!obstacle) continue;
+        const origin = new BABYLON.Vector3(obstacle.x - 30, 1.5, obstacle.z);
+        const target = new BABYLON.Vector3(obstacle.x + 30, 1.5, obstacle.z);
+        const dir = target.subtract(origin).normalize();
+        const pick = scene.pickWithRay(new BABYLON.Ray(origin, dir, 80), mesh => mesh.metadata?.finalInteractiveOpaqueShell === true);
+        if (pick?.hit) rayBlockedCount++;
+      }
       const badInteractiveOpaque = interactiveOpaque.filter(mesh =>
         mesh.isEnabled?.() === false ||
         mesh.isVisible === false ||
@@ -123,6 +141,9 @@ const { chromium } = require('playwright');
         badLinerCount: badLiners.length,
         interactiveOpaqueCount: interactiveOpaque.length,
         badInteractiveOpaqueCount: badInteractiveOpaque.length,
+        allInteractiveStructuresCovered,
+        interactiveStructureIds: [...interactiveStructureIds],
+        rayBlockedCount,
         x: player.x,
         z: player.z,
         transparentCount: transparent.length,
@@ -145,6 +166,8 @@ const { chromium } = require('playwright');
       result.badLinerCount !== 0 ||
       result.interactiveOpaqueCount < 12 ||
       result.badInteractiveOpaqueCount !== 0 ||
+      !result.allInteractiveStructuresCovered ||
+      result.rayBlockedCount < 6 ||
       result.structuralCount < 20 ||
       result.transparentCount !== 0 ||
       result.badDepthCount !== 0 ||
