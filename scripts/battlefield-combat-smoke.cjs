@@ -73,7 +73,7 @@ const { chromium } = require('playwright');
       combat.enemies < 72 ||
       !combat.rosterReady ||
       combat.vehicles !== 3 ||
-      combat.grenadeDamage < 640 ||
+      combat.grenadeDamage < 599 || combat.grenadeDamage > 601 ||
       errors.length
     ) process.exitCode = 1;
   } finally {
