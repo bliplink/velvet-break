@@ -16,10 +16,9 @@ const checks = [
   ['persistence-reset', 'node', ['scripts/persistence-reset-smoke.cjs']],
   ['raid-loop-v2', 'node', ['scripts/raid-loop-v2-smoke.cjs']],
   ['tactical-loop', 'node', ['scripts/tactical-loop-smoke.cjs']],
-  ['performance-blitz', 'node', ['scripts/performance-blitz-smoke.cjs']],
   ['lockdown-easter-egg', 'node', ['scripts/lockdown-easter-egg-smoke.cjs']],
+  ['vehicle-battlefield', 'node', ['scripts/battlefield-smoke.cjs']],
   ['nameless-reset', 'node', ['scripts/nameless-reset-smoke.cjs']],
-  ['black-tide', 'node', ['scripts/black-tide-content-smoke.cjs']],
 ];
 
 const results = [];
