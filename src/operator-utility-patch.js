@@ -35,13 +35,13 @@
     const SUPPORT_SMOKE_RADIUS = 20;
     const SUPPORT_SMOKE_CONTACT_RANGE = 2.2;
     const GRENADE_DAMAGE = 600;
+    const GRENADE_RADIUS = 26;
     window.__sdrKaiUtilityConfig = Object.freeze({
       grenadeDamage: GRENADE_DAMAGE,
       grenadeRadius: GRENADE_RADIUS,
       guardDuration: 8,
       guardDamageTakenMult: 0.60,
     });
-    const GRENADE_RADIUS = 26;
     let utilityView = null;
 
     const utilityName = (operatorId) => {
@@ -380,18 +380,19 @@
         nameEn: 'Kai',
         passiveZh: '男 · 前线突击手，初始护甲耐久 200，护甲耐久消耗减半；控枪更稳、换弹更快，过载击杀可持续续航。',
         passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption, plus steadier gun control, faster reloads, and stronger Overdrive kill sustain.',
-        skillTextZh: '手动启动：20 秒内进入过载状态；期间保留当前移速、伤害和击败续航强化。',
-        skillTextEn: 'Manual: 20s Overdrive duration while keeping the current speed, damage and kill-sustain bonuses.',
+        skillTextZh: '手动启动：25 秒进入强化过载；移速提升至 2.35 倍、枪械伤害提升至 2.5 倍，并获得 35% 减伤、强化控枪/换弹与击败续航。',
+        skillTextEn: 'Manual: 25s enhanced Overdrive with 2.35x movement, 2.5x weapon damage, 35% damage reduction, stronger handling/reload and kill sustain.',
         itemNameZh: '高级手雷',
         itemNameEn: 'Advanced Grenade',
-        abilityDuration: 20,
-        speedBoostMult: 2,
-        damageBoostMult: 2,
-        killExtendSeconds: 1.5,
-        killHeal: 90,
-        spreadMult: 0.70,
-        recoilMult: 0.72,
-        reloadMult: 0.72,
+        abilityDuration: 25,
+        speedBoostMult: 2.35,
+        damageBoostMult: 2.5,
+        killExtendSeconds: 2.0,
+        killHeal: 120,
+        spreadMult: 0.60,
+        recoilMult: 0.60,
+        reloadMult: 0.60,
+        abilityDamageTakenMult: 0.65,
         startArmorBonus: 170,
         armorDurabilityCostMult: 0.5,
       });
@@ -478,7 +479,7 @@
     };
 
     const createUtilityBurst = (position, color, count = 1.2) => {
-      spawnPulse(position, color, 0.16, 0.36);
+      // Utility impacts must not create the old spherical pulse. Keep only directional impact fragments/audio.
       spawnImpactBurst(position, color, count, 'hard');
       playImpactAudio(position, 'hard');
     };
