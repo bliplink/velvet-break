@@ -1042,8 +1042,38 @@
       };
     }
 
+    const useAbilityBeforeUniversalStartup = typeof useOperatorAbility === 'function' ? useOperatorAbility : null;
+    if (useAbilityBeforeUniversalStartup) {
+      useOperatorAbility = function useOperatorAbilityWithUniversalStartup(...args) {
+        const player = state.raid?.player;
+        const before = player ? {
+          active: Number(player.abilityActiveTimer ?? 0),
+          charges: Number(player.abilityCharges ?? 0),
+          uses: Number(player.skillUses ?? 0),
+          immunity: Number(player.damageImmunityTimer ?? 0),
+          phase: Number(player.phaseTimer ?? 0),
+          freeze: Number(player.claireFreezeTimer ?? 0),
+        } : null;
+        const result = useAbilityBeforeUniversalStartup.apply(this, args);
+        if (player && before) {
+          const used =
+            Number(player.abilityActiveTimer ?? 0) > before.active + 0.05 ||
+            Number(player.abilityCharges ?? 0) < before.charges ||
+            Number(player.skillUses ?? 0) < before.uses ||
+            Number(player.damageImmunityTimer ?? 0) > before.immunity + 0.05 ||
+            Number(player.phaseTimer ?? 0) > before.phase + 0.05 ||
+            Number(player.claireFreezeTimer ?? 0) > before.freeze + 0.05;
+          if (used) {
+            triggerUltimateStartFeedback(player);
+            previousUltimateActive = Number(player.abilityActiveTimer ?? 0) > 0;
+          }
+        }
+        return result;
+      };
+    }
+
     window.__sdrFinalPolishDebug = {
-      version: '20261003-operator-power7',
+      version: '20261004-combat-feedback25',
       nonSolidLoot: true,
       continuousEnemyVisuals: true,
       authoritativeStaminaHud: true,
