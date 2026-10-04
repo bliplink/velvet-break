@@ -93,10 +93,10 @@
         nameZh: '凯', nameEn: 'Kai',
         passiveZh: '男 · 前线突击手，初始护甲耐久 200，护甲耐久消耗减半；移动每秒消耗 5 点体力，控枪更稳、换弹更快，静止时恢复体力。',
         passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption. Movement costs 5 stamina/s; steadier aim, faster reloads, and stamina recovery while idle.',
-        skillTextZh: '手动启动：20 秒过载；保留当前移速、伤害与击败续航强化。',
-        skillTextEn: 'Manual: 20s Overdrive while keeping the current speed, damage and kill-sustain bonuses.',
-        spreadMult: 0.78, recoilMult: 0.80, reloadMult: 0.82, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
-        abilityDuration: 20, speedBoostMult: 1.65, damageBoostMult: 1.6, killExtendSeconds: 1.5, killHeal: 60,
+        skillTextZh: '手动启动：16 秒过载；获得中等移速、伤害与击败续航强化。',
+        skillTextEn: 'Manual: 16s Overdrive with moderate speed, damage and kill-sustain bonuses.',
+        spreadMult: 0.82, recoilMult: 0.84, reloadMult: 0.86, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
+        abilityDuration: 16, speedBoostMult: 1.40, damageBoostMult: 1.35, killExtendSeconds: 1.0, killHeal: 40,
       });
       if (defs.recon) Object.assign(defs.recon, {
         nameZh: '克莱尔', nameEn: 'Claire',
