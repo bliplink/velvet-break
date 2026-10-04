@@ -3,6 +3,7 @@ const { spawnSync } = require('node:child_process');
 const checks = [
   ['browser', 'npm', ['run', 'test:browser']],
   ['death-replay', 'node', ['scripts/death-replay-smoke.cjs']],
+  ['battlefield-combat', 'node', ['scripts/battlefield-combat-smoke.cjs']],
   ['visual-overhaul', 'node', ['scripts/visual-overhaul-smoke.cjs']],
   ['window-opacity', 'node', ['scripts/window-opacity-smoke.cjs']],
   ['performance-rescue', 'node', ['scripts/performance-rescue-smoke.cjs']],
