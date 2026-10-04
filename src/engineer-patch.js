@@ -361,7 +361,6 @@
       raid.engineerBarriers.push(barrier);
       disposeFireNode(player.barrierDeployAction?.visual);
       player.barrierDeployAction = { timer: 0, duration: 0.72, visual: makeBarrierProjectorVisual() };
-      spawnPulse(new BABYLON.Vector3(barrier.x, 0.8, barrier.z), '#58c8ff', 0.18, 0.18);
       notify(L('速凝掩体已部署：15 米，不可破坏。', 'Rapid Barrier deployed: 15m and indestructible.'), 'success');
       return true;
     };
@@ -895,7 +894,6 @@
       raid.incendiaryGrid ??= new rules.SpatialGrid();
       raid.incendiaryGrid.add(field);
       playImpactAudio(new BABYLON.Vector3(target.x, target.y, target.z), 'hard');
-      spawnPulse(new BABYLON.Vector3(target.x, target.y + 0.3, target.z), '#ff9a32', 0.22, 0.3);
     };
 
     const fireTargetAtMouse = () => {
@@ -991,7 +989,6 @@
         hits += 1;
       }
       spawnImpactBurst(new BABYLON.Vector3(target.x, target.y + 0.5, target.z), '#dff7ff', 2.4, 'hard');
-      spawnPulse(new BABYLON.Vector3(target.x, target.y + 0.35, target.z), '#9fe8ff', 0.34, 0.28);
       playImpactAudio(new BABYLON.Vector3(target.x, target.y + 0.4, target.z), 'hard');
       notify(
         L(`震撼弹命中 ${hits} 名敌人：10 秒内移速降至 10%，且无法跳跃、滑铲、翻滚或躲闪。`, `Stun Grenade hit ${hits} enemies: 10% movement speed for 10s and no jump, slide, roll, or dodge.`),
