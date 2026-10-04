@@ -33,6 +33,7 @@ const { chromium } = require('playwright');
       useOperatorAbility();
       syncHud();
       const kaiUlt = {
+        baseMaxArmor: maxBefore,
         active: (player.abilityActiveTimer ?? 0) > 0,
         maxArmorGain: player.maxArmor - maxBefore,
         armorGain: player.armor - armorBefore,
@@ -121,7 +122,7 @@ const { chromium } = require('playwright');
       !r.actionHud.frameActive ||
       !/瞄准|Aiming/i.test(r.actionHud.label) ||
       r.kaiRestored.ultArmorActive ||
-      r.kaiRestored.maxArmor !== r.kaiUlt.maxArmorGain + r.kaiRestored.maxArmor - r.kaiUlt.maxArmorGain ||
+      r.kaiRestored.maxArmor !== r.kaiUlt.baseMaxArmor ||
       errors.length
     ) process.exitCode = 1;
   } finally {
