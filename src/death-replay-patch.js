@@ -519,18 +519,10 @@
       );
     }
 
-    const playerForward = new BABYLON.Vector3(Math.sin(player.yaw), 0, Math.cos(player.yaw));
-    const playerRight = new BABYLON.Vector3(Math.cos(player.yaw), 0, -Math.sin(player.yaw));
-    const playerCamera = new BABYLON.Vector3(
-      player.x - playerForward.x * 4.35 + playerRight.x * 1.18,
-      player.y + 3.0,
-      player.z - playerForward.z * 4.35 + playerRight.z * 1.18,
-    );
-
     const playerChest = new BABYLON.Vector3(player.x, player.y + 1.22, player.z);
-    let desiredCamera = playerCamera;
+    let desiredCamera = playerChest.clone();
     let cameraTarget = playerChest.clone();
-    let targetFov = 0.88;
+    let targetFov = 0.76;
 
     if (attackerFrame) {
       const attackerForward = new BABYLON.Vector3(
@@ -538,48 +530,41 @@
         0,
         Math.cos(attackerFrame.heading),
       );
-      const attackerRight = new BABYLON.Vector3(
-        Math.cos(attackerFrame.heading),
-        0,
-        -Math.sin(attackerFrame.heading),
-      );
-      const attackerHead = new BABYLON.Vector3(attackerFrame.x, attackerFrame.y + 1.76, attackerFrame.z);
+      const attackerHead = new BABYLON.Vector3(attackerFrame.x, attackerFrame.y + 1.72, attackerFrame.z);
 
-      // Show the killer from the front/three-quarter side. A rear shoulder
-      // camera hides the firing animation and feels like spectating behind the AI.
-      const frontSideCamera = attackerHead
-        .add(attackerForward.scale(3.25))
-        .add(attackerRight.scale(0.95))
-        .add(new BABYLON.Vector3(0, 0.32, 0));
-      const closeFrontCamera = attackerHead
-        .add(attackerForward.scale(1.85))
-        .add(attackerRight.scale(0.48))
-        .add(new BABYLON.Vector3(0, 0.12, 0));
+      // Entire replay stays in the killer's first-person view.
+      // Move slightly in front of the head mesh so the camera never sits inside the helmet.
+      desiredCamera = attackerHead.add(attackerForward.scale(0.18));
+      cameraTarget = playerChest;
+      const aimDelta = cameraTarget.subtract(desiredCamera);
+      if (aimDelta.lengthSquared() < 0.0001) {
+        cameraTarget = desiredCamera.add(attackerForward.scale(12));
+      }
 
-      const shoulderBlend = smoothstep((replayProgress - 0.48) / 0.22);
-      const eyeBlend = smoothstep((replayProgress - 0.72) / 0.12);
-      desiredCamera = BABYLON.Vector3.Lerp(playerCamera, frontSideCamera, shoulderBlend);
-      desiredCamera = BABYLON.Vector3.Lerp(desiredCamera, closeFrontCamera, eyeBlend * 0.72);
-      const cameraFromAttacker = desiredCamera.subtract(attackerHead);
-      replay.killerCameraFrontDot = BABYLON.Vector3.Dot(
-        new BABYLON.Vector3(cameraFromAttacker.x, 0, cameraFromAttacker.z).normalize(),
-        attackerForward,
-      );
-      const attackerChest = attackerHead.add(new BABYLON.Vector3(0, -0.48, 0));
-      cameraTarget = BABYLON.Vector3.Lerp(playerChest, attackerChest, Math.max(shoulderBlend * 0.72, eyeBlend));
-      targetFov = interpolate(0.84, 0.64, Math.max(shoulderBlend * 0.72, eyeBlend));
-
-      if (shoulderBlend > 0.25) {
+      replay.killerViewShown = true;
+      replay.killerCameraFrontDot = 1;
+      overlay.classList.add('killer-view');
+      perspectiveEl.textContent = L('击杀者第一视角', 'KILLER FIRST-PERSON');
+    } else {
+      const fallbackAttacker = replay.attacker;
+      if (fallbackAttacker) {
+        const heading = fallbackAttacker.heading ?? 0;
+        const forward = new BABYLON.Vector3(Math.sin(heading), 0, Math.cos(heading));
+        desiredCamera = new BABYLON.Vector3(
+          fallbackAttacker.x + forward.x * 0.18,
+          floorHeight(fallbackAttacker) + 1.72,
+          fallbackAttacker.z + forward.z * 0.18,
+        );
+        cameraTarget = playerChest;
         replay.killerViewShown = true;
+        replay.killerCameraFrontDot = 1;
         overlay.classList.add('killer-view');
-        perspectiveEl.textContent = eyeBlend > 0.55
-          ? L('击杀者正面特写', 'KILLER FRONT CLOSE-UP')
-          : L('击杀者侧前视角', 'KILLER FRONT-SIDE VIEW');
+        perspectiveEl.textContent = L('击杀者第一视角', 'KILLER FIRST-PERSON');
       }
     }
 
-    const safeCamera = resolveCameraCollision(cameraTarget, desiredCamera);
-    camera.position.copyFrom(safeCamera);
+    replay.marker.root.setEnabled(false);
+    camera.position.copyFrom(desiredCamera);
     camera.setTarget(cameraTarget);
     camera.fov = targetFov;
 
@@ -589,14 +574,10 @@
     overlay.classList.toggle('freeze', freezeWindow);
 
     const actionLabel = getPlayerActionLabel(player);
-    if (replayProgress >= 0.76) {
-      phaseEl.textContent = L('致命一击', 'FATAL SHOT');
-    } else if (replayProgress >= 0.50) {
-      phaseEl.textContent = L('击杀者视角', 'KILLER VIEW');
-    } else {
-      phaseEl.textContent = L(`玩家当时：${actionLabel}`, `PLAYER ACTION: ${actionLabel}`);
-      perspectiveEl.textContent = L('玩家动作追踪', 'PLAYER ACTION TRACK');
-    }
+    perspectiveEl.textContent = L('击杀者第一视角', 'KILLER FIRST-PERSON');
+    phaseEl.textContent = replayProgress >= 0.76
+      ? L('致命一击', 'FATAL SHOT')
+      : L('击杀者第一视角', 'KILLER FIRST-PERSON');
 
     if (freezeWindow) {
       replay.freezeShown = true;
@@ -604,12 +585,10 @@
     } else if (fatalWindow) {
       impactTextEl.textContent = L('致命弹道', 'FATAL TRAJECTORY');
     } else {
-      impactTextEl.textContent = replayProgress < 0.50
-        ? L(
-            `${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} 发`,
-            `${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} rounds`,
-          )
-        : '';
+      impactTextEl.textContent = L(
+        `目标动作：${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} 发`,
+        `Target action: ${actionLabel} · ${player.weapon ?? ''} · ${player.ammoInMag ?? 0} rounds`,
+      );
     }
 
     if (!replay.fatalTracer && replayProgress >= 0.815 && attackerFrame) {
@@ -726,7 +705,7 @@
   };
 
   window.__sdrReplayDebug = {
-    version: '2026-10-04-killcam-v6-front',
+    version: '2026-10-04-killcam-v7-first-person',
     get active() { return Boolean(replay); },
     get frames() { return history.length; },
     get elapsed() { return replay?.elapsed ?? 0; },
