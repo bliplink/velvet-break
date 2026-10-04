@@ -579,6 +579,10 @@
           player.claireInvisibleTimer = Math.max(0, Number(player.claireInvisibleTimer ?? 0) - dt);
         }
         const result = updateRaidBeforeClaireTimers.call(this, dt, ...args);
+        if (player) {
+          player.kaiUtilityGuardTimer = Math.max(0, Number(player.kaiUtilityGuardTimer ?? 0) - dt);
+          if ((player.kaiUtilityGuardTimer ?? 0) <= 0) player.kaiUtilityDamageTakenMult = 1;
+        }
         if (!window.__sdrFinalOpaqueInteractiveShellsBuilt) buildFinalOpaqueInteractiveShells();
         // Run last so no earlier patch can reopen enemy x-ray rendering in the same frame.
         syncReconWallRevealDepth();
