@@ -96,7 +96,7 @@
         skillTextZh: '手动启动：16 秒过载；获得中等移速、伤害与击败续航强化。',
         skillTextEn: 'Manual: 16s Overdrive with moderate speed, damage and kill-sustain bonuses.',
         spreadMult: 0.82, recoilMult: 0.84, reloadMult: 0.86, startArmorBonus: 170, armorDurabilityCostMult: 0.5,
-        abilityDuration: 16, speedBoostMult: 1.40, damageBoostMult: 1.35, killExtendSeconds: 1.0, killHeal: 40,
+        abilityDuration: 28, speedBoostMult: 1.65, damageBoostMult: 1.60, killExtendSeconds: 1.5, killHeal: 60,
       });
       if (defs.recon) Object.assign(defs.recon, {
         nameZh: '克莱尔', nameEn: 'Claire',
