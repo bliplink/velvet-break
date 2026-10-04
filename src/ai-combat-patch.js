@@ -240,7 +240,13 @@
 
       if (type === 'stun') {
         enemyUtilityDebug.stuns += 1;
-        if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(targetX, 0.7, targetZ), '#f6efc8', 0.75, 'hard');
+        if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(targetX, 0.7, targetZ), 'hard');
+        if (typeof spawnSmokePuff === 'function') {
+          for (let i = 0; i < 7; i++) {
+            const angle = i / 7 * Math.PI * 2;
+            spawnSmokePuff(new BABYLON.Vector3(targetX + Math.cos(angle) * 0.7, 0.35 + (i % 2) * 0.18, targetZ + Math.sin(angle) * 0.7), '#e7edf0', 0.18, 0.28);
+          }
+        }
         if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
           player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
           player.aiStunMobilityLockTimer = Math.max(player.aiStunMobilityLockTimer ?? 0, 2.5);
@@ -253,7 +259,14 @@
       }
 
       enemyUtilityDebug.grenades += 1;
-      if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(targetX, 0.55, targetZ), '#ff9b5a', 1.05, 'hard');
+      if (typeof playImpactAudio === 'function') playImpactAudio(new BABYLON.Vector3(targetX, 0.55, targetZ), 'hard');
+      if (typeof spawnSmokePuff === 'function') {
+        for (let i = 0; i < 10; i++) {
+          const angle = i / 10 * Math.PI * 2;
+          const radius = 0.45 + (i % 3) * 0.28;
+          spawnSmokePuff(new BABYLON.Vector3(targetX + Math.cos(angle) * radius, 0.28 + (i % 2) * 0.22, targetZ + Math.sin(angle) * radius), '#9c6b58', 0.24, 0.42);
+        }
+      }
       if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
         const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
         applyDamageToPlayer(damage);
