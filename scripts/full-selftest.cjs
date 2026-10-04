@@ -34,11 +34,13 @@ const results = [];
 for (const [name, cmd, args] of checks) {
   process.stdout.write(`\n===== SELFTEST ${name} =====\n`);
   const started = Date.now();
-  const run = spawnSync(cmd, args, { encoding: 'utf8', env: process.env, maxBuffer: 20 * 1024 * 1024 });
+  const run = spawnSync(cmd, args, { encoding: 'utf8', env: process.env, maxBuffer: 20 * 1024 * 1024, timeout: 90000 });
   if (run.stdout) process.stdout.write(run.stdout);
   if (run.stderr) process.stderr.write(run.stderr);
-  const ok = run.status === 0;
-  results.push({ name, ok, exitCode: run.status, ms: Date.now() - started });
+  const timedOut = Boolean(run.error && run.error.code === 'ETIMEDOUT');
+  const ok = run.status === 0 && !timedOut;
+  results.push({ name, ok, exitCode: run.status, timedOut, ms: Date.now() - started });
+  if (timedOut) process.stderr.write(`SELFTEST_TIMEOUT: ${name}\n`);
   process.stdout.write(`===== ${name}: ${ok ? 'PASS' : 'FAIL'} =====\n`);
 }
 process.stdout.write('\n===== FULL SELFTEST SUMMARY =====\n');
