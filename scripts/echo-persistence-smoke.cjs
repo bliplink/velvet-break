@@ -17,7 +17,7 @@ const { chromium } = require('playwright');
       state.mode = 'base';
       state.save.money = 250000;
       state.save.echoUnlocked = false;
-      state.save.selectedModeId = 'contract';
+      state.save.selectedModeId = 'battlefield';
       persistSave();
       renderBasePanel();
       const before = state.save.money;
@@ -40,7 +40,7 @@ const { chromium } = require('playwright');
     }));
 
     const inRaid = await page.evaluate(() => {
-      state.save.selectedModeId = 'contract';
+      state.save.selectedModeId = 'battlefield';
       renderBasePanel();
       startRaid();
       const player = state.raid.player;
@@ -65,13 +65,13 @@ const { chromium } = require('playwright');
 
     const ok = Boolean(
       purchase.entry &&
-      purchase.mode === 'contract' &&
+      purchase.mode === 'battlefield' &&
       purchase.bought === true &&
       purchase.unlocked &&
       purchase.moneyDelta === 100000 &&
       reload.unlocked &&
       reload.entryDisabled === true &&
-      inRaid.modeId === 'contract' &&
+      inRaid.modeId === 'battlefield' &&
       inRaid.equipped &&
       inRaid.started &&
       inRaid.action &&
