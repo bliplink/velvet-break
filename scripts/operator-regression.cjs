@@ -58,7 +58,7 @@ function raid(operatorId = 'engineer') {
 function key(code) { for (const callback of listeners) callback({ code, preventDefault: noop, stopImmediatePropagation: noop }); }
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-6, `${a} != ${b}`);
 let r = raid();
-assert.equal(context.getOperatorDefs().assault.abilityDuration, 28);
+assert.equal(context.getOperatorDefs().assault.abilityDuration, 20);
 assert.equal(context.getOperatorDefs().assault.killHeal, 60);
 assert.equal(context.getOperatorDefs().assault.killExtendSeconds, 1.5);
 close(context.getOperatorDefs().assault.spreadMult, 0.78);
