@@ -34,7 +34,7 @@
     const SUPPORT_SMOKE_TIME = 7;
     const SUPPORT_SMOKE_RADIUS = 20;
     const SUPPORT_SMOKE_CONTACT_RANGE = 2.2;
-    const GRENADE_DAMAGE = 800;
+    const GRENADE_DAMAGE = 400;
     const GRENADE_RADIUS = 26;
     let utilityView = null;
 
@@ -50,8 +50,8 @@
       if (operatorId === 'recon') return L('隐身器', 'Cloak');
       return L('烟雾', 'Smoke');
     };
-    const utilityMax = (operatorId) => operatorId === 'engineer' ? ENGINEER_UTILITY_MAX_ITEMS : operatorId === 'assault' ? 1 : UTILITY_MAX_ITEMS;
-    const utilityGainTime = (operatorId) => operatorId === 'recon' ? RECON_UTILITY_GAIN_TIME : operatorId === 'assault' ? 30 : UTILITY_GAIN_TIME;
+    const utilityMax = (operatorId) => operatorId === 'engineer' ? ENGINEER_UTILITY_MAX_ITEMS : UTILITY_MAX_ITEMS;
+    const utilityGainTime = (operatorId) => operatorId === 'recon' ? RECON_UTILITY_GAIN_TIME : UTILITY_GAIN_TIME;
 
     const ensureUtilityUi = () => {
       const hudLeft = document.querySelector('#hud .hud-left');
