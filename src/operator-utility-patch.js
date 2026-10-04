@@ -111,7 +111,7 @@
       ui.label.textContent = L('专属道具', 'Utility');
       ui.value.textContent = `${utilityName(player.operatorId)} ${count}/${maxItems}`;
       ui.detail.textContent = player.grenadeTargeting
-        ? L(`手雷落点 ${player.grenadeTargeting.distance.toFixed(0)} 米｜按 G 确认投掷`, `Grenade landing ${player.grenadeTargeting.distance.toFixed(0)}m | Press G to throw`)
+        ? L('选择落点｜滚轮调整距离｜按 G 投掷', 'Choose landing point | Mouse wheel adjusts distance | Press G to throw')
         : player.utilityAction
         ? L('使用中...', 'Using...')
         : ready
@@ -643,7 +643,7 @@
       }
       const type = player.operatorId;
       if (type === 'assault' && !player.grenadeTargeting) {
-        player.grenadeTargeting = { distance: 18, x: player.x, z: player.z };
+        player.grenadeTargeting = { distance: 12, x: player.x, z: player.z };
         updateGrenadeTargeting(player);
         raid.statusText = L('高级手雷｜移动鼠标选择落点，滚轮调整距离，按 G 确认投掷。', 'Advanced Grenade | Aim with the mouse, use the wheel to adjust distance, press G to throw.');
         syncUtilityUi();
