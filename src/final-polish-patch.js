@@ -585,6 +585,22 @@
     }
 
 
+    // Final mode authority: only Lockdown and Vehicle Battlefield are selectable.
+    const getLobbyModeDefsBeforeFinalModeTrim = typeof getLobbyModeDefs === 'function' ? getLobbyModeDefs : null;
+    if (getLobbyModeDefsBeforeFinalModeTrim) {
+      getLobbyModeDefs = function getFinalLobbyModeDefs() {
+        const defs = getLobbyModeDefsBeforeFinalModeTrim.apply(this, arguments) ?? {};
+        const finalDefs = {};
+        if (defs.raid) finalDefs.raid = defs.raid;
+        if (defs.battlefield) finalDefs.battlefield = defs.battlefield;
+        return finalDefs;
+      };
+      if (!['raid', 'battlefield'].includes(state.save?.selectedModeId)) {
+        state.save.selectedModeId = 'raid';
+        if (typeof persistSave === 'function') persistSave();
+      }
+    }
+
     // Final operator power pass. This lives in the last-loaded authority patch so
     // earlier operator/engineer/warden definitions cannot weaken it later.
     const getOperatorDefsBeforePowerPass = typeof getOperatorDefs === 'function' ? getOperatorDefs : null;
