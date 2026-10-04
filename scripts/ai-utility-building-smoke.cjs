@@ -45,7 +45,7 @@ const { chromium } = require('playwright');
     });
     console.log(JSON.stringify({ result, errors }, null, 2));
     const healthOk = result.healths.every(row => row.maxHealth >= (row.type === 'bruiser' ? 490 : row.type === 'hunter' ? 370 : 260));
-    if (result.normalCount < 30 || !healthOk || result.utilityThrows < 1 || result.utilityThrows > 4 || result.playerSlowTimer > 10.01 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
+    if (result.normalCount < 18 || result.normalCount > 22 || !healthOk || result.utilityThrows < 1 || result.utilityThrows > 4 || result.playerSlowTimer > 10.01 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
   } finally {
     await browser.close();
   }
