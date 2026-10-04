@@ -169,6 +169,9 @@
         const action = player.useAction;
         return { label: L(`正在${action.labelZh ?? '使用物品'}`, `Using: ${action.labelEn ?? 'item'}`), detail: L('动作完成前请保持操作', 'Action completes when the timer finishes'), color: action.flavor === 'armor' ? '#93c9ff' : '#82f2b2', remaining: player.healTimer, duration: action.duration };
       }
+      if (player.healTimer > 0) {
+        return { label: L('正在治疗', 'Healing'), detail: `${player.healTimer.toFixed(1)}s`, color: '#82f2b2', remaining: player.healTimer, duration: Math.max(player.healTimer, PLAYER_HEAL_COOLDOWN ?? player.healTimer) };
+      }
       if (player.utilityAction) {
         const type = player.utilityAction.type;
         const name = type === 'assault' ? L('正在投掷高级手雷', 'Throwing Advanced Grenade')
