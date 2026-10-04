@@ -75,6 +75,16 @@ const { chromium } = require('playwright');
         mesh.material?.disableDepthWrite === true
       );
 
+      const interactiveOpaque = scene.meshes.filter(mesh => mesh.metadata?.finalInteractiveOpaqueShell);
+      const badInteractiveOpaque = interactiveOpaque.filter(mesh =>
+        mesh.isEnabled?.() === false ||
+        mesh.isVisible === false ||
+        (mesh.visibility ?? 1) < 0.999 ||
+        (mesh.material?.alpha ?? 1) < 0.999 ||
+        mesh.renderingGroupId !== 0 ||
+        mesh.material?.disableDepthWrite === true
+      );
+
       const structural = scene.meshes.filter(mesh => {
         const name = String(mesh?.name ?? '');
         const parentName = String(mesh?.parent?.name ?? '');
@@ -111,6 +121,8 @@ const { chromium } = require('playwright');
         wallAdvance,
         linerCount: liners.length,
         badLinerCount: badLiners.length,
+        interactiveOpaqueCount: interactiveOpaque.length,
+        badInteractiveOpaqueCount: badInteractiveOpaque.length,
         x: player.x,
         z: player.z,
         transparentCount: transparent.length,
@@ -131,6 +143,8 @@ const { chromium } = require('playwright');
       result.wallAdvance > 1.4 ||
       result.linerCount < 8 ||
       result.badLinerCount !== 0 ||
+      result.interactiveOpaqueCount < 12 ||
+      result.badInteractiveOpaqueCount !== 0 ||
       result.structuralCount < 20 ||
       result.transparentCount !== 0 ||
       result.badDepthCount !== 0 ||
