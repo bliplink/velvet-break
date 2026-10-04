@@ -35,7 +35,7 @@
     window.__sdrContentExpansionApplied = true;
 
     const BATTLEFIELD_ID = 'battlefield';
-    const BATTLEFIELD_ENABLED = false;
+    const BATTLEFIELD_ENABLED = true;
     const BATTLEFIELD_ENEMY_COUNT = 72;
     const BATTLEFIELD_EXTRA_CONTAINERS = 10;
     const BATTLEFIELD_VISUAL_RADIUS = 86;
@@ -51,14 +51,14 @@
       if (!BATTLEFIELD_ENABLED) return modes;
       modes[BATTLEFIELD_ID] = {
         id: BATTLEFIELD_ID,
-        nameZh: '大战场',
-        nameEn: 'Battlefield',
-        summaryZh: '多线交火的大地图玩法，更多敌人、更多补给，撤离路线自由选择。',
-        summaryEn: 'A large multi-front raid with more hostiles, more supplies, and open extraction choices.',
-        detailZh: '12 分钟限时，72 名敌人，战场区域扩大至 1.5 倍；不设置波次，压力来自持续交火。',
-        detailEn: '12-minute limit, 72 hostiles, and a 1.5x battlefield area. No waves; pressure comes from sustained contact.',
-        deployZh: '进入大战场',
-        deployEn: 'Enter Battlefield',
+        nameZh: '载具战场',
+        nameEn: 'Vehicle Battlefield',
+        summaryZh: '大规模交火 + 可驾驶装甲载具。驾驶载具穿越战区、碾压敌人并完成撤离。',
+        summaryEn: 'Large-scale combat with drivable armored vehicles. Cross the battlefield, run down hostiles, and extract.'
+        detailZh: '12 分钟限时，72 名敌人，部署 3 辆装甲越野车。E 上下车，WASD 驾驶；载具有独立耐久和碰撞伤害。',
+        detailEn: '12-minute limit, 72 hostiles, and 3 armored vehicles. Press E to enter/exit, WASD to drive; vehicles have durability and impact damage.'
+        deployZh: '进入载具战场',
+        deployEn: 'Enter Vehicle Battlefield',
         duration: 12 * 60,
         bonusReward: 18000,
         objectiveFactory: () => [],
@@ -66,10 +66,10 @@
           return chooseRaidExtractions(playerSpawn);
         },
         getStartInteractionText() {
-          return L('大战场：普通撤离点已开放，拉闸撤离仍需先拉闸。', 'Battlefield: standard extraction is open; the gated exit still needs its lever.');
+          return L('载具战场：普通撤离点开放。靠近载具按 E 上车，WASD 驾驶。', 'Vehicle Battlefield: standard extraction is open. Approach a vehicle and press E; drive with WASD.');
         },
         getStartNotice() {
-          return L('大战场已开始：72 名敌人已部署，战场区域扩大，物资点已增密。', 'Battlefield started: 72 hostiles deployed across the expanded battlefield with reinforced loot.');
+          return L('载具战场开始：72 名敌人和 3 辆装甲越野车已部署。按 E 上下车，WASD 驾驶。', 'Vehicle Battlefield started: 72 hostiles and 3 armored vehicles deployed. Press E to enter/exit; drive with WASD.');
         },
       };
       return modes;
@@ -100,6 +100,198 @@
       return result;
     };
 
+
+    const createBattlefieldVehicleVisual = (vehicle) => {
+      const root = new BABYLON.TransformNode(`battlefield-vehicle-${vehicle.id}`, scene);
+      root.position.set(vehicle.x, 0, vehicle.z);
+      root.rotation.y = vehicle.yaw ?? 0;
+
+      const bodyMat = new BABYLON.StandardMaterial(`battlefield-vehicle-body-mat-${vehicle.id}`, scene);
+      bodyMat.diffuseColor = BABYLON.Color3.FromHexString('#4b5f55');
+      bodyMat.emissiveColor = BABYLON.Color3.FromHexString('#111b17');
+      bodyMat.specularColor = BABYLON.Color3.Black();
+
+      const darkMat = new BABYLON.StandardMaterial(`battlefield-vehicle-dark-mat-${vehicle.id}`, scene);
+      darkMat.diffuseColor = BABYLON.Color3.FromHexString('#20292a');
+      darkMat.specularColor = BABYLON.Color3.Black();
+
+      const body = BABYLON.MeshBuilder.CreateBox(`battlefield-vehicle-body-${vehicle.id}`, { width: 2.35, height: 0.72, depth: 4.25 }, scene);
+      body.parent = root;
+      body.position.y = 0.82;
+      body.material = bodyMat;
+
+      const cabin = BABYLON.MeshBuilder.CreateBox(`battlefield-vehicle-cabin-${vehicle.id}`, { width: 2.05, height: 0.95, depth: 1.85 }, scene);
+      cabin.parent = root;
+      cabin.position.set(0, 1.48, -0.35);
+      cabin.material = bodyMat;
+
+      const hood = BABYLON.MeshBuilder.CreateBox(`battlefield-vehicle-hood-${vehicle.id}`, { width: 2.0, height: 0.34, depth: 1.15 }, scene);
+      hood.parent = root;
+      hood.position.set(0, 1.03, 1.47);
+      hood.material = bodyMat;
+
+      const bumper = BABYLON.MeshBuilder.CreateBox(`battlefield-vehicle-bumper-${vehicle.id}`, { width: 2.45, height: 0.22, depth: 0.22 }, scene);
+      bumper.parent = root;
+      bumper.position.set(0, 0.56, 2.18);
+      bumper.material = darkMat;
+
+      for (const side of [-1, 1]) {
+        for (const z of [-1.35, 1.35]) {
+          const wheel = BABYLON.MeshBuilder.CreateCylinder(`battlefield-vehicle-wheel-${vehicle.id}-${side}-${z}`, {
+            height: 0.32, diameter: 0.74, tessellation: 16,
+          }, scene);
+          wheel.parent = root;
+          wheel.position.set(side * 1.12, 0.5, z);
+          wheel.rotation.z = Math.PI / 2;
+          wheel.material = darkMat;
+        }
+      }
+
+      for (const mesh of root.getChildMeshes()) {
+        mesh.isPickable = true;
+        mesh.metadata = { vehicleId: vehicle.id, battlefieldVehicle: true };
+      }
+      vehicle.visual = { root, bodyMat, darkMat };
+      return vehicle.visual;
+    };
+
+    const disposeBattlefieldVehicles = (raid = state.raid) => {
+      for (const vehicle of raid?.vehicles ?? []) vehicle.visual?.root?.dispose?.(false, true);
+      if (raid) {
+        raid.vehicles = [];
+        if (raid.player) raid.player.mountedVehicleId = null;
+      }
+    };
+
+    const spawnBattlefieldVehicles = (raid) => {
+      if (!raid || raid.modeId !== BATTLEFIELD_ID) return;
+      disposeBattlefieldVehicles(raid);
+      const points = [
+        { x: -22, z: -4, yaw: 0.25 },
+        { x: 58, z: -52, yaw: -1.15 },
+        { x: -72, z: 62, yaw: 2.3 },
+      ];
+      raid.vehicles = points.map((point, index) => {
+        const placed = resolveStaticPlacement(point.x, point.z, 2.4);
+        const vehicle = {
+          id: `armored-jeep-${index + 1}`,
+          x: placed.x,
+          z: placed.z,
+          yaw: point.yaw,
+          speed: 0,
+          health: 1200,
+          maxHealth: 1200,
+          radius: 1.35,
+          occupied: false,
+          impactCooldowns: new Map(),
+          visual: null,
+        };
+        createBattlefieldVehicleVisual(vehicle);
+        return vehicle;
+      });
+      raid.vehicleKills = 0;
+    };
+
+    const getMountedBattlefieldVehicle = (raid = state.raid) => {
+      const id = raid?.player?.mountedVehicleId;
+      return id ? raid.vehicles?.find((vehicle) => vehicle.id === id) ?? null : null;
+    };
+
+    const enterOrExitBattlefieldVehicle = () => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (!raid || raid.modeId !== BATTLEFIELD_ID || !player || state.overlay) return false;
+      const mounted = getMountedBattlefieldVehicle(raid);
+      if (mounted) {
+        mounted.occupied = false;
+        player.mountedVehicleId = null;
+        player.x = mounted.x + Math.cos(mounted.yaw) * 2.2;
+        player.z = mounted.z - Math.sin(mounted.yaw) * 2.2;
+        notify(L('已下车。', 'Exited vehicle.'), 'success');
+        return true;
+      }
+      let nearest = null;
+      let nearestDistance = Infinity;
+      for (const vehicle of raid.vehicles ?? []) {
+        if (vehicle.health <= 0 || vehicle.occupied) continue;
+        const distance = distance2D(player.x, player.z, vehicle.x, vehicle.z);
+        if (distance < nearestDistance) {
+          nearest = vehicle;
+          nearestDistance = distance;
+        }
+      }
+      if (!nearest || nearestDistance > 3.4) return false;
+      nearest.occupied = true;
+      player.mountedVehicleId = nearest.id;
+      player.mobilityAction = null;
+      player.x = nearest.x;
+      player.z = nearest.z;
+      notify(L('已进入装甲越野车：WASD 驾驶，E 下车。', 'Entered armored vehicle: WASD to drive, E to exit.'), 'success');
+      return true;
+    };
+
+    window.__sdrEnterOrExitBattlefieldVehicle = enterOrExitBattlefieldVehicle;
+    window.addEventListener('keydown', (event) => {
+      if (event.repeat || event.code !== 'KeyE') return;
+      if (state.raid?.modeId !== BATTLEFIELD_ID) return;
+      if (enterOrExitBattlefieldVehicle()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    }, true);
+
+    const updateBattlefieldVehicles = (dt) => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (!raid || raid.modeId !== BATTLEFIELD_ID || !player) return;
+      const vehicle = getMountedBattlefieldVehicle(raid);
+      if (!vehicle) return;
+
+      const forward = (state.input.keys.has('KeyW') || state.input.keys.has('ArrowUp') ? 1 : 0) -
+        (state.input.keys.has('KeyS') || state.input.keys.has('ArrowDown') ? 1 : 0);
+      const steer = (state.input.keys.has('KeyD') || state.input.keys.has('ArrowRight') ? 1 : 0) -
+        (state.input.keys.has('KeyA') || state.input.keys.has('ArrowLeft') ? 1 : 0);
+
+      const targetSpeed = forward * (forward >= 0 ? 15.5 : 8.5);
+      vehicle.speed += (targetSpeed - vehicle.speed) * Math.min(1, dt * 3.4);
+      if (!forward) vehicle.speed *= Math.pow(0.86, dt * 10);
+      const steerStrength = Math.min(1, Math.abs(vehicle.speed) / 6);
+      vehicle.yaw += steer * dt * 1.35 * steerStrength * (vehicle.speed >= 0 ? 1 : -1);
+
+      const dx = Math.sin(vehicle.yaw) * vehicle.speed * dt;
+      const dz = Math.cos(vehicle.yaw) * vehicle.speed * dt;
+      const carrier = { x: vehicle.x, z: vehicle.z, radius: vehicle.radius };
+      moveEntityWithCollision(carrier, dx, dz, vehicle.radius);
+      vehicle.x = carrier.x;
+      vehicle.z = carrier.z;
+      vehicle.visual?.root?.position.set(vehicle.x, 0, vehicle.z);
+      if (vehicle.visual?.root) vehicle.visual.root.rotation.y = vehicle.yaw;
+
+      player.x = vehicle.x;
+      player.z = vehicle.z;
+      player.yaw = vehicle.yaw;
+      player.sprinting = false;
+      player.stamina = Math.min(player.maxStamina ?? 100, (player.stamina ?? 100) + dt * 8);
+
+      for (const [enemyId, remaining] of [...vehicle.impactCooldowns.entries()]) {
+        const next = remaining - dt;
+        if (next <= 0) vehicle.impactCooldowns.delete(enemyId);
+        else vehicle.impactCooldowns.set(enemyId, next);
+      }
+      if (Math.abs(vehicle.speed) >= 5) {
+        for (const enemy of raid.enemies ?? []) {
+          if (enemy.dead || enemy.despawned || vehicle.impactCooldowns.has(enemy.id)) continue;
+          if (distance2D(vehicle.x, vehicle.z, enemy.x, enemy.z) > 2.0) continue;
+          const damage = Math.round(55 + Math.min(145, Math.abs(vehicle.speed) * 8));
+          const wasAlive = !enemy.dead;
+          damageEnemy(enemy, damage, { utilityKind: 'vehicle-impact', ignoreSmoke: true });
+          vehicle.impactCooldowns.set(enemy.id, 0.9);
+          vehicle.speed *= 0.78;
+          if (wasAlive && enemy.dead) raid.vehicleKills = (raid.vehicleKills ?? 0) + 1;
+        }
+      }
+    };
+
     const originalPatchedStartRaid = window.__sdrPatchedStartRaid;
     if (typeof originalPatchedStartRaid === 'function') {
       window.__sdrPatchedStartRaid = function startProductionBattlefield() {
@@ -108,6 +300,7 @@
         if (!raid || raid.modeId !== BATTLEFIELD_ID) return result;
         raid.isBattlefield = true;
         raid.battlefieldScale = 1.5;
+        spawnBattlefieldVehicles(raid);
 
         // The final runtime owns the enemy-spawn call, so top up here as a
         // post-start invariant. This keeps the mode at exactly 72 enemies
@@ -276,8 +469,15 @@
       if (state.raid?.modeId === BATTLEFIELD_ID) {
         enforceBattlefieldRoster(state.raid);
         ensureNearbyBattlefieldVisuals(state.raid);
+        updateBattlefieldVehicles(dt);
       }
       return result;
+    };
+
+    const clearRaidBeforeBattlefieldVehicles = clearRaid;
+    clearRaid = function clearRaidWithBattlefieldVehicleCleanup(...args) {
+      disposeBattlefieldVehicles(state.raid);
+      return clearRaidBeforeBattlefieldVehicles.apply(this, args);
     };
 
     const RESET_DAY_KEY = 'iron-extraction-reset-day-v1';
