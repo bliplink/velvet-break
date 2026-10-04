@@ -616,22 +616,7 @@
         let hits = 0;
         for (const enemy of raid.enemies) {
           if (enemy.dead || distance2D(center.x, center.z, enemy.x, enemy.z) > GRENADE_RADIUS) continue;
-          const grenadeReduction = enemy.isNamelessBoss
-            ? 0.40
-            : enemy.isNamelessMinion
-              ? 0.30
-              : enemy.type === 'bruiser'
-                ? 0.25
-                : enemy.type === 'hunter'
-                  ? 0.15
-                  : 0.10;
-          const savedReduction = enemy.damageReduction;
-          enemy.damageReduction = Math.max(Number(savedReduction ?? 0), grenadeReduction);
-          try {
-            damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
-          } finally {
-            enemy.damageReduction = savedReduction;
-          }
+          damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
           hits += 1;
         }
 
