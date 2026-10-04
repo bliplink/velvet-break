@@ -128,6 +128,13 @@ jobs:
       - name: Verify Echo purchase persistence across modes
         run: node scripts/echo-persistence-smoke.cjs
 
+      - name: Verify Echo Phase and Kai balance
+        run: node scripts/echo-kai-balance-smoke.cjs
+
+      - name: Verify ultimate and action feedback HUD
+        run: node scripts/combat-feedback-smoke.cjs
+
+
       - name: Verify persistence shop and protected reset
         run: node scripts/persistence-reset-smoke.cjs
 
