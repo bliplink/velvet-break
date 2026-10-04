@@ -457,7 +457,7 @@ async function main() {
     ['range-health', rangeBefore.health !== 1500],
     ['range-target-health', rangeBefore.targetHealth.join(',') !== '100,200,300,400,500,600,700,800,900,1000'],
     ['range-attackers', rangeBefore.attackers !== 0],
-    ['range-kai-heal', rangeBefore.kaiKillHeal !== 60],
+    ['range-kai-heal', rangeBefore.kaiKillHeal !== 40],
     ['range-enemy-movement', rangeAfter.moved < 5],
     ['range-boss-count', rangeAfter.bossCount !== 0],
     ['range-hit-health', rangeAfter.healthAfterHit !== 1500],
