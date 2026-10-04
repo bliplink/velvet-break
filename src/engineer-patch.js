@@ -622,28 +622,36 @@
         } else {
           execution.timer = Math.max(0, execution.timer - dt);
           const progress = 1 - execution.timer / execution.duration;
-          const backX = -Math.sin(enemy.heading ?? 0);
-          const backZ = -Math.cos(enemy.heading ?? 0);
+          const approach = Math.max(0, Math.min(1, progress / 0.28));
+          const strike = Math.max(0, Math.min(1, (progress - 0.24) / 0.34));
+          const impactWave = Math.sin(Math.max(0, Math.min(1, (progress - 0.34) / 0.34)) * Math.PI);
+          const recover = Math.max(0, Math.min(1, (progress - 0.64) / 0.36));
           const swing = Math.sin(Math.min(1, progress) * Math.PI);
+
           if (enemy.visual?.root) {
-            enemy.visual.root.rotation.x = swing * 0.3;
-            enemy.visual.root.rotation.z = -swing * 0.64;
-            enemy.visual.root.position.y = -Math.max(0, progress - 0.48) * 0.52;
+            enemy.visual.root.rotation.x = strike * 0.42 + recover * 0.56;
+            enemy.visual.root.rotation.z = -strike * 0.78 - recover * 0.42;
+            enemy.visual.root.position.y = -Math.max(0, progress - 0.42) * 0.68;
+            enemy.visual.root.position.x += Math.sin(enemy.heading ?? 0) * impactWave * 0.08;
+            enemy.visual.root.position.z += Math.cos(enemy.heading ?? 0) * impactWave * 0.08;
           }
           if (typeof viewModel !== 'undefined' && viewModel?.root) {
-            viewModel.root.position.z -= swing * 0.78;
-            viewModel.root.position.x += (progress < 0.56 ? -1 : 1) * swing * 0.18;
-            viewModel.root.rotation.x += swing * 0.42;
-            viewModel.root.rotation.z += (progress < 0.56 ? -1 : 1) * swing * 0.24;
+            viewModel.root.position.z -= approach * 0.34 + strike * 0.62 - recover * 0.20;
+            viewModel.root.position.x += Math.sin(progress * Math.PI * 2) * (0.08 + strike * 0.16);
+            viewModel.root.position.y += approach * 0.06 - impactWave * 0.10 + recover * 0.05;
+            viewModel.root.rotation.x += approach * 0.16 + strike * 0.58 - recover * 0.22;
+            viewModel.root.rotation.y += Math.sin(progress * Math.PI) * 0.18;
+            viewModel.root.rotation.z += (progress < 0.58 ? -1 : 1) * swing * 0.34;
           }
           const overlay = ensureExecutionOverlay();
           overlay.style.setProperty('--execution-progress', progress.toFixed(3));
-          overlay.classList.toggle('is-impact', progress >= 0.48 && progress <= 0.76);
+          overlay.classList.toggle('is-impact', progress >= 0.44 && progress <= 0.70);
           overlay.classList.add('is-active');
-          if (!execution.applied && progress >= 0.5) {
+          if (!execution.applied && progress >= 0.52) {
             execution.applied = true;
-            spawnImpactBurst(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), execution.color, 1.55, 'flesh');
+            spawnImpactBurst(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), execution.color, 1.9, 'flesh');
             playImpactAudio(new BABYLON.Vector3(enemy.x, 1.25, enemy.z), 'flesh');
+            current.damageJolt = Math.max(current.damageJolt ?? 0, 0.18);
             killEnemy(enemy);
           }
           if (execution.timer <= 0) {
@@ -701,7 +709,7 @@
         killEnemy(enemy);
         return;
       }
-      state.raid.engineerExecution = { enemyId: enemy.id, duration: fast ? 0.24 : 1.08, timer: fast ? 0.24 : 1.08, applied: false, color: fast ? '#7fe2a2' : player.operatorId === ENGINEER_ID ? '#58c8ff' : '#ff8f62' };
+      state.raid.engineerExecution = { enemyId: enemy.id, duration: fast ? 0.24 : 1.22, timer: fast ? 0.24 : 1.22, applied: false, color: fast ? '#7fe2a2' : player.operatorId === ENGINEER_ID ? '#58c8ff' : '#ff8f62' };
       enemy.executionFrozen = true;
       enemy.shootCooldown = Number.POSITIVE_INFINITY;
       player.executionLocked = true;
