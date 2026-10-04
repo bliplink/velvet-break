@@ -77,27 +77,9 @@
 
     const originalChooseRaidEnemySpawns = chooseRaidEnemySpawns;
     chooseRaidEnemySpawns = function productionEnemySpawns(playerSpawn) {
-      const baseSpawns = originalChooseRaidEnemySpawns(playerSpawn);
-      if (getSelectedLobbyModeId() !== BATTLEFIELD_ID || baseSpawns.length >= BATTLEFIELD_ENEMY_COUNT) {
-        return baseSpawns;
-      }
-      const result = baseSpawns.slice();
-      let attempt = 0;
-      while (result.length < BATTLEFIELD_ENEMY_COUNT && attempt < BATTLEFIELD_ENEMY_COUNT * 10) {
-        const source = baseSpawns[attempt % Math.max(1, baseSpawns.length)];
-        const angle = (attempt * 2.39996) % (Math.PI * 2);
-        const radius = 5 + (attempt % 5) * 1.9;
-        const x = source.x + Math.cos(angle) * radius;
-        const z = source.z + Math.sin(angle) * radius;
-        const resolved = resolveStaticPlacement(x, z, 1.2);
-        const tooCloseToPlayer = distance2D(resolved.x, resolved.z, playerSpawn.x, playerSpawn.z) < SPAWN_SAFE_RADIUS;
-        const tooCloseToExisting = result.some((entry) => distance2D(entry.x, entry.z, resolved.x, resolved.z) < 2.3);
-        if (!tooCloseToPlayer && !tooCloseToExisting) {
-          result.push({ ...source, x: resolved.x, z: resolved.z, route: (source.route ?? []).map((point) => ({ ...point })) });
-        }
-        attempt += 1;
-      }
-      return result;
+      // Enter the battlefield with the normal roster first. The large roster is
+      // populated after the raid has rendered so deployment never stalls on 72 full enemy visuals.
+      return originalChooseRaidEnemySpawns(playerSpawn);
     };
 
 
@@ -335,58 +317,8 @@
         raid.battlefieldScale = 1.5;
         spawnBattlefieldVehicles(raid);
 
-        // The final runtime owns the enemy-spawn call, so top up here as a
-        // post-start invariant. This keeps the mode at exactly 72 enemies
-        // even when a later runtime override replaces the spawn helper.
-        if (raid.enemies.length < BATTLEFIELD_ENEMY_COUNT && raid.enemies.length > 0) {
-          const initialEnemies = raid.enemies.slice();
-          let attempt = 0;
-          while (raid.enemies.length < BATTLEFIELD_ENEMY_COUNT && attempt < 400) {
-              const source = initialEnemies[attempt % Math.max(1, initialEnemies.length)];
-              const gridX = -112 + (attempt % 15) * 16;
-              const gridZ = -112 + Math.floor(attempt / 15) * 16;
-              attempt += 1;
-              // Grid candidates avoid the expensive collision resolver during
-              // the 56-unit burst; the navigation update will correct each
-              // unit on its first patrol step.
-              const resolved = { x: gridX, z: gridZ };
-              const tooCloseToPlayer = distance2D(resolved.x, resolved.z, raid.player.x, raid.player.z) < 18;
-              if (!tooCloseToPlayer) {
-                const spawn = { x: resolved.x, z: resolved.z, route: (source.route ?? [{ x: source.x, z: source.z }]).map((point) => ({ ...point })) };
-                const template = source;
-                const enemy = {
-                  ...template,
-                  id: `battlefield-enemy-${raid.enemies.length}`,
-                  x: spawn.x,
-                  z: spawn.z,
-                  health: template.maxHealth,
-                  lastKnownPlayerX: spawn.x,
-                  lastKnownPlayerZ: spawn.z,
-                  route: spawn.route,
-                  routeIndex: 0,
-                  combatState: 'patrol',
-                  alertTimer: 0,
-                  investigateTimer: 0,
-                  mobilityAction: null,
-                  isProne: false,
-                  proneTimer: 0,
-                  proneBlend: 0,
-                  dead: false,
-                  despawned: false,
-                  dropPending: false,
-                  dropItem: null,
-                  visual: null,
-                  damageFlash: 0,
-                  muzzleTimer: 0,
-                  shootCooldown: 0.4 + Math.random() * 0.8,
-                };
-                raid.enemies.push(enemy);
-                enemy.visual = distance2D(enemy.x, enemy.z, raid.player.x, raid.player.z) <= BATTLEFIELD_VISUAL_RADIUS
-                  ? createEnemyVisual(enemy)
-                  : null;
-              }
-          }
-        }
+        raid.battlefieldRosterTarget = BATTLEFIELD_ENEMY_COUNT;
+        raid.battlefieldRosterReady = false;
         const pools = ['tech', 'weapon', 'valuable', 'med'];
         for (let index = 0; index < BATTLEFIELD_EXTRA_CONTAINERS; index += 1) {
           const angle = (index * 2.39996) % (Math.PI * 2);
@@ -474,8 +406,14 @@
       const templates = raid.enemies.filter((enemy) => !enemy.isNamelessBoss && !enemy.isNamelessMinion);
       if (!templates.length) return;
       const boss = raid.enemies.find((enemy) => enemy.isNamelessBoss && !enemy.dead);
-      let attempt = 0;
-      while (raid.enemies.length < BATTLEFIELD_ENEMY_COUNT && attempt < 900) {
+      let attempt = Math.max(0, Number(raid.battlefieldSpawnCursor ?? 0));
+      let addedThisFrame = 0;
+      const startAttempt = attempt;
+      while (
+        raid.enemies.length < BATTLEFIELD_ENEMY_COUNT &&
+        addedThisFrame < 6 &&
+        attempt - startAttempt < 180
+      ) {
         const x = -112 + (attempt % 29) * 8;
         const z = -112 + Math.floor(attempt / 29) * 8;
         attempt += 1;
@@ -483,7 +421,10 @@
         if (boss && Math.hypot(x - boss.territoryX, z - boss.territoryZ) < (boss.territoryRadius ?? 68) + 3) continue;
         if (raid.enemies.some((enemy) => Math.hypot(enemy.x - x, enemy.z - z) < 2.4)) continue;
         addBattlefieldEnemy(raid, templates[attempt % templates.length], x, z);
+        addedThisFrame += 1;
       }
+      raid.battlefieldSpawnCursor = attempt;
+      raid.battlefieldRosterReady = raid.enemies.length >= BATTLEFIELD_ENEMY_COUNT;
     };
 
     const ensureNearbyBattlefieldVisuals = (raid) => {
