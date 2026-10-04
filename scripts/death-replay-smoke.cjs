@@ -63,6 +63,7 @@ async function main() {
       distance: document.getElementById('deathReplayDistance')?.textContent,
       result: !refs.resultOverlay.classList.contains('hidden'),
       version: window.__sdrReplayDebug?.version,
+      killerCameraFrontDot: window.__sdrReplayDebug?.killerCameraFrontDot,
       duration: window.__sdrReplayDebug?.duration,
       recordedActions: window.__sdrReplayDebug?.recordedPlayerActions ?? [],
       currentAction: window.__sdrReplayDebug?.currentPlayerAction ?? null,
@@ -91,6 +92,7 @@ async function main() {
       tracerShown: window.__sdrReplayDebug?.tracerShown,
       freezeShown: window.__sdrReplayDebug?.freezeShown,
       killerViewShown: window.__sdrReplayDebug?.killerViewShown,
+      killerCameraFrontDot: window.__sdrReplayDebug?.killerCameraFrontDot,
       cameraCollisionChecks: window.__sdrReplayDebug?.cameraCollisionChecks,
       perspective: document.getElementById('deathReplayPerspective')?.textContent,
       impactText: document.getElementById('deathReplayImpactText')?.textContent,
@@ -120,7 +122,7 @@ async function main() {
       !active.visible ||
       !active.title.includes('淘汰回放') ||
       active.result ||
-      active.version !== '2026-10-04-killcam-v5' ||
+      active.version !== '2026-10-04-killcam-v6-front' ||
       active.duration < 3.5 ||
       !active.recordedActions.some(action => /开火|FIRING/.test(action)) ||
       !active.recordedActions.some(action => /换弹|RELOADING/.test(action)) ||
@@ -131,6 +133,7 @@ async function main() {
       !impact.tracerShown ||
       !impact.freezeShown ||
       !impact.killerViewShown ||
+      !(impact.killerCameraFrontDot > 0.35) ||
       !(impact.cameraCollisionChecks > 0) ||
       !impact.phase?.includes('致命一击') ||
       !impact.perspective ||
