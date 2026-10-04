@@ -94,6 +94,9 @@ jobs:
       - name: Verify performance visibility and repeat rescue
         run: node scripts/performance-rescue-smoke.cjs
 
+      - name: Verify frame-rate performance governor and Blitz load
+        run: node scripts/performance-blitz-smoke.cjs
+
       - name: Verify fair vision and canister remodel
         run: node scripts/fair-vision-canister-smoke.cjs
 
