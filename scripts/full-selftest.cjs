@@ -7,6 +7,7 @@ const checks = [
   ['visual-overhaul', 'node', ['scripts/visual-overhaul-smoke.cjs']],
   ['window-opacity', 'node', ['scripts/window-opacity-smoke.cjs']],
   ['performance-rescue', 'node', ['scripts/performance-rescue-smoke.cjs']],
+  ['performance-blitz', 'node', ['scripts/performance-blitz-smoke.cjs']],
   ['fair-vision-canister', 'node', ['scripts/fair-vision-canister-smoke.cjs']],
   ['ai-utility-building', 'node', ['scripts/ai-utility-building-smoke.cjs']],
   ['ai-throw-animation', 'node', ['scripts/ai-throw-animation-smoke.cjs']],
