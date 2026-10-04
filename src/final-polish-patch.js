@@ -500,21 +500,44 @@
       const allowThroughWalls = raid.player?.operatorId === 'recon' && (raid.player?.abilityActiveTimer ?? 0) > 0;
       for (const enemy of raid.enemies ?? []) {
         if (!enemy?.visual) continue;
+
+        // Normal enemies must always obey world depth and never render as an x-ray overlay.
+        for (const mesh of enemy.visual.overlayMeshes ?? []) {
+          if (!mesh) continue;
+          mesh.renderingGroupId = 0;
+          if (!allowThroughWalls) {
+            mesh.renderOverlay = false;
+            mesh.overlayAlpha = 0;
+          }
+        }
+
         const revealMaterial = enemy.visual.revealMaterial;
         const classLabelMaterial = enemy.visual.classLabelMaterial;
         for (const mesh of enemy.visual.revealMeshes ?? []) {
           mesh.renderingGroupId = allowThroughWalls ? 3 : 0;
           mesh.alwaysSelectAsActiveMesh = allowThroughWalls;
+          if (!allowThroughWalls) {
+            mesh.setEnabled(false);
+            mesh.isVisible = false;
+          }
         }
+
+        if (enemy.visual.classLabel && !allowThroughWalls) {
+          enemy.visual.classLabel.setEnabled(false);
+          enemy.visual.classLabel.isVisible = false;
+        }
+
         if (revealMaterial) {
           revealMaterial.depthFunction = allowThroughWalls
             ? (BABYLON.ALWAYS ?? 519)
             : (BABYLON.LEQUAL ?? 515);
+          if (!allowThroughWalls) revealMaterial.alpha = 0;
         }
         if (classLabelMaterial) {
           classLabelMaterial.depthFunction = allowThroughWalls
             ? (BABYLON.ALWAYS ?? 519)
             : (BABYLON.LEQUAL ?? 515);
+          if (!allowThroughWalls) classLabelMaterial.alpha = 0;
         }
       }
     };
@@ -523,7 +546,6 @@
     if (updateRaidBeforeClaireTimers) {
       updateRaid = function updateRaidWithClaireTimers(dt, ...args) {
         const player = state.raid?.player;
-        syncReconWallRevealDepth();
         if (player?.operatorId === 'recon') {
           if (!Number.isFinite(player.claireScanCharges)) {
             player.claireScanCharges = 4;
@@ -533,7 +555,10 @@
           player.claireJammerCooldown = Math.max(0, Number(player.claireJammerCooldown ?? 0) - dt);
           player.claireInvisibleTimer = Math.max(0, Number(player.claireInvisibleTimer ?? 0) - dt);
         }
-        return updateRaidBeforeClaireTimers.call(this, dt, ...args);
+        const result = updateRaidBeforeClaireTimers.call(this, dt, ...args);
+        // Run last so no earlier patch can reopen enemy x-ray rendering in the same frame.
+        syncReconWallRevealDepth();
+        return result;
       };
     }
 
