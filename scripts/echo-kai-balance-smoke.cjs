@@ -65,7 +65,7 @@ const { chromium } = require('playwright');
       window.useOperatorUtility();
       for (let i = 0; i < 30; i++) updateRaid(0.05);
       const grenadeDamage = beforeEnemyHealth - enemy.health;
-      const expected = enemy.type === 'bruiser' ? 450 : enemy.type === 'hunter' ? 510 : 540;
+      const expected = enemy.type === 'bruiser' ? 420 : enemy.type === 'hunter' ? 450 : 480;
 
       const guardTimer = player.kaiUtilityGuardTimer ?? 0;
       const hpBeforeGuardHit = player.health;
@@ -111,7 +111,7 @@ const { chromium } = require('playwright');
       Math.abs(result.grenadeDamage - result.expectedGrenadeDamage) > 2 ||
       result.utilitySpent < 1 ||
       result.guardTimer <= 4 ||
-      result.guardedDamage >= 80 ||
+      result.guardedDamage > 62 ||
       result.kaiAbilityDuration < 32 ||
       result.kaiDamageBoost < 1.85 ||
       result.kaiDamageTakenMult > 0.62 ||
