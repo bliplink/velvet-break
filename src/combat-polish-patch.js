@@ -115,6 +115,7 @@
     const ECHO_SWING_DURATION = 0.34;
     const ECHO_INSPECT_DURATION = 1.55;
     const ECHO_SUPPORT_SMOKE_RADIUS = 20;
+    const ECHO_FORM2_PRICE = 150000;
 
     const shopBeforeEchoRangeUpdate = getShopEntries;
     getShopEntries = function restorePrepShopAfterSubsidyCleanup() {
@@ -150,6 +151,7 @@
         },
       ];
       const echoUnlocked = Boolean(state.save.echoUnlocked);
+      const echoForm2Unlocked = Boolean(state.save.echoForm2Unlocked);
       const echoEntry = {
         id: 'echo_unlock',
         kind: 'melee',
@@ -160,37 +162,79 @@
         status: echoUnlocked ? L('永久拥有', 'Permanently owned') : L('永久解锁', 'Permanent unlock'),
         disabled: echoUnlocked,
       };
-      return [...restoredPrep.filter((entry) => !existing.has(entry.id)), ...(existing.has(echoEntry.id) ? [] : [echoEntry]), ...entries]
-        .filter((entry) => entry.id !== 'emergency_funding');
+      const echoForm2Entry = {
+        id: 'echo_form2_unlock',
+        kind: 'melee_form',
+        meleeId: 'echo',
+        name: L('回声 · 相位形态', 'Echo · Phase Form'),
+        description: L('回声第二形态：重构刀身、双能量刃脊、脉冲护手与增强挥刀/命中特效。购买后自动装备，基础伤害与攻击范围不变。', 'Echo second form: rebuilt blade, twin energy rails, pulse guard and upgraded slash/impact effects. Auto-equips after purchase; base damage and range stay unchanged.'),
+        price: ECHO_FORM2_PRICE,
+        status: !echoUnlocked
+          ? L('需先拥有回声', 'Requires Echo')
+          : echoForm2Unlocked
+            ? L('第二形态已拥有', 'Phase Form owned')
+            : L('永久解锁第二形态', 'Permanent Phase Form unlock'),
+        disabled: !echoUnlocked || echoForm2Unlocked,
+      };
+      return [
+        ...restoredPrep.filter((entry) => !existing.has(entry.id)),
+        ...(existing.has(echoEntry.id) ? [] : [echoEntry]),
+        ...(existing.has(echoForm2Entry.id) ? [] : [echoForm2Entry]),
+        ...entries,
+      ].filter((entry) => entry.id !== 'emergency_funding');
     };
 
     let persistedEchoUnlocked = false;
+    let persistedEchoForm2Unlocked = false;
+    let persistedEchoForm = 1;
     try {
       const rawSave = JSON.parse(localStorage.getItem('iron-extraction-save-v1') || '{}');
       persistedEchoUnlocked = Boolean(rawSave.echoUnlocked || rawSave.armory?.echoUnlocked);
+      persistedEchoForm2Unlocked = Boolean(rawSave.echoForm2Unlocked || rawSave.armory?.echoForm2Unlocked);
+      persistedEchoForm = Number(rawSave.selectedEchoForm ?? rawSave.armory?.selectedEchoForm ?? 1) === 2 ? 2 : 1;
     } catch (_) {}
     state.save.echoUnlocked = Boolean(state.save.echoUnlocked || persistedEchoUnlocked);
+    state.save.echoForm2Unlocked = Boolean(state.save.echoForm2Unlocked || persistedEchoForm2Unlocked);
+    state.save.selectedEchoForm = state.save.echoForm2Unlocked && (Number(state.save.selectedEchoForm ?? persistedEchoForm) === 2) ? 2 : 1;
     state.save.echoSmokeUnlocked = false;
     persistSave();
     const echoUnlocked = () => Boolean(state.save.echoUnlocked || state.raid?.player?.echoKnifeEquipped);
+    const getEchoForm = () => state.save.echoForm2Unlocked && Number(state.save.selectedEchoForm) === 2 ? 2 : 1;
 
     const buyBeforeEcho = typeof buyShopEntry === 'function' ? buyShopEntry : null;
     if (buyBeforeEcho) {
       buyShopEntry = function buyShopEntryWithEcho(id, ...args) {
-        if (id !== 'echo_unlock') return buyBeforeEcho.call(this, id, ...args);
-        if (state.save.echoUnlocked) return false;
-        const price = 100000;
-        if ((state.save.money ?? 0) < price) {
-          notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
-          return false;
+        if (id === 'echo_unlock') {
+          if (state.save.echoUnlocked) return false;
+          const price = 100000;
+          if ((state.save.money ?? 0) < price) {
+            notify(L('资金不足：回声需要 100,000。', 'Not enough funds: Echo costs 100,000.'), 'danger');
+            return false;
+          }
+          state.save.money -= price;
+          state.save.echoUnlocked = true;
+          state.save.selectedEchoForm = 1;
+          if (state.raid?.player) state.raid.player.echoKnifeEquipped = true;
+          persistSave();
+          renderBasePanel();
+          notify(L('回声已永久解锁：所有模式都会自动携带。', 'Echo permanently unlocked and carried in every mode.'), 'success');
+          return true;
         }
-        state.save.money -= price;
-        state.save.echoUnlocked = true;
-        if (state.raid?.player) state.raid.player.echoKnifeEquipped = true;
-        persistSave();
-        renderBasePanel();
-        notify(L('回声已永久解锁：所有模式都会自动携带。', 'Echo permanently unlocked and carried in every mode.'), 'success');
-        return true;
+        if (id === 'echo_form2_unlock') {
+          if (!state.save.echoUnlocked || state.save.echoForm2Unlocked) return false;
+          if ((state.save.money ?? 0) < ECHO_FORM2_PRICE) {
+            notify(L('资金不足：回声第二形态需要 150,000。', 'Not enough funds: Echo Phase Form costs 150,000.'), 'danger');
+            return false;
+          }
+          state.save.money -= ECHO_FORM2_PRICE;
+          state.save.echoForm2Unlocked = true;
+          state.save.selectedEchoForm = 2;
+          persistSave();
+          renderBasePanel();
+          notify(L('回声 · 相位形态已永久解锁并自动装备。', 'Echo Phase Form permanently unlocked and equipped.'), 'success');
+          return true;
+        }
+        return buyBeforeEcho.call(this, id, ...args);
       };
     }
 
