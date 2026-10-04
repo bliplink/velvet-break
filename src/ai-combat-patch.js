@@ -101,8 +101,8 @@
       enemy.aiStrengthProfile = 'normal';
       const ratio = enemy.maxHealth > 0 ? enemy.health / enemy.maxHealth : 1;
       const baseHealth = enemy.maxHealth ?? enemy.health ?? 100;
-      const healthMult = enemy.type === 'bruiser' ? 1.20 : enemy.type === 'hunter' ? 1.18 : 1.15;
-      enemy.maxHealth = Math.max(120, Math.round(baseHealth * healthMult));
+      const healthMult = enemy.type === 'bruiser' ? 1.36 : enemy.type === 'hunter' ? 1.30 : 1.24;
+      enemy.maxHealth = Math.max(160, Math.round(baseHealth * healthMult));
       enemy.health = Math.max(1, Math.round(enemy.maxHealth * ratio));
       enemy.damage = Math.round((enemy.damage ?? 10) * 1.22);
       enemy.speed = (enemy.speed ?? 2.5) * 1.35;
