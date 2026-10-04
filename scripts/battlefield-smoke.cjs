@@ -40,6 +40,8 @@ async function main() {
   await page.evaluate(() => renderBasePanel());
   const lobby = await page.evaluate(() => ({
     battlefieldCard: Boolean(document.querySelector('[data-mode-id="battlefield"]')),
+    raidCard: Boolean(document.querySelector('[data-mode-id="raid"]')),
+    modeIds: Array.from(document.querySelectorAll('[data-mode-id]')).map(node => node.dataset.modeId).sort(),
     stashDirectory: Boolean(document.querySelector('#stashDirectory')),
     stashDirectoryRows: document.querySelectorAll('#stashDirectory .stash-directory-row').length,
   }));
@@ -61,7 +63,33 @@ async function main() {
     allies: state.raid?.allies?.length ?? 0,
     allyOperators: (state.raid?.allies ?? []).map((ally) => ally.operatorId),
     mapScale: state.raid?.battlefieldScale,
+    vehicles: state.raid?.vehicles?.length ?? 0,
+    vehicleHealths: (state.raid?.vehicles ?? []).map(v => v.health),
   }));
+
+  const vehicleDrive = await page.evaluate(() => {
+    const raid = state.raid;
+    const vehicle = raid.vehicles?.[0];
+    raid.player.x = vehicle.x + 1.2;
+    raid.player.z = vehicle.z;
+    const entered = window.__sdrEnterOrExitBattlefieldVehicle?.() ?? false;
+    const before = { x: vehicle.x, z: vehicle.z, health: vehicle.health };
+    state.input.keys.add('KeyW');
+    for (let i = 0; i < 30; i++) updateRaid(0.05);
+    state.input.keys.delete('KeyW');
+    const after = { x: vehicle.x, z: vehicle.z, health: vehicle.health };
+    const moved = Math.hypot(after.x - before.x, after.z - before.z);
+    const mounted = raid.player.mountedVehicleId === vehicle.id;
+    const playerHealthBefore = raid.player.health;
+    applyDamageToPlayer(100);
+    const durabilityAbsorbed = vehicle.health < after.health;
+    const playerDamage = playerHealthBefore - raid.player.health;
+    const exited = window.__sdrEnterOrExitBattlefieldVehicle?.() ?? false;
+    return {
+      entered, moved, mounted, durabilityAbsorbed, playerDamage, exited,
+      mountedAfterExit: raid.player.mountedVehicleId,
+    };
+  });
 
   const squad = await page.evaluate(() => ({
     count: state.raid?.allies?.length ?? 0,
@@ -70,16 +98,22 @@ async function main() {
   }));
 
   await page.screenshot({ path: 'screenshots/playwright-battlefield.png' });
-  const result = { lobby, selected, battlefield, squad, errors, missingResources };
+  const result = { lobby, selected, battlefield, vehicleDrive, squad, errors, missingResources };
   console.log(JSON.stringify(result, null, 2));
   await Promise.race([browser.close(), new Promise((resolve) => setTimeout(resolve, 1200))]);
   testServer?.kill();
-  const failed = errors.length > 0 || missingResources.length > 0 || !lobby.battlefieldCard || !lobby.stashDirectory ||
+  const failed = errors.length > 0 || missingResources.length > 0 || !lobby.battlefieldCard || !lobby.raidCard ||
+    lobby.modeIds.join(',') !== 'battlefield,raid' || !lobby.stashDirectory ||
     selected !== 'battlefield' || battlefield.mode !== 'battlefield' || !battlefield.isBattlefield ||
     battlefield.configuredDuration !== 720 || battlefield.enemies !== 72 || battlefield.allies !== 6 ||
     battlefield.allyOperators.join(',') !== 'assault,assault,medic,medic,engineer,engineer' ||
     battlefield.mapScale !== 1.5 || battlefield.containers < 10 || battlefield.objectives !== 0 ||
-    battlefield.extractionCount < 2 || battlefield.distinctEnemyPositions !== 72 || squad.count !== 6 ||
+    battlefield.extractionCount < 2 || battlefield.distinctEnemyPositions !== 72 ||
+    battlefield.vehicles !== 3 || battlefield.vehicleHealths.some(value => value !== 1200) ||
+    !vehicleDrive.entered || vehicleDrive.moved < 0.5 || !vehicleDrive.mounted ||
+    !vehicleDrive.durabilityAbsorbed || vehicleDrive.playerDamage >= 100 ||
+    !vehicleDrive.exited || vehicleDrive.mountedAfterExit !== null ||
+    squad.count !== 6 ||
     squad.operators.join(',') !== 'assault,assault,medic,medic,engineer,engineer' || !squad.playerReviveAvailable;
   process.exit(failed ? 1 : 0);
 }
