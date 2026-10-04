@@ -597,7 +597,8 @@
         event.stopImmediatePropagation();
         state.save.selectedModeId = 'battlefield';
         persistSave?.();
-        startRaid();
+        if (typeof window.__sdrPatchedStartRaid === 'function') window.__sdrPatchedStartRaid();
+        else startRaid();
       }, true);
     }
 
