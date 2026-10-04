@@ -140,7 +140,7 @@
     const actionDetail = combatFeedback.querySelector('#finalActionDetail');
     const actionProgress = combatFeedback.querySelector('#finalActionProgress i');
     let previousUltimateActive = false;
-    const KAI_ULT_ARMOR_BONUS = 300;
+    const KAI_ULT_ARMOR_BONUS = 450;
 
     const activateKaiUltimateArmor = (player) => {
       if (!player || player.operatorId !== 'assault' || player.kaiUltArmorActive) return;
@@ -879,7 +879,7 @@
           damageBoostMult: 1.85,
           killExtendSeconds: 2.0,
           killHeal: 90,
-          abilityDamageTakenMult: 0.62,
+          abilityDamageTakenMult: 0.55,
           ultimateArmorBonus: KAI_ULT_ARMOR_BONUS,
           abilityReloadMult: 0.62,
           abilitySpreadMult: 0.58,
