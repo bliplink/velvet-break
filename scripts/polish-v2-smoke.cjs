@@ -241,15 +241,15 @@ const { chromium } = require('playwright');
       balance.boostedDamage >= 159 && balance.boostedDamage <= 161 &&
       balance.description.includes('restore 800 HP') &&
       balance.description.includes('1.6x bullet damage') &&
-      kai.abilityDuration === 16 &&
-      kai.startTimer >= 15.9 && kai.startTimer <= 16.1 &&
-      kai.afterKillTimer >= 16.9 && kai.afterKillTimer <= 17.1 &&
-      kai.healOnKill >= 39 && kai.healOnKill <= 41 &&
-      kai.killExtendSeconds === 1 &&
-      kai.killHeal === 40 &&
-      kai.spreadMult === 0.82 &&
-      kai.recoilMult === 0.84 &&
-      kai.reloadMult === 0.86 &&
+      kai.abilityDuration === 28 &&
+      kai.startTimer >= 27.9 && kai.startTimer <= 28.1 &&
+      kai.afterKillTimer >= 29.4 && kai.afterKillTimer <= 29.6 &&
+      kai.healOnKill >= 59 && kai.healOnKill <= 61 &&
+      kai.killExtendSeconds === 1.5 &&
+      kai.killHeal === 60 &&
+      kai.spreadMult === 0.68 &&
+      kai.recoilMult === 0.68 &&
+      kai.reloadMult === 0.70 &&
       kai.startArmorBonus === 170 &&
       kai.armorDurabilityCostMult === 0.5 &&
       kai.startingArmor === 200 &&
