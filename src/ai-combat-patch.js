@@ -160,8 +160,8 @@
     window.__sdrEnemyUtilityDebug = enemyUtilityDebug;
     window.__sdrEnemyUtilityConfig = Object.freeze({
       version: '2026-10-04-ai-utility-config-v1',
-      smokeRadius: 8,
-      smokeDuration: 5.5,
+      smokeRadius: 10,
+      smokeDuration: 6.5,
       stunRadius: 3.8,
       stunSlowDuration: 5,
       stunMobilityLockDuration: 2.5,
@@ -170,36 +170,6 @@
       throwWindup: 0.45,
     });
 
-    const spawnEnemyUtilityPulse = (x, z, color, size = 1.1) => {
-      if (typeof BABYLON === 'undefined' || !scene) return null;
-      const mat = new BABYLON.StandardMaterial(`enemy-utility-mat-${Date.now()}-${Math.random()}`, scene);
-      mat.diffuseColor = BABYLON.Color3.FromHexString(color);
-      mat.emissiveColor = mat.diffuseColor.scale(1.25);
-      mat.alpha = 0.86;
-      mat.disableLighting = true;
-      mat.backFaceCulling = false;
-      mat.disableDepthWrite = true;
-      const mesh = BABYLON.MeshBuilder.CreateSphere(`enemy-utility-fx-${Date.now()}-${Math.random()}`, {
-        diameter: size,
-        segments: 8,
-      }, scene);
-      mesh.position.set(x, 0.42, z);
-      mesh.material = mat;
-      mesh.isPickable = false;
-      mesh.renderingGroupId = 2;
-      world.effects ??= [];
-      world.effects.push({
-        mesh,
-        material: mat,
-        timer: 0.42,
-        duration: 0.42,
-        update(progress) {
-          mesh.scaling.setAll(0.55 + progress * 1.9);
-          mat.alpha = (1 - progress) * 0.86;
-        },
-      });
-      return mesh;
-    };
 
     const createEnemyUtilityProjectile = (type, enemy) => {
       const color = type === 'smoke' ? '#9aa7ad' : type === 'stun' ? '#dfefff' : '#c95b39';
@@ -226,9 +196,9 @@
       if (type === 'smoke') {
         enemyUtilityDebug.smokes += 1;
         raid.enemySmokeFields ??= [];
-        const smokeRadius = 8;
-        raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: smokeRadius, timer: 5.5 });
-        enemy.smokeScreenTimer = 5.5;
+        const smokeRadius = 10;
+        raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: smokeRadius, timer: 6.5 });
+        enemy.smokeScreenTimer = 6.5;
         enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
         if (typeof spawnSmokePuff === 'function') {
           for (let i = 0; i < 18; i += 1) {
