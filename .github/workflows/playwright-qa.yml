@@ -103,6 +103,10 @@ jobs:
       - name: Verify visible AI utility throw animation
         run: node scripts/ai-throw-animation-smoke.cjs
 
+      - name: Verify enemies cannot xray through buildings
+        run: node scripts/enemy-occlusion-smoke.cjs
+
+
 
       - name: Verify unified 10-second stun control
         run: node scripts/stun-control-smoke.cjs
