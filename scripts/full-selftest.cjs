@@ -18,6 +18,7 @@ const checks = [
   ['operator-regression', 'node', ['scripts/operator-regression.cjs']],
   ['operator-power-live', 'node', ['scripts/operator-power-smoke.cjs']],
   ['kai-echo-utility', 'node', ['scripts/kai-echo-utility-regression.cjs']],
+  ['utility-fx-shape', 'node', ['scripts/utility-fx-shape-smoke.cjs']],
   ['final-feature-regression', 'node', ['scripts/final-feature-regression.cjs']],
   ['combat-polish', 'node', ['scripts/combat-polish-smoke.cjs']],
   ['echo-persistence', 'node', ['scripts/echo-persistence-smoke.cjs']],
