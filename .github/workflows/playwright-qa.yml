@@ -100,6 +100,10 @@ jobs:
       - name: Verify tactical AI utilities and final opaque buildings
         run: node scripts/ai-utility-building-smoke.cjs
 
+      - name: Verify visible AI utility throw animation
+        run: node scripts/ai-throw-animation-smoke.cjs
+
+
       - name: Verify unified 10-second stun control
         run: node scripts/stun-control-smoke.cjs
 
