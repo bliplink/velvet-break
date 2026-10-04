@@ -140,7 +140,7 @@
     const actionDetail = combatFeedback.querySelector('#finalActionDetail');
     const actionProgress = combatFeedback.querySelector('#finalActionProgress i');
     let previousUltimateActive = false;
-    const KAI_ULT_ARMOR_BONUS = 450;
+    const KAI_ULT_ARMOR_BONUS = 650;
 
     const activateKaiUltimateArmor = (player) => {
       if (!player || player.operatorId !== 'assault' || player.kaiUltArmorActive) return;
@@ -869,21 +869,23 @@
       getOperatorDefs = function getStrengthenedOperatorDefs() {
         const defs = getOperatorDefsBeforePowerPass.apply(this, arguments);
         if (defs.assault) Object.assign(defs.assault, {
-          moveMult: 1.08,
-          spreadMult: 0.68,
-          recoilMult: 0.68,
-          reloadMult: 0.70,
-          baseDamageMult: 1.18,
-          abilityDuration: 32,
-          speedBoostMult: 1.80,
-          damageBoostMult: 1.85,
-          killExtendSeconds: 2.0,
-          killHeal: 90,
-          abilityDamageTakenMult: 0.55,
+          moveMult: 1.10,
+          spreadMult: 0.64,
+          recoilMult: 0.64,
+          reloadMult: 0.66,
+          baseDamageMult: 1.30,
+          abilityDuration: 36,
+          speedBoostMult: 2.35,
+          damageBoostMult: 2.50,
+          killExtendSeconds: 2.25,
+          killHeal: 130,
+          abilityDamageTakenMult: 0.45,
           ultimateArmorBonus: KAI_ULT_ARMOR_BONUS,
-          abilityReloadMult: 0.62,
-          abilitySpreadMult: 0.58,
-          abilityRecoilMult: 0.58,
+          abilityReloadMult: 0.50,
+          abilitySpreadMult: 0.50,
+          abilityRecoilMult: 0.50,
+          skillTextZh: '手动启动：36 秒强化过载；移速提升至 2.35 倍、枪械伤害提升至 2.5 倍，获得 55% 减伤、+650 临时护甲、强化控枪/换弹与击败续航。',
+          skillTextEn: 'Manual: 36s enhanced Overdrive with 2.35x movement, 2.5x weapon damage, 55% damage reduction, +650 temporary armor, stronger handling/reload and kill sustain.',
           startArmorBonus: Math.max(defs.assault.startArmorBonus ?? 0, 170),
         });
         if (defs.recon) Object.assign(defs.recon, {
