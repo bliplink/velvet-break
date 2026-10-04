@@ -343,13 +343,14 @@
     damageEl.textContent = fatalEvent?.amount
       ? L(`最后受击 -${Math.round(fatalEvent.amount)} HP`, `Final hit -${Math.round(fatalEvent.amount)} HP`)
       : L('最后交战记录', 'Final engagement record');
-    phaseEl.textContent = L('最后交战', 'FINAL ENGAGEMENT');
-    perspectiveEl.textContent = L('第三人称追踪', 'THIRD-PERSON TRACK');
+    phaseEl.textContent = L('击杀者第一视角', 'KILLER FIRST-PERSON');
+    perspectiveEl.textContent = L('击杀者第一视角', 'KILLER FIRST-PERSON');
     impactTextEl.textContent = '';
     hintEl.textContent = L('空格 / Enter / Esc 跳过', 'Space / Enter / Esc to skip');
     progressEl.style.width = '0%';
 
-    overlay.classList.remove('hidden', 'impact', 'freeze', 'killer-view');
+    overlay.classList.remove('hidden', 'impact', 'freeze');
+    overlay.classList.add('killer-view');
     refs.resultOverlay.classList.add('hidden');
     document.getElementById('hud')?.classList.add('replay-dim');
     if (typeof viewModel !== 'undefined') viewModel?.root?.setEnabled(false);
