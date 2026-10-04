@@ -3350,7 +3350,7 @@ function createEnemyVisual(enemy) {
   classLabelMaterial.backFaceCulling = false;
   classLabelMaterial.alpha = 0;
   classLabelMaterial.disableDepthWrite = true;
-  classLabelMaterial.depthFunction = BABYLON.ALWAYS ?? 519;
+  classLabelMaterial.depthFunction = BABYLON.LEQUAL ?? 515;
 
   const classLabel = configureRevealGhostMesh(BABYLON.MeshBuilder.CreatePlane(`enemy-class-label-${enemy.id}`, {
     width: enemy.type === 'bruiser' ? 3.05 : 2.7,
@@ -5278,8 +5278,8 @@ function makeRevealMaterial(name, baseHex = '#79f5ff') {
 
 function configureRevealGhostMesh(mesh) {
   mesh.isPickable = false;
-  mesh.alwaysSelectAsActiveMesh = true;
-  mesh.renderingGroupId = 3;
+  mesh.alwaysSelectAsActiveMesh = false;
+  mesh.renderingGroupId = 0;
   mesh.setEnabled(false);
   mesh.onBeforeRenderObservable.add(() => {
     const activeEngine = scene?.getEngine?.();
@@ -5293,8 +5293,8 @@ function configureRevealGhostMesh(mesh) {
     mesh.metadata.prevDepthWrite = typeof activeEngine.getDepthWrite === 'function'
       ? activeEngine.getDepthWrite()
       : null;
-    if (typeof activeEngine.setDepthFunction === 'function') {
-      activeEngine.setDepthFunction(BABYLON.ALWAYS ?? 519);
+    if (typeof activeEngine.setDepthFunctionToLessOrEqual === 'function') {
+      activeEngine.setDepthFunctionToLessOrEqual();
     }
     if (typeof activeEngine.setDepthWrite === 'function') {
       activeEngine.setDepthWrite(false);
