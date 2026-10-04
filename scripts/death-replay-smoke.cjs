@@ -120,7 +120,7 @@ async function main() {
       !active.visible ||
       !active.title.includes('淘汰回放') ||
       active.result ||
-      active.version !== '2026-10-03-killcam-v4' ||
+      active.version !== '2026-10-04-killcam-v5' ||
       active.duration < 3.5 ||
       !active.recordedActions.some(action => /开火|FIRING/.test(action)) ||
       !active.recordedActions.some(action => /换弹|RELOADING/.test(action)) ||
