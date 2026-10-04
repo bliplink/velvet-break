@@ -24,6 +24,33 @@
       if (modes && Object.prototype.hasOwnProperty.call(modes, 'contract')) {
         delete modes.contract;
       }
+      if (modes?.raid && !modes.battlefield) {
+        const raid = modes.raid;
+        modes.battlefield = {
+          ...raid,
+          id: 'battlefield',
+          nameZh: '大战场',
+          nameEn: 'Battlefield',
+          summaryZh: '高密度大型交战。44 名敌人分布在整张地图，完成清敌目标后撤离。',
+          summaryEn: 'Large-scale combat with 44 hostiles across the map. Clear the combat objective, then extract.',
+          detailZh: '12 分钟大型战斗，保留双撤离结构；与封锁区使用独立的人机数量预算。',
+          detailEn: '12-minute large battle with dual extractions and a separate AI population budget from Lockdown.',
+          deployZh: '进入大战场',
+          deployEn: 'Enter Battlefield',
+          duration: 12 * 60,
+          bonusReward: 5200,
+          objectiveFactory: () => ([
+            { id: 'kill', label: L('击倒', 'Eliminate'), target: 20, progress: 0 },
+          ]),
+          buildLayout: raid.buildLayout,
+          getStartInteractionText() {
+            return L('大战场目标：击倒 20 名敌人后前往撤离点。', 'Battlefield objective: eliminate 20 hostiles, then extract.');
+          },
+          getStartNotice() {
+            return L('已进入大战场：44 名敌人已部署，完成 20 次击倒后撤离。', 'Battlefield entered: 44 hostiles deployed. Eliminate 20, then extract.');
+          },
+        };
+      }
       return modes;
     };
 
