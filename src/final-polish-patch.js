@@ -238,10 +238,17 @@
     buildFinalOpaqueLockdownShells();
 
     const buildFinalOpaqueInteractiveShells = () => {
-      if (window.__sdrFinalOpaqueInteractiveShellsBuilt || !window.BABYLON || !scene) return;
-      window.__sdrFinalOpaqueInteractiveShellsBuilt = true;
+      if (!window.BABYLON || !scene) return false;
       const interactiveIds = new Set(['center-depot','west-barracks','east-hangar','west-bunker','north-silo','south-yard-2']);
-      const mat = new BABYLON.StandardMaterial('final-interactive-solid-shell-mat', scene);
+      const interactiveWalls = (obstacleDefs ?? []).filter(wall => {
+        const structureId = String(wall?.structureId ?? '');
+        return interactiveIds.has(structureId) && String(wall?.id ?? '').includes('-wall-');
+      });
+      // expansion-patch initializes these asynchronously; do not mark complete too early.
+      if (!interactiveWalls.length) return false;
+
+      const mat = scene.getMaterialByName?.('final-interactive-solid-shell-mat')
+        ?? new BABYLON.StandardMaterial('final-interactive-solid-shell-mat', scene);
       mat.diffuseColor = BABYLON.Color3.FromHexString('#3b474d');
       mat.emissiveColor = BABYLON.Color3.FromHexString('#0f171b');
       mat.specularColor = BABYLON.Color3.Black();
@@ -253,10 +260,10 @@
       if (BABYLON.Material) mat.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
       if (BABYLON.Engine?.ALPHA_DISABLE !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
 
-      for (const wall of obstacleDefs ?? []) {
+      const completedStructures = new Set();
+      for (const wall of interactiveWalls) {
         const structureId = String(wall?.structureId ?? '');
-        if (!interactiveIds.has(structureId)) continue;
-        if (!String(wall.id ?? '').includes('-wall-')) continue;
+        completedStructures.add(structureId);
         const name = `final-interactive-solid-${wall.id}`;
         if (scene.getMeshByName?.(name)) continue;
         const mesh = BABYLON.MeshBuilder.CreateBox(name, {
@@ -309,8 +316,22 @@
           finalInteractiveOpaqueShell: true,
         };
       }
+      window.__sdrFinalOpaqueInteractiveShellCount = scene.meshes.filter(mesh => mesh.metadata?.finalInteractiveOpaqueShell).length;
+      window.__sdrFinalOpaqueInteractiveStructures = [...completedStructures];
+      window.__sdrFinalOpaqueInteractiveShellsBuilt = completedStructures.size === interactiveIds.size;
+      return window.__sdrFinalOpaqueInteractiveShellsBuilt;
     };
-    buildFinalOpaqueInteractiveShells();
+
+    // The interactive buildings are created by an async boot patch. Retry until all six exist.
+    const ensureFinalOpaqueInteractiveShells = () => {
+      if (window.__sdrFinalOpaqueInteractiveShellsBuilt) return;
+      buildFinalOpaqueInteractiveShells();
+      if (!window.__sdrFinalOpaqueInteractiveShellsBuilt) window.setTimeout(ensureFinalOpaqueInteractiveShells, 120);
+    };
+    ensureFinalOpaqueInteractiveShells();
+    window.setTimeout(ensureFinalOpaqueInteractiveShells, 500);
+    window.setTimeout(ensureFinalOpaqueInteractiveShells, 1500);
+    window.setTimeout(ensureFinalOpaqueInteractiveShells, 3500);
 
     // Final building opacity guard. Glass panes are the only structural meshes allowed to stay transparent.
     const forceOpaqueBuildingMeshes = () => {
@@ -556,6 +577,7 @@
           player.claireInvisibleTimer = Math.max(0, Number(player.claireInvisibleTimer ?? 0) - dt);
         }
         const result = updateRaidBeforeClaireTimers.call(this, dt, ...args);
+        if (!window.__sdrFinalOpaqueInteractiveShellsBuilt) buildFinalOpaqueInteractiveShells();
         // Run last so no earlier patch can reopen enemy x-ray rendering in the same frame.
         syncReconWallRevealDepth();
         return result;
