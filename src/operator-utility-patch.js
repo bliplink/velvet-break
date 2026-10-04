@@ -478,9 +478,95 @@
       return false;
     };
 
-    const createUtilityBurst = (position, color, count = 1.2) => {
-      // Utility impacts must not create the old spherical pulse. Keep only directional impact fragments/audio.
-      spawnImpactBurst(position, color, count, 'hard');
+    const spawnUtilityImpactFx = window.__sdrSpawnUtilityImpactFx = window.__sdrSpawnUtilityImpactFx || ((position, color, intensity = 1, style = 'impact', radius = 3, life = 0.55) => {
+      if (!scene || !state.raid) return;
+      state.raid.effects ??= [];
+
+      const ringMat = new BABYLON.StandardMaterial(`utility-ring-mat-${Math.random().toString(36).slice(2, 7)}`, scene);
+      ringMat.diffuseColor = BABYLON.Color3.FromHexString(color);
+      ringMat.emissiveColor = ringMat.diffuseColor.scale(1.1);
+      ringMat.specularColor = BABYLON.Color3.Black();
+      ringMat.alpha = 0.74;
+      ringMat.disableLighting = true;
+      ringMat.backFaceCulling = false;
+      ringMat.disableDepthWrite = true;
+      const ring = BABYLON.MeshBuilder.CreateTorus(`utility-ring-${Math.random().toString(36).slice(2, 7)}`, {
+        diameter: Math.max(0.9, Math.min(radius * 0.7, 4.2)),
+        thickness: 0.045 + Math.min(0.04, intensity * 0.012),
+        tessellation: 36,
+      }, scene);
+      ring.position.copyFrom(position);
+      ring.position.y = Math.max(0.04, Number(position.y ?? 0.04));
+      ring.rotation.x = Math.PI / 2;
+      ring.material = ringMat;
+      ring.isPickable = false;
+      state.raid.effects.push({
+        mesh: ring,
+        life,
+        maxLife: life,
+        alphaScale: 0.74,
+        baseScale: 0.72,
+        scaleGrow: 2.1 + intensity * 0.25,
+      });
+
+      const sparkCount = Math.max(5, Math.min(14, Math.round(6 + intensity * 2)));
+      for (let i = 0; i < sparkCount; i++) {
+        const angle = i / sparkCount * Math.PI * 2 + Math.random() * 0.15;
+        const len = 0.45 + Math.random() * (0.55 + intensity * 0.18);
+        const start = new BABYLON.Vector3(position.x, Number(position.y ?? 0) + 0.12, position.z);
+        const end = new BABYLON.Vector3(
+          position.x + Math.cos(angle) * len,
+          Number(position.y ?? 0) + 0.18 + Math.random() * 0.45,
+          position.z + Math.sin(angle) * len,
+        );
+        const line = BABYLON.MeshBuilder.CreateLines(`utility-spark-${i}-${Math.random().toString(36).slice(2, 6)}`, { points: [start, end] }, scene);
+        line.color = BABYLON.Color3.FromHexString(color);
+        line.alpha = 0.9;
+        line.isPickable = false;
+        state.raid.effects.push({ line, life: 0.26 + Math.random() * 0.18, maxLife: 0.44 });
+      }
+
+      if (style === 'smoke') {
+        const puffCount = Math.max(10, Math.min(18, Math.round(radius * 1.35)));
+        for (let i = 0; i < puffCount; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          const dist = Math.sqrt(Math.random()) * Math.max(1.2, radius * 0.92);
+          const plane = BABYLON.MeshBuilder.CreatePlane(`utility-smoke-plane-${i}-${Math.random().toString(36).slice(2, 6)}`, {
+            width: 3.2 + Math.random() * 2.4,
+            height: 2.1 + Math.random() * 1.8,
+          }, scene);
+          plane.position.set(
+            position.x + Math.cos(angle) * dist,
+            0.9 + Math.random() * 1.7,
+            position.z + Math.sin(angle) * dist,
+          );
+          plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+          plane.isPickable = false;
+          const smokeMat = new BABYLON.StandardMaterial(`utility-smoke-plane-mat-${i}-${Math.random().toString(36).slice(2, 6)}`, scene);
+          smokeMat.diffuseColor = BABYLON.Color3.FromHexString('#6d7778');
+          smokeMat.emissiveColor = BABYLON.Color3.FromHexString('#31393b').scale(0.28);
+          smokeMat.specularColor = BABYLON.Color3.Black();
+          smokeMat.alpha = 0.18 + Math.random() * 0.08;
+          smokeMat.backFaceCulling = false;
+          smokeMat.disableDepthWrite = true;
+          plane.material = smokeMat;
+          const smokeLife = Math.max(1.2, life);
+          state.raid.effects.push({
+            mesh: plane,
+            life: smokeLife,
+            maxLife: smokeLife,
+            alphaScale: smokeMat.alpha,
+            baseScale: 0.86 + Math.random() * 0.18,
+            scaleGrow: 0.28 + Math.random() * 0.22,
+            velocity: new BABYLON.Vector3((Math.random() - 0.5) * 0.08, 0.06 + Math.random() * 0.05, (Math.random() - 0.5) * 0.08),
+            spin: (Math.random() - 0.5) * 0.14,
+          });
+        }
+      }
+    });
+
+    const createUtilityBurst = (position, color, count = 1.2, style = 'impact', radius = 3, life = 0.55) => {
+      spawnUtilityImpactFx(position, color, count, style, radius, life);
       playImpactAudio(position, 'hard');
     };
 
@@ -645,7 +731,7 @@
         player.supportSmokeVisual?.smokeTexture?.dispose();
         disposeVisual(player.supportSmokeVisual?.root);
         player.supportSmokeVisual = createSupportSmokeVisual(player.supportSmokeX, player.supportSmokeZ);
-        createUtilityBurst(new BABYLON.Vector3(player.supportSmokeX, 0.5, player.supportSmokeZ), '#76e6a4', 1.05);
+        createUtilityBurst(new BABYLON.Vector3(player.supportSmokeX, 0.16, player.supportSmokeZ), '#76e6a4', 1.05, 'impact', SUPPORT_SMOKE_RADIUS, 0.62);
         notify(L('增益烟雾已释放：半径 20 米，持续 7 秒，每秒恢复 50 生命和 20 体力。', 'Recovery Smoke: 20m radius, 7s, +50 HP and +20 stamina per second.'), 'success');
       }
       syncUtilityUi();
