@@ -693,7 +693,7 @@
       };
     }
 
-    const GLOBAL_FIREARM_DAMAGE_MULT = 1.30;
+    const GLOBAL_FIREARM_DAMAGE_MULT = 1.50;
 
     const weaponDamageBeforePowerPass = typeof getWeaponDamage === 'function' ? getWeaponDamage : null;
     if (weaponDamageBeforePowerPass) {
