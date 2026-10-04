@@ -50,8 +50,8 @@
       if (operatorId === 'recon') return L('隐身器', 'Cloak');
       return L('烟雾', 'Smoke');
     };
-    const utilityMax = (operatorId) => operatorId === 'engineer' ? ENGINEER_UTILITY_MAX_ITEMS : UTILITY_MAX_ITEMS;
-    const utilityGainTime = (operatorId) => operatorId === 'recon' ? RECON_UTILITY_GAIN_TIME : UTILITY_GAIN_TIME;
+    const utilityMax = (operatorId) => operatorId === 'engineer' ? ENGINEER_UTILITY_MAX_ITEMS : operatorId === 'assault' ? 1 : UTILITY_MAX_ITEMS;
+    const utilityGainTime = (operatorId) => operatorId === 'recon' ? RECON_UTILITY_GAIN_TIME : operatorId === 'assault' ? 30 : UTILITY_GAIN_TIME;
 
     const ensureUtilityUi = () => {
       const hudLeft = document.querySelector('#hud .hud-left');
@@ -374,11 +374,11 @@
         nameEn: 'Kai',
         passiveZh: '男 · 前线突击手，初始护甲耐久 200，护甲耐久消耗减半；控枪更稳、换弹更快，过载击杀可持续续航。',
         passiveEn: 'Male · Frontline breacher with 200 starting armor and half armor durability consumption, plus steadier gun control, faster reloads, and stronger Overdrive kill sustain.',
-        skillTextZh: '手动启动：35 秒内移速 x2、伤害翻倍；期间每击败一人延长 1.5 秒并恢复 90 生命。',
-        skillTextEn: 'Manual: 35s of x2 speed and double damage. Each kill adds 1.5s and restores 90 HP.',
+        skillTextZh: '手动启动：20 秒内进入过载状态；期间保留当前移速、伤害和击败续航强化。',
+        skillTextEn: 'Manual: 20s Overdrive duration while keeping the current speed, damage and kill-sustain bonuses.',
         itemNameZh: '高级手雷',
         itemNameEn: 'Advanced Grenade',
-        abilityDuration: 35,
+        abilityDuration: 20,
         speedBoostMult: 2,
         damageBoostMult: 2,
         killExtendSeconds: 1.5,
