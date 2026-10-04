@@ -816,7 +816,20 @@
     const damageBeforeYanfeiReward = damageEnemy;
     damageEnemy = function damageWithYanfeiGunReward(enemy, damage, options = {}) {
       const wasAlive = Boolean(enemy && !enemy.dead && enemy.health > 0);
-      const result = damageBeforeYanfeiReward(enemy, damage, options);
+      let appliedDamage = damage;
+      if (enemy && options.utilityKind && damage > 0) {
+        const utilityReduction = enemy.isNamelessBoss
+          ? 0.40
+          : enemy.isNamelessMinion
+            ? 0.30
+            : enemy.type === 'bruiser'
+              ? 0.25
+              : enemy.type === 'hunter'
+                ? 0.15
+                : 0.10;
+        appliedDamage *= 1 - utilityReduction;
+      }
+      const result = damageBeforeYanfeiReward(enemy, appliedDamage, options);
       const player = state.raid?.player;
       if (wasAlive && enemy && !enemy.dead && !enemy.isRangeTarget && player &&
         !options.utilityKind && !options.execution && damage > 0 && !enemy.isProne &&
