@@ -14591,7 +14591,9 @@ if (refs.deployButton && !refs.deployButton.dataset.boundPatchedRaidFinal) {
   refs.deployButton.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopImmediatePropagation();
-    window.__sdrPatchedStartRaid();
+    // Call the latest wrapped startRaid authority so later mode patches
+    // (especially Vehicle Battlefield) can initialize their own raid state.
+    startRaid();
   }, true);
 }
 
