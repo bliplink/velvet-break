@@ -17,6 +17,7 @@ const checks = [
   ['polish-v2', 'node', ['scripts/polish-v2-smoke.cjs']],
   ['operator-regression', 'node', ['scripts/operator-regression.cjs']],
   ['operator-power-live', 'node', ['scripts/operator-power-smoke.cjs']],
+  ['final-feature-regression', 'node', ['scripts/final-feature-regression.cjs']],
   ['combat-polish', 'node', ['scripts/combat-polish-smoke.cjs']],
   ['echo-persistence', 'node', ['scripts/echo-persistence-smoke.cjs']],
   ['echo-kai-balance', 'node', ['scripts/echo-kai-balance-smoke.cjs']],
