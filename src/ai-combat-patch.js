@@ -151,7 +151,7 @@
 
 
     const enemyUtilityDebug = window.__sdrEnemyUtilityDebug ?? {
-      version: '2026-10-03-ai-utility-v3-soft-stun',
+      version: '2026-10-04-ai-utility-v4-smoke-feedback',
       throws: 0,
       grenades: 0,
       smokes: 0,
@@ -214,32 +214,50 @@
       if (!raid || !player) return;
       if (type === 'smoke') {
         enemyUtilityDebug.smokes += 1;
-        spawnEnemyUtilityPulse(targetX, targetZ, '#a9b8bd', 0.7);
         raid.enemySmokeFields ??= [];
-        raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: 4.8, timer: 4.5 });
-        enemy.smokeScreenTimer = 4.5;
+        const smokeRadius = 8;
+        raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: smokeRadius, timer: 5.5 });
+        enemy.smokeScreenTimer = 5.5;
         enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
+        if (typeof spawnSmokePuff === 'function') {
+          for (let i = 0; i < 18; i += 1) {
+            const angle = Math.PI * 2 * i / 18 + Math.random() * 0.2;
+            const radius = Math.sqrt(Math.random()) * smokeRadius;
+            spawnSmokePuff(
+              new BABYLON.Vector3(targetX + Math.cos(angle) * radius, 0.45 + Math.random() * 1.2, targetZ + Math.sin(angle) * radius),
+              '#8d989d',
+              0.55 + Math.random() * 0.45,
+              1.8 + Math.random() * 1.3,
+              new BABYLON.Vector3((Math.random() - 0.5) * 0.12, 0.08 + Math.random() * 0.12, (Math.random() - 0.5) * 0.12),
+            );
+          }
+        }
+        if (Math.hypot(player.x - targetX, player.z - targetZ) <= smokeRadius) {
+          notify(L('敌方烟雾已覆盖当前位置。', 'Enemy smoke is covering your position.'), 'warning');
+        }
         return;
       }
 
       if (type === 'stun') {
         enemyUtilityDebug.stuns += 1;
-        spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
+        if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(targetX, 0.7, targetZ), '#f6efc8', 0.75, 'hard');
         if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
           player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
           player.aiStunMobilityLockTimer = Math.max(player.aiStunMobilityLockTimer ?? 0, 2.5);
           player.mobilityAction = null;
           player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.2);
           player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.4);
+          notify(L('被敌方震撼弹命中：移速降低，短时间无法机动。', 'Hit by enemy stun: movement slowed and mobility briefly disabled.'), 'danger');
         }
         return;
       }
 
       enemyUtilityDebug.grenades += 1;
-      spawnEnemyUtilityPulse(targetX, targetZ, '#ff9b5a', 0.95);
+      if (typeof spawnImpactBurst === 'function') spawnImpactBurst(new BABYLON.Vector3(targetX, 0.55, targetZ), '#ff9b5a', 1.05, 'hard');
       if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
         const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
         applyDamageToPlayer(damage);
+        notify(L(`被敌方爆炸物命中：-${damage} 基础伤害。`, `Hit by enemy explosive: -${damage} base damage.`), 'danger');
       }
     };
 
