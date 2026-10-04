@@ -106,6 +106,10 @@ jobs:
       - name: Verify enemies cannot xray through buildings
         run: node scripts/enemy-occlusion-smoke.cjs
 
+      - name: Verify real Lockdown wall occlusion
+        run: node scripts/lockdown-wall-occlusion-smoke.cjs
+
+
 
 
       - name: Verify unified 10-second stun control
