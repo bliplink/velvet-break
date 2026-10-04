@@ -91,6 +91,8 @@ const { chromium } = require('playwright');
       shop.liveForm === 2 &&
       runtime.modeDefs.includes('battlefield') &&
       !runtime.modeDefs.includes('contract') &&
+      !runtime.modeDefs.includes('blacktide') &&
+      !runtime.modeDefs.includes('hormone') &&
       runtime.modeId === 'battlefield' &&
       runtime.enemyCount >= 40 &&
       runtime.allyCount === 6 &&
