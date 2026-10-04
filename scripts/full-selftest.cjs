@@ -12,6 +12,7 @@ const checks = [
   ['ai-utility-building', 'node', ['scripts/ai-utility-building-smoke.cjs']],
   ['ai-throw-animation', 'node', ['scripts/ai-throw-animation-smoke.cjs']],
   ['enemy-occlusion', 'node', ['scripts/enemy-occlusion-smoke.cjs']],
+  ['latest-combat-regression', 'node', ['scripts/latest-combat-regression.cjs']],
   ['lockdown-wall-occlusion', 'node', ['scripts/lockdown-wall-occlusion-smoke.cjs']],
   ['stun-control', 'node', ['scripts/stun-control-smoke.cjs']],
   ['polish-v2', 'node', ['scripts/polish-v2-smoke.cjs']],
