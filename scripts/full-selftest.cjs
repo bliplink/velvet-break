@@ -14,6 +14,8 @@ const checks = [
   ['operator-power-live', 'node', ['scripts/operator-power-smoke.cjs']],
   ['combat-polish', 'node', ['scripts/combat-polish-smoke.cjs']],
   ['echo-persistence', 'node', ['scripts/echo-persistence-smoke.cjs']],
+  ['echo-kai-balance', 'node', ['scripts/echo-kai-balance-smoke.cjs']],
+  ['combat-feedback', 'node', ['scripts/combat-feedback-smoke.cjs']],
   ['persistence-reset', 'node', ['scripts/persistence-reset-smoke.cjs']],
   ['raid-loop-v2', 'node', ['scripts/raid-loop-v2-smoke.cjs']],
   ['tactical-loop', 'node', ['scripts/tactical-loop-smoke.cjs']],
