@@ -545,27 +545,31 @@
       );
       const attackerHead = new BABYLON.Vector3(attackerFrame.x, attackerFrame.y + 1.76, attackerFrame.z);
 
-      const shoulderCamera = attackerHead
-        .subtract(attackerForward.scale(1.02))
-        .add(attackerRight.scale(0.44))
-        .add(new BABYLON.Vector3(0, 0.12, 0));
-      const eyeCamera = attackerHead
-        .subtract(attackerForward.scale(0.26))
-        .add(attackerRight.scale(0.11));
+      // Show the killer from the front/three-quarter side. A rear shoulder
+      // camera hides the firing animation and feels like spectating behind the AI.
+      const frontSideCamera = attackerHead
+        .add(attackerForward.scale(2.65))
+        .add(attackerRight.scale(1.35))
+        .add(new BABYLON.Vector3(0, 0.22, 0));
+      const closeFrontCamera = attackerHead
+        .add(attackerForward.scale(1.45))
+        .add(attackerRight.scale(0.72))
+        .add(new BABYLON.Vector3(0, 0.08, 0));
 
       const shoulderBlend = smoothstep((replayProgress - 0.48) / 0.22);
       const eyeBlend = smoothstep((replayProgress - 0.72) / 0.12);
-      desiredCamera = BABYLON.Vector3.Lerp(playerCamera, shoulderCamera, shoulderBlend);
-      desiredCamera = BABYLON.Vector3.Lerp(desiredCamera, eyeCamera, eyeBlend * 0.78);
-      cameraTarget = BABYLON.Vector3.Lerp(playerChest, playerChest.add(new BABYLON.Vector3(0, -0.16, 0)), eyeBlend);
-      targetFov = interpolate(0.84, 0.60, Math.max(shoulderBlend * 0.72, eyeBlend));
+      desiredCamera = BABYLON.Vector3.Lerp(playerCamera, frontSideCamera, shoulderBlend);
+      desiredCamera = BABYLON.Vector3.Lerp(desiredCamera, closeFrontCamera, eyeBlend * 0.72);
+      const attackerChest = attackerHead.add(new BABYLON.Vector3(0, -0.48, 0));
+      cameraTarget = BABYLON.Vector3.Lerp(playerChest, attackerChest, Math.max(shoulderBlend * 0.72, eyeBlend));
+      targetFov = interpolate(0.84, 0.64, Math.max(shoulderBlend * 0.72, eyeBlend));
 
       if (shoulderBlend > 0.25) {
         replay.killerViewShown = true;
         overlay.classList.add('killer-view');
         perspectiveEl.textContent = eyeBlend > 0.55
-          ? L('击杀者瞄准视角', 'KILLER AIM VIEW')
-          : L('击杀者肩后视角', 'KILLER SHOULDER VIEW');
+          ? L('击杀者正面特写', 'KILLER FRONT CLOSE-UP')
+          : L('击杀者侧前视角', 'KILLER FRONT-SIDE VIEW');
       }
     }
 
@@ -717,7 +721,7 @@
   };
 
   window.__sdrReplayDebug = {
-    version: '2026-10-03-killcam-v4',
+    version: '2026-10-04-killcam-v5',
     get active() { return Boolean(replay); },
     get frames() { return history.length; },
     get elapsed() { return replay?.elapsed ?? 0; },
