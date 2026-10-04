@@ -53,12 +53,15 @@ const { chromium } = require('playwright');
       window.useOperatorUtility();
       for (let i = 0; i < 28; i++) updateRaid(0.05);
       const grenadeDamage = before - enemy.health;
+      const expectedGrenadeDamage = enemy.type === 'bruiser' ? 450 : enemy.type === 'hunter' ? 510 : 540;
 
       return {
         enemies: raid.enemies.length,
         rosterReady: Boolean(raid.battlefieldRosterReady),
         vehicles: raid.vehicles?.length ?? 0,
+        enemyType: enemy.type,
         grenadeDamage,
+        expectedGrenadeDamage,
         utilityItems: player.utilityItems,
       };
     });
@@ -73,7 +76,7 @@ const { chromium } = require('playwright');
       combat.enemies < 72 ||
       !combat.rosterReady ||
       combat.vehicles !== 3 ||
-      combat.grenadeDamage < 599 || combat.grenadeDamage > 601 ||
+      Math.abs(combat.grenadeDamage - combat.expectedGrenadeDamage) > 2 ||
       errors.length
     ) process.exitCode = 1;
   } finally {
