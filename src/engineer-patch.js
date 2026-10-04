@@ -461,11 +461,7 @@
 
     const damageBeforeIncendiary = damageEnemy;
     damageEnemy = function incendiaryDamage(enemy, amount, options = {}) {
-      if (options.utilityKind !== 'incendiary' || !enemy || enemy.isNamelessBoss) return damageBeforeIncendiary(enemy, amount, options);
-      const reduction = enemy.damageReduction;
-      enemy.damageReduction = 0;
-      try { return damageBeforeIncendiary(enemy, amount, options); }
-      finally { enemy.damageReduction = reduction; }
+      return damageBeforeIncendiary(enemy, amount, options);
     };
 
     const enemyShootBeforeEngineer = enemyShoot;
