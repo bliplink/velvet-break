@@ -122,23 +122,23 @@ async function main() {
       !active.visible ||
       !active.title.includes('淘汰回放') ||
       active.result ||
-      active.version !== '2026-10-04-killcam-v6-front' ||
+      active.version !== '2026-10-04-killcam-v7-first-person' ||
       active.duration < 3.5 ||
       !active.recordedActions.some(action => /开火|FIRING/.test(action)) ||
       !active.recordedActions.some(action => /换弹|RELOADING/.test(action)) ||
       !active.recordedActions.some(action => /闪避|DODGING/.test(action)) ||
-      !active.phase?.includes('玩家当时') ||
+      !active.phase?.includes('击杀者第一视角') ||
       !active.impactText ||
       !impact.impactShown ||
       !impact.tracerShown ||
       !impact.freezeShown ||
       !impact.killerViewShown ||
-      !(impact.killerCameraFrontDot > 0.35) ||
-      !(impact.cameraCollisionChecks > 0) ||
+      !(impact.killerCameraFrontDot > 0.95) ||
+      impact.cameraCollisionChecks !== 0 ||
       !impact.phase?.includes('致命一击') ||
-      !impact.perspective ||
+      !impact.perspective?.includes('击杀者第一视角') ||
       !impact.impactText ||
-      !(impact.cameraFov <= 0.64) ||
+      !(impact.cameraFov <= 0.78) ||
       impact.tracerCoreGroup !== 3 ||
       impact.tracerGlowGroup !== 3 ||
       impact.tracerImpactGroup !== 3 ||
