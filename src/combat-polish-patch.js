@@ -418,6 +418,8 @@
 
     const spawnEchoSlashEffect = (player, target = null) => {
       if (!player || !scene?.activeCamera) return null;
+      const form = getEchoForm();
+      const phaseForm = form === 2;
       const cameraRef = scene.activeCamera;
       const forward = cameraRef.getForwardRay?.(1)?.direction?.normalize?.()
         ?? new BABYLON.Vector3(Math.sin(player.yaw ?? 0), 0, Math.cos(player.yaw ?? 0));
@@ -429,16 +431,16 @@
       const points = [];
       for (let i = 0; i <= 10; i += 1) {
         const t = i / 10;
-        const angle = -1.05 + t * 2.1;
+        const angle = (phaseForm ? -1.18 : -1.05) + t * (phaseForm ? 2.36 : 2.1);
         points.push(
           center
-            .add(right.scale(Math.sin(angle) * 0.72))
-            .add(up.scale(Math.cos(angle) * 0.38)),
+            .add(right.scale(Math.sin(angle) * (phaseForm ? 0.88 : 0.72)))
+            .add(up.scale(Math.cos(angle) * (phaseForm ? 0.46 : 0.38))),
         );
       }
       const mat = new BABYLON.StandardMaterial(`echo-slash-mat-${Date.now()}`, scene);
-      mat.diffuseColor = BABYLON.Color3.FromHexString('#7cecff');
-      mat.emissiveColor = BABYLON.Color3.FromHexString('#35d9ff').scale(1.45);
+      mat.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#b68cff' : '#7cecff');
+      mat.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#7b5cff' : '#35d9ff').scale(phaseForm ? 1.7 : 1.45);
       mat.specularColor = BABYLON.Color3.FromHexString('#ffffff');
       mat.disableLighting = true;
       mat.alpha = 0.92;
@@ -448,7 +450,7 @@
 
       const slash = BABYLON.MeshBuilder.CreateTube(`echo-slash-${Date.now()}`, {
         path: points,
-        radius: 0.026,
+        radius: phaseForm ? 0.038 : 0.026,
         tessellation: 8,
         cap: BABYLON.Mesh.CAP_ALL,
       }, scene);
@@ -461,14 +463,14 @@
       let impactMat = null;
       if (target) {
         impactMat = new BABYLON.StandardMaterial(`echo-impact-mat-${Date.now()}`, scene);
-        impactMat.diffuseColor = BABYLON.Color3.FromHexString('#b9f8ff');
-        impactMat.emissiveColor = BABYLON.Color3.FromHexString('#42dbff').scale(1.3);
+        impactMat.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#eadfff' : '#b9f8ff');
+        impactMat.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#9c74ff' : '#42dbff').scale(phaseForm ? 1.55 : 1.3);
         impactMat.disableLighting = true;
         impactMat.alpha = 0.78;
         impactMat.disableDepthWrite = true;
         impact = BABYLON.MeshBuilder.CreateTorus(`echo-impact-ring-${Date.now()}`, {
-          diameter: 0.9,
-          thickness: 0.055,
+          diameter: phaseForm ? 1.18 : 0.9,
+          thickness: phaseForm ? 0.072 : 0.055,
           tessellation: 32,
         }, scene);
         impact.position.set(target.x, 1.08, target.z);
@@ -477,34 +479,56 @@
         impact.isPickable = false;
         impact.renderingGroupId = 3;
       }
-      echoSlashEffects.push({ slash, mat, impact, impactMat, age: 0, duration: 0.26 });
+      let phaseRing = null;
+      let phaseRingMat = null;
+      if (phaseForm && target) {
+        phaseRingMat = new BABYLON.StandardMaterial(`echo-phase-ring-mat-${Date.now()}`, scene);
+        phaseRingMat.diffuseColor = BABYLON.Color3.FromHexString('#7cecff');
+        phaseRingMat.emissiveColor = BABYLON.Color3.FromHexString('#5fe9ff').scale(1.6);
+        phaseRingMat.disableLighting = true;
+        phaseRingMat.alpha = 0.68;
+        phaseRingMat.disableDepthWrite = true;
+        phaseRing = BABYLON.MeshBuilder.CreateTorus(`echo-phase-ring-${Date.now()}`, {
+          diameter: 1.55,
+          thickness: 0.035,
+          tessellation: 36,
+        }, scene);
+        phaseRing.position.set(target.x, 1.08, target.z);
+        phaseRing.rotation.x = Math.PI / 2;
+        phaseRing.rotation.z = Math.PI / 4;
+        phaseRing.material = phaseRingMat;
+        phaseRing.isPickable = false;
+        phaseRing.renderingGroupId = 3;
+      }
+      echoSlashEffects.push({ slash, mat, impact, impactMat, phaseRing, phaseRingMat, age: 0, duration: phaseForm ? 0.34 : 0.26 });
       return slash;
     };
 
-    const makeEchoKnifeVisual = () => {
+    const makeEchoKnifeVisual = (form = getEchoForm()) => {
       const root = new BABYLON.TransformNode('echo-knife-view', scene);
       root.parent = scene.activeCamera;
       root.position.set(0.32, -0.28, 0.62);
       root.rotation.set(-0.08, -0.18, -0.08);
 
+      const phaseForm = form === 2;
       const shell = new BABYLON.StandardMaterial('echo-knife-shell-blue', scene);
-      shell.diffuseColor = BABYLON.Color3.FromHexString('#0c4aa8');
-      shell.emissiveColor = BABYLON.Color3.FromHexString('#0b65d9').scale(0.62);
+      shell.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#17266e' : '#0c4aa8');
+      shell.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#4936c9' : '#0b65d9').scale(phaseForm ? 0.82 : 0.62);
       shell.specularColor = BABYLON.Color3.FromHexString('#8fe9ff').scale(0.8);
 
       const core = new BABYLON.StandardMaterial('echo-knife-core-blue', scene);
-      core.diffuseColor = BABYLON.Color3.FromHexString('#168dff');
-      core.emissiveColor = BABYLON.Color3.FromHexString('#159dff').scale(0.95);
+      core.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#7d5cff' : '#168dff');
+      core.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#986cff' : '#159dff').scale(phaseForm ? 1.18 : 0.95);
       core.specularColor = BABYLON.Color3.FromHexString('#d8f8ff');
 
       const line = new BABYLON.StandardMaterial('echo-knife-line-blue', scene);
-      line.diffuseColor = BABYLON.Color3.FromHexString('#7cecff');
-      line.emissiveColor = BABYLON.Color3.FromHexString('#42d7ff').scale(1.15);
+      line.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#b9f3ff' : '#7cecff');
+      line.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#70e8ff' : '#42d7ff').scale(phaseForm ? 1.45 : 1.15);
       line.specularColor = BABYLON.Color3.FromHexString('#efffff');
 
-      const blade = BABYLON.MeshBuilder.CreateBox('echo-knife-blade', { width: 0.082, height: 0.038, depth: 0.58 }, scene);
+      const blade = BABYLON.MeshBuilder.CreateBox('echo-knife-blade', { width: phaseForm ? 0.112 : 0.082, height: phaseForm ? 0.052 : 0.038, depth: phaseForm ? 0.68 : 0.58 }, scene);
       blade.parent = root;
-      blade.position.z = 0.17;
+      blade.position.z = phaseForm ? 0.21 : 0.17;
       blade.material = shell;
 
       const centerChannel = BABYLON.MeshBuilder.CreateBox('echo-knife-center-line', { width: 0.018, height: 0.044, depth: 0.5 }, scene);
@@ -523,6 +547,30 @@
         vent.position.set(side * 0.046, 0, -0.015);
         vent.rotation.y = side * 0.12;
         vent.material = line;
+      }
+
+      if (phaseForm) {
+        const spine = BABYLON.MeshBuilder.CreateBox('echo-phase-spine', { width: 0.034, height: 0.068, depth: 0.61 }, scene);
+        spine.parent = root;
+        spine.position.set(0, 0.012, 0.22);
+        spine.material = core;
+        for (const side of [-1, 1]) {
+          const edge = BABYLON.MeshBuilder.CreateBox(`echo-phase-edge-${side}`, { width: 0.016, height: 0.058, depth: 0.58 }, scene);
+          edge.parent = root;
+          edge.position.set(side * 0.061, -0.002, 0.23);
+          edge.rotation.z = side * 0.08;
+          edge.material = line;
+          const fin = BABYLON.MeshBuilder.CreateBox(`echo-phase-guard-fin-${side}`, { width: 0.19, height: 0.028, depth: 0.055 }, scene);
+          fin.parent = root;
+          fin.position.set(side * 0.12, 0.005, -0.13);
+          fin.rotation.y = side * 0.28;
+          fin.material = core;
+        }
+        const emitter = BABYLON.MeshBuilder.CreateSphere('echo-phase-emitter', { diameter: 0.105, segments: 12 }, scene);
+        emitter.parent = root;
+        emitter.position.set(0, 0.018, -0.145);
+        emitter.scaling.z = 0.65;
+        emitter.material = line;
       }
 
       const tip = BABYLON.MeshBuilder.CreateCylinder('echo-knife-tip', { height: 0.18, diameterTop: 0, diameterBottom: 0.084, tessellation: 4 }, scene);
@@ -565,7 +613,7 @@
         mesh.isPickable = false;
         mesh.metadata = { ...(mesh.metadata ?? {}), echoKnife: true, techBlue: true };
       }
-      root.metadata = { echoKnife: true, inspectable: true, range: ECHO_RANGE, damage: ECHO_DAMAGE };
+      root.metadata = { echoKnife: true, inspectable: true, range: ECHO_RANGE, damage: ECHO_DAMAGE, form };
       return root;
     };
 
@@ -642,7 +690,8 @@
         return false;
       }
       player.echoKnifeCooldown = ECHO_COOLDOWN;
-      player.echoKnifeAction = { timer: 0, duration: ECHO_SWING_DURATION, applied: false, visual: makeEchoKnifeVisual() };
+      const form = getEchoForm();
+      player.echoKnifeAction = { timer: 0, duration: form === 2 ? 0.38 : ECHO_SWING_DURATION, applied: false, form, visual: makeEchoKnifeVisual(form) };
       spawnEchoSlashEffect(player);
       state.input.fireHeld = false;
       debug.echoSwingCount += 1;
@@ -662,7 +711,8 @@
         debug.echoSmokeBlockedCount += 1;
         return false;
       }
-      player.echoKnifeInspect = { timer: 0, duration: ECHO_INSPECT_DURATION, visual: makeEchoKnifeVisual() };
+      const form = getEchoForm();
+      player.echoKnifeInspect = { timer: 0, duration: form === 2 ? 1.9 : ECHO_INSPECT_DURATION, form, visual: makeEchoKnifeVisual(form) };
       state.input.fireHeld = false;
       debug.echoInspectCount += 1;
       return true;
@@ -676,6 +726,8 @@
       revealDuration: ECHO_REVEAL_DURATION,
       cooldown: ECHO_COOLDOWN,
       inspectDuration: ECHO_INSPECT_DURATION,
+      get form() { return getEchoForm(); },
+      form2Unlocked: () => Boolean(state.save.echoForm2Unlocked),
     };
 
     let echoAttackHeld = false;
@@ -712,11 +764,18 @@
         if (fx.slash) fx.slash.scaling.setAll(1 + p * 0.28);
         if (fx.impactMat) fx.impactMat.alpha = (1 - p) * 0.78;
         if (fx.impact) fx.impact.scaling.setAll(0.8 + p * 1.1);
+        if (fx.phaseRingMat) fx.phaseRingMat.alpha = (1 - p) * 0.68;
+        if (fx.phaseRing) {
+          fx.phaseRing.scaling.setAll(0.72 + p * 1.55);
+          fx.phaseRing.rotation.z += dt * 5.5;
+        }
         if (p >= 1) {
           fx.slash?.dispose?.();
           fx.impact?.dispose?.();
+          fx.phaseRing?.dispose?.();
           fx.mat?.dispose?.();
           fx.impactMat?.dispose?.();
+          fx.phaseRingMat?.dispose?.();
           echoSlashEffects.splice(i, 1);
         }
       }
@@ -731,10 +790,15 @@
           const progress = Math.min(1, action.timer / action.duration);
           const wave = Math.sin(progress * Math.PI);
           if (action.visual) {
-            action.visual.position.set(0.32 - progress * 0.24, -0.28 + wave * 0.21, 0.62 - wave * 0.25);
-            action.visual.rotation.x = -0.08 - wave * 1.08;
-            action.visual.rotation.y = -0.18 + wave * 0.38;
-            action.visual.rotation.z = -0.08 - wave * 0.72;
+            const phase = action.form === 2;
+            action.visual.position.set(
+              0.32 - progress * (phase ? 0.34 : 0.24),
+              -0.28 + wave * (phase ? 0.29 : 0.21),
+              0.62 - wave * (phase ? 0.34 : 0.25),
+            );
+            action.visual.rotation.x = -0.08 - wave * (phase ? 1.38 : 1.08);
+            action.visual.rotation.y = -0.18 + wave * (phase ? 0.62 : 0.38);
+            action.visual.rotation.z = -0.08 - wave * (phase ? 1.02 : 0.72);
           }
           if (!action.applied && progress >= 0.3) {
             action.applied = true;
@@ -753,10 +817,11 @@
           const lift = Math.sin(progress * Math.PI);
           const turn = Math.sin(progress * Math.PI * 0.5);
           if (inspect.visual) {
-            inspect.visual.position.set(0.05 + lift * 0.08, -0.14 + lift * 0.13, 0.5 - lift * 0.08);
-            inspect.visual.rotation.x = -0.12 + Math.sin(progress * Math.PI * 2) * 0.18;
-            inspect.visual.rotation.y = -0.3 + turn * Math.PI * 1.75;
-            inspect.visual.rotation.z = -0.12 + Math.sin(progress * Math.PI) * 0.42;
+            const phase = inspect.form === 2;
+            inspect.visual.position.set(0.05 + lift * (phase ? 0.13 : 0.08), -0.14 + lift * (phase ? 0.18 : 0.13), 0.5 - lift * (phase ? 0.13 : 0.08));
+            inspect.visual.rotation.x = -0.12 + Math.sin(progress * Math.PI * (phase ? 3 : 2)) * (phase ? 0.28 : 0.18);
+            inspect.visual.rotation.y = -0.3 + turn * Math.PI * (phase ? 2.25 : 1.75);
+            inspect.visual.rotation.z = -0.12 + Math.sin(progress * Math.PI) * (phase ? 0.58 : 0.42);
           }
           if (progress >= 1) {
             inspect.visual?.dispose(false, true);
