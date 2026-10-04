@@ -24,16 +24,26 @@ const { chromium } = require('playwright');
       raid.enemyUtilityGlobalCooldown = 0;
 
       // Force deterministic stun selection by directly starting the staged action.
+      const baseMove = getPlayerMoveSpeed(player, false);
       const beforeStuns = window.__sdrEnemyUtilityDebug?.stuns ?? 0;
-      const started = beginEnemyUtilityThrow(enemy, player, 'stun');
+      const started = window.__sdrBeginEnemyUtilityThrow?.(enemy, player, 'stun') ?? false;
       const shootingBlocked = enemyShoot(enemy) === false;
 
       for (let i=0;i<12;i++) updateRaid(0.05);
       const projectileVisible = scene.meshes.some(m => String(m.name).includes('enemy-stun-body-'));
       const beforeImpactStuns = window.__sdrEnemyUtilityDebug?.stuns ?? 0;
 
-      for (let i=0;i<40;i++) updateRaid(0.05);
+      let guard = 0;
+      while (enemy.utilityThrowAction && guard < 60) {
+        updateRaid(0.05);
+        guard++;
+      }
       const afterImpactStuns = window.__sdrEnemyUtilityDebug?.stuns ?? 0;
+      const stunnedMove = getPlayerMoveSpeed(player, false);
+      state.input.keys.clear();
+      state.input.keys.add('KeyW');
+      const jumpBlocked = tryPlayerMobilityAction('jump') === false;
+      const dodgeBlocked = tryPlayerMobilityAction('dodge') === false;
 
       return {
         started,
@@ -43,6 +53,11 @@ const { chromium } = require('playwright');
         beforeImpactStuns,
         afterImpactStuns,
         actionEnded: !enemy.utilityThrowAction,
+        aiSlowTimer: player.aiStunSlowTimer ?? 0,
+        aiMobilityLockTimer: player.aiStunMobilityLockTimer ?? 0,
+        moveRatio: stunnedMove / baseMove,
+        jumpBlocked,
+        dodgeBlocked,
       };
     });
 
@@ -54,6 +69,10 @@ const { chromium } = require('playwright');
       result.beforeImpactStuns !== result.beforeStuns ||
       result.afterImpactStuns <= result.beforeStuns ||
       !result.actionEnded ||
+      result.aiSlowTimer < 4.7 || result.aiSlowTimer > 5.01 ||
+      result.aiMobilityLockTimer < 2.2 || result.aiMobilityLockTimer > 2.51 ||
+      result.moveRatio < 0.44 || result.moveRatio > 0.46 ||
+      !result.jumpBlocked || !result.dodgeBlocked ||
       errors.length
     ) process.exitCode = 1;
   } finally {
