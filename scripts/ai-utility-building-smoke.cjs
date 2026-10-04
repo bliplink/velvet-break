@@ -14,7 +14,7 @@ const { chromium } = require('playwright');
       const raid = state.raid;
       raid.player.dropTimer = 0;
       const normal = raid.enemies.filter(e => !e.isNamelessBoss && !e.isNamelessMinion && !e.isRangeTarget);
-      const healths = normal.slice(0,3).map(e => ({ type:e.type, maxHealth:e.maxHealth }));
+      const healths = normal.slice(0,6).map(e => ({ type:e.type, maxHealth:e.maxHealth }));
       const enemy = normal[0];
       enemy.x = raid.player.x + 14;
       enemy.z = raid.player.z;
@@ -34,6 +34,7 @@ const { chromium } = require('playwright');
         m.material?.disableDepthWrite === true
       );
       return {
+        normalCount: normal.length,
         healths,
         utilityThrows: after - before,
         playerSlowTimer: raid.player.engineerSlowTimer ?? 0,
@@ -43,8 +44,8 @@ const { chromium } = require('playwright');
       };
     });
     console.log(JSON.stringify({ result, errors }, null, 2));
-    const healthOk = result.healths.every(row => row.maxHealth <= (row.type === 'bruiser' ? 390 : row.type === 'hunter' ? 290 : 210));
-    if (!healthOk || result.utilityThrows < 1 || result.utilityThrows > 4 || result.playerSlowTimer > 10.01 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
+    const healthOk = result.healths.every(row => row.maxHealth >= (row.type === 'bruiser' ? 490 : row.type === 'hunter' ? 370 : 260));
+    if (result.normalCount < 30 || !healthOk || result.utilityThrows < 1 || result.utilityThrows > 4 || result.playerSlowTimer > 10.01 || result.shellCount < 20 || result.badShellCount !== 0 || errors.length) process.exitCode = 1;
   } finally {
     await browser.close();
   }
