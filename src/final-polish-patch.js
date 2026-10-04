@@ -76,6 +76,169 @@
       };
     }
 
+    // Unified ultimate/action feedback. Movement, jumping and prone are intentionally excluded.
+    const combatFeedbackStyle = document.createElement('style');
+    combatFeedbackStyle.id = 'final-combat-action-feedback-style';
+    combatFeedbackStyle.textContent = `
+      #finalCombatFeedback{position:fixed;inset:0;pointer-events:none;z-index:29;font-family:inherit;overflow:hidden}
+      #finalUltimateFrame{position:absolute;inset:10px;border:2px solid transparent;border-radius:16px;opacity:0;transition:opacity .18s ease;box-shadow:inset 0 0 28px transparent,0 0 18px transparent}
+      #finalUltimateFrame.is-active{opacity:.9;animation:final-ultimate-pulse .72s ease-in-out infinite alternate}
+      #finalUltimateBurst{position:absolute;left:50%;top:19%;min-width:300px;transform:translate(-50%,-50%) scale(.82);padding:12px 26px;border:1px solid transparent;border-radius:10px;background:linear-gradient(90deg,rgba(5,10,14,0),rgba(5,10,14,.84),rgba(5,10,14,0));text-align:center;opacity:0;filter:blur(4px)}
+      #finalUltimateBurst strong{display:block;font-size:1.03rem;letter-spacing:.18em;text-transform:uppercase}
+      #finalUltimateBurst span{display:block;margin-top:4px;font-size:.7rem;letter-spacing:.12em;opacity:.82}
+      #finalUltimateBurst.is-starting{animation:final-ultimate-start 1.05s cubic-bezier(.16,.8,.22,1)}
+      #finalActionFeedback{position:absolute;left:50%;bottom:16%;transform:translate(-50%,14px) scale(.96);min-width:260px;max-width:min(520px,76vw);padding:10px 18px 9px;border:1px solid rgba(180,230,255,.3);border-radius:9px;background:linear-gradient(90deg,rgba(5,10,14,.24),rgba(5,10,14,.88),rgba(5,10,14,.24));box-shadow:0 10px 30px rgba(0,0,0,.34);opacity:0;transition:opacity .12s ease,transform .12s ease;text-align:center;backdrop-filter:blur(7px)}
+      #finalActionFeedback.is-active{opacity:1;transform:translate(-50%,0) scale(1)}
+      #finalActionFeedback::before,#finalActionFeedback::after{content:'';position:absolute;top:50%;width:42px;height:1px;background:currentColor;opacity:.58;animation:final-action-ray .75s ease-in-out infinite alternate}
+      #finalActionFeedback::before{right:100%}#finalActionFeedback::after{left:100%}
+      #finalActionLabel{font-size:.83rem;font-weight:900;letter-spacing:.08em;text-shadow:0 0 11px currentColor}
+      #finalActionDetail{margin-top:3px;font-size:.65rem;opacity:.72;letter-spacing:.06em}
+      #finalActionProgress{height:2px;margin-top:7px;background:rgba(255,255,255,.12);overflow:hidden}
+      #finalActionProgress i{display:block;height:100%;width:0;background:currentColor;box-shadow:0 0 10px currentColor;transition:width .06s linear}
+      @keyframes final-ultimate-pulse{from{filter:brightness(.82)}to{filter:brightness(1.35)}}
+      @keyframes final-ultimate-start{0%{opacity:0;transform:translate(-50%,-50%) scale(.62);filter:blur(8px)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:blur(0)}72%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}100%{opacity:0;transform:translate(-50%,-54%) scale(1.04);filter:blur(3px)}}
+      @keyframes final-action-ray{from{transform:scaleX(.45);opacity:.22}to{transform:scaleX(1);opacity:.72}}
+    `;
+    document.head.appendChild(combatFeedbackStyle);
+
+    const combatFeedback = document.createElement('div');
+    combatFeedback.id = 'finalCombatFeedback';
+    combatFeedback.innerHTML = `
+      <div id="finalUltimateFrame"></div>
+      <div id="finalUltimateBurst"><strong id="finalUltimateName"></strong><span id="finalUltimateSub"></span></div>
+      <div id="finalActionFeedback">
+        <div id="finalActionLabel"></div>
+        <div id="finalActionDetail"></div>
+        <div id="finalActionProgress"><i></i></div>
+      </div>
+    `;
+    document.body.appendChild(combatFeedback);
+
+    const ultimateFrame = combatFeedback.querySelector('#finalUltimateFrame');
+    const ultimateBurst = combatFeedback.querySelector('#finalUltimateBurst');
+    const ultimateName = combatFeedback.querySelector('#finalUltimateName');
+    const ultimateSub = combatFeedback.querySelector('#finalUltimateSub');
+    const actionFeedback = combatFeedback.querySelector('#finalActionFeedback');
+    const actionLabel = combatFeedback.querySelector('#finalActionLabel');
+    const actionDetail = combatFeedback.querySelector('#finalActionDetail');
+    const actionProgress = combatFeedback.querySelector('#finalActionProgress i');
+    let previousUltimateActive = false;
+
+    const setUltimateFeedbackColor = (color) => {
+      const safe = color || '#8fd6ff';
+      ultimateFrame.style.borderColor = safe;
+      ultimateFrame.style.boxShadow = `inset 0 0 34px ${safe}55,0 0 20px ${safe}66`;
+      ultimateBurst.style.color = safe;
+      ultimateBurst.style.borderColor = `${safe}88`;
+      ultimateBurst.style.boxShadow = `0 0 30px ${safe}44,inset 0 0 24px ${safe}22`;
+    };
+
+    const triggerUltimateStartFeedback = (player) => {
+      if (!player) return;
+      const operator = getPlayerOperatorDef(player);
+      const color = operator?.abilityColor ?? '#8fd6ff';
+      setUltimateFeedbackColor(color);
+      ultimateName.textContent = L(operator?.skillNameZh ?? '大招启动', operator?.skillNameEn ?? 'ULTIMATE ACTIVE');
+      ultimateSub.textContent = L('战术系统已启动', 'TACTICAL SYSTEM ONLINE');
+      ultimateBurst.classList.remove('is-starting');
+      void ultimateBurst.offsetWidth;
+      ultimateBurst.classList.add('is-starting');
+    };
+
+    const getFinalActionFeedback = (player, raid) => {
+      if (!player || !raid) return null;
+      const operator = getPlayerOperatorDef(player);
+      const opColor = operator?.abilityColor ?? '#8fd6ff';
+
+      if (raid.engineerExecution || player.executionLocked) {
+        const action = raid.engineerExecution;
+        return { label: L('正在处决目标', 'Executing target'), detail: L('保持警戒 · 处决期间仍会受伤', 'Stay alert · you can still take damage'), color: '#ff765f', remaining: action?.timer, duration: action?.duration };
+      }
+      if (player.echoKnifeInspect) {
+        return { label: L('正在检视：回声', 'Inspecting: Echo'), detail: getEchoForm?.() === 2 ? L('相位形态', 'Phase Form') : L('标准形态', 'Standard Form'), color: getEchoForm?.() === 2 ? '#a985ff' : '#70e8ff', remaining: Math.max(0, player.echoKnifeInspect.duration - player.echoKnifeInspect.timer), duration: player.echoKnifeInspect.duration };
+      }
+      if (player.echoKnifeAction) {
+        return { label: L('正在挥击：回声', 'Striking: Echo'), detail: L('近战攻击', 'Melee strike'), color: player.echoKnifeAction.form === 2 ? '#a985ff' : '#70e8ff', remaining: Math.max(0, player.echoKnifeAction.duration - player.echoKnifeAction.timer), duration: player.echoKnifeAction.duration };
+      }
+      if (player.reloadTimer > 0) {
+        let duration = player.reloadTimer;
+        try { duration = Math.max(player.reloadTimer, getCurrentPlayerWeaponStats(player)?.reload ?? player.reloadTimer); } catch (_) {}
+        return { label: L('正在换弹', 'Reloading'), detail: `${player.reloadTimer.toFixed(1)}s`, color: '#8fd6ff', remaining: player.reloadTimer, duration };
+      }
+      if (player.useAction) {
+        const action = player.useAction;
+        return { label: L(`正在${action.labelZh ?? '使用物品'}`, `Using: ${action.labelEn ?? 'item'}`), detail: L('动作完成前请保持操作', 'Action completes when the timer finishes'), color: action.flavor === 'armor' ? '#93c9ff' : '#82f2b2', remaining: player.healTimer, duration: action.duration };
+      }
+      if (player.utilityAction) {
+        const type = player.utilityAction.type;
+        const name = type === 'assault' ? L('正在投掷高级手雷', 'Throwing Advanced Grenade')
+          : type === 'medic' ? L('正在释放增益烟雾', 'Deploying Recovery Smoke')
+          : L('正在启动电子隐身器', 'Activating Electronic Cloak');
+        return { label: name, detail: L('专属道具', 'Signature utility'), color: opColor, remaining: player.utilityAction.timer, duration: player.utilityAction.duration };
+      }
+      if (player.barrierDeployAction) {
+        return { label: L('正在部署速凝掩体', 'Deploying Rapid Barrier'), detail: L('工程道具', 'Engineer utility'), color: '#58c8ff', remaining: Math.max(0, player.barrierDeployAction.duration - player.barrierDeployAction.timer), duration: player.barrierDeployAction.duration };
+      }
+      if (player.incendiaryThrow) {
+        return { label: L('正在投掷火焰弹', 'Throwing Incendiary'), detail: L('彦飞专属道具', 'Yanfei utility'), color: '#ff8a57' };
+      }
+      if (player.stunGrenadeThrow) {
+        return { label: L('正在投掷震撼弹', 'Throwing Stun Grenade'), detail: L('彦飞专属道具', 'Yanfei utility'), color: '#9fe8ff' };
+      }
+      if (raid.incendiaryTargeting) {
+        return { label: L('正在选择火焰弹落点', 'Selecting incendiary landing'), detail: L('再次按 I 确认', 'Press I again to confirm'), color: '#ff8a57' };
+      }
+      if (raid.stunGrenadeTargeting) {
+        return { label: L('正在选择震撼弹落点', 'Selecting stun landing'), detail: L('再次按 O 确认', 'Press O again to confirm'), color: '#9fe8ff' };
+      }
+      if (player.grenadeTargeting) {
+        return { label: L('正在选择高级手雷落点', 'Selecting grenade landing'), detail: L('再次按 G 投掷', 'Press G again to throw'), color: '#ff9a62' };
+      }
+      if (raid.switchSequence) {
+        return { label: L('正在启动撤离开关', 'Activating extraction switch'), detail: `${Math.max(0, raid.switchSequence.timer ?? 0).toFixed(1)}s`, color: '#ffd06a', remaining: raid.switchSequence.timer, duration: raid.switchSequence.duration ?? 2.2 };
+      }
+      if ((player.extractionProgress ?? 0) > 0) {
+        return { label: L('正在撤离', 'Extracting'), detail: `${Math.min(player.extractionProgress, EXTRACTION_HOLD_TIME).toFixed(1)} / ${EXTRACTION_HOLD_TIME.toFixed(1)}s`, color: '#8fffc1', remaining: Math.max(0, EXTRACTION_HOLD_TIME - player.extractionProgress), duration: EXTRACTION_HOLD_TIME };
+      }
+      return null;
+    };
+
+    const syncFinalCombatFeedback = () => {
+      const raid = state.raid;
+      const player = raid?.player;
+      const inRaid = state.mode === 'raid' && Boolean(player);
+      const activeUltimate = Boolean(inRaid && (player.abilityActiveTimer ?? 0) > 0);
+      if (activeUltimate && !previousUltimateActive) triggerUltimateStartFeedback(player);
+      previousUltimateActive = activeUltimate;
+
+      if (activeUltimate) {
+        const operator = getPlayerOperatorDef(player);
+        setUltimateFeedbackColor(operator?.abilityColor ?? '#8fd6ff');
+      }
+      ultimateFrame.classList.toggle('is-active', activeUltimate);
+      if (!inRaid) {
+        actionFeedback.classList.remove('is-active');
+        return;
+      }
+
+      const action = getFinalActionFeedback(player, raid);
+      if (!action) {
+        actionFeedback.classList.remove('is-active');
+        actionProgress.style.width = '0%';
+        return;
+      }
+      actionFeedback.classList.add('is-active');
+      actionFeedback.style.color = action.color ?? '#8fd6ff';
+      actionFeedback.style.borderColor = `${action.color ?? '#8fd6ff'}66`;
+      actionFeedback.style.boxShadow = `0 10px 30px rgba(0,0,0,.34),0 0 18px ${action.color ?? '#8fd6ff'}33`;
+      actionLabel.textContent = action.label;
+      actionDetail.textContent = action.detail ?? '';
+      const progress = Number.isFinite(action.remaining) && Number.isFinite(action.duration) && action.duration > 0
+        ? Math.max(0, Math.min(1, 1 - action.remaining / action.duration))
+        : 0.5;
+      actionProgress.style.width = `${Math.round(progress * 100)}%`;
+    };
+
     // One authoritative stamina HUD after every earlier patch has run.
     const syncHudBeforeFinal = syncHud;
     syncHud = function syncFinalStaminaHud(...args) {
@@ -88,6 +251,7 @@
       const fill = document.getElementById('staminaMeterFill');
       if (value) value.textContent = `${Math.round(player.stamina)} / ${Math.round(max)}`;
       if (fill) fill.style.width = `${Math.max(0, Math.min(100, player.stamina / max * 100)).toFixed(1)}%`;
+      syncFinalCombatFeedback();
       return result;
     };
 
@@ -702,7 +866,7 @@
       };
     }
 
-    const GLOBAL_FIREARM_DAMAGE_MULT = 1.50;
+    const GLOBAL_FIREARM_DAMAGE_MULT = 1.75;
 
     const weaponDamageBeforePowerPass = typeof getWeaponDamage === 'function' ? getWeaponDamage : null;
     if (weaponDamageBeforePowerPass) {
