@@ -145,6 +145,7 @@
       enemy.utilityTargetX = 0;
       enemy.utilityTargetZ = 0;
       enemy.utilityThrows = 0;
+      enemy.utilityThrowAction = null;
       return enemy;
     };
 
@@ -189,9 +190,62 @@
       return mesh;
     };
 
-    const throwEnemyUtility = (enemy, player, type) => {
+    const createEnemyUtilityProjectile = (type, enemy) => {
+      const color = type === 'smoke' ? '#9aa7ad' : type === 'stun' ? '#dfefff' : '#c95b39';
+      const root = new BABYLON.TransformNode(`enemy-${type}-projectile-${enemy.id}`, scene);
+      const body = BABYLON.MeshBuilder.CreateCylinder(`enemy-${type}-body-${enemy.id}`, {
+        height: 0.22,
+        diameter: 0.11,
+        tessellation: 12,
+      }, scene);
+      body.parent = root;
+      body.rotation.z = Math.PI / 2;
+      const mat = new BABYLON.StandardMaterial(`enemy-${type}-projectile-mat-${enemy.id}`, scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString(color);
+      mat.emissiveColor = mat.diffuseColor.scale(type === 'stun' ? 0.65 : 0.24);
+      mat.specularColor = BABYLON.Color3.Black();
+      body.material = mat;
+      body.isPickable = false;
+      return root;
+    };
+
+    const resolveEnemyUtilityImpact = (enemy, player, type, targetX, targetZ) => {
       const raid = state.raid;
-      if (!raid || !enemy || !player || enemy.dead || enemy.despawned) return false;
+      if (!raid || !player) return;
+      if (type === 'smoke') {
+        enemyUtilityDebug.smokes += 1;
+        spawnEnemyUtilityPulse(targetX, targetZ, '#a9b8bd', 0.7);
+        raid.enemySmokeFields ??= [];
+        raid.enemySmokeFields.push({ x: targetX, z: targetZ, radius: 4.8, timer: 4.5 });
+        enemy.smokeScreenTimer = 4.5;
+        enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
+        return;
+      }
+
+      if (type === 'stun') {
+        enemyUtilityDebug.stuns += 1;
+        spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
+        if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
+          player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
+          player.aiStunMobilityLockTimer = Math.max(player.aiStunMobilityLockTimer ?? 0, 2.5);
+          player.mobilityAction = null;
+          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.2);
+          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.4);
+        }
+        return;
+      }
+
+      enemyUtilityDebug.grenades += 1;
+      spawnEnemyUtilityPulse(targetX, targetZ, '#ff9b5a', 0.95);
+      if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
+        const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
+        applyDamageToPlayer(damage);
+      }
+    };
+
+    const beginEnemyUtilityThrow = (enemy, player, type) => {
+      const raid = state.raid;
+      if (!raid || !enemy || !player || enemy.dead || enemy.despawned || enemy.utilityThrowAction) return false;
       const dx = player.x - enemy.x;
       const dz = player.z - enemy.z;
       const dist = Math.hypot(dx, dz);
@@ -205,39 +259,67 @@
           : 16 + Math.random() * 5;
       enemy.utilityThrows = (enemy.utilityThrows ?? 0) + 1;
       enemyUtilityDebug.throws += 1;
-      const targetX = player.x + (player.lastMoveX ?? 0) * 0.25;
-      const targetZ = player.z + (player.lastMoveZ ?? 0) * 0.25;
 
-      if (type === 'smoke') {
-        enemyUtilityDebug.smokes += 1;
-        spawnEnemyUtilityPulse(enemy.x, enemy.z, '#a9b8bd', 0.7);
-        raid.enemySmokeFields ??= [];
-        raid.enemySmokeFields.push({ x: enemy.x, z: enemy.z, radius: 4.8, timer: 4.5 });
-        enemy.smokeScreenTimer = 4.5;
-        enemy.accuracyBonus = Math.max(-0.1, (enemy.accuracyBonus ?? 0) - 0.05);
-        return true;
-      }
-
-      if (type === 'stun') {
-        enemyUtilityDebug.stuns += 1;
-        spawnEnemyUtilityPulse(targetX, targetZ, '#f6efc8', 0.8);
-        if ((player.aiStunSlowTimer ?? 0) <= 0 && Math.hypot(player.x - targetX, player.z - targetZ) <= 3.8) {
-          player.aiStunSlowTimer = Math.max(player.aiStunSlowTimer ?? 0, 5);
-          player.aiStunMobilityLockTimer = Math.max(player.aiStunMobilityLockTimer ?? 0, 2.5);
-          player.mobilityAction = null;
-          player.fallStunTimer = Math.max(player.fallStunTimer ?? 0, 0.2);
-          player.suppressionTimer = Math.max(player.suppressionTimer ?? 0, 1.4);
-        }
-        return true;
-      }
-
-      enemyUtilityDebug.grenades += 1;
-      spawnEnemyUtilityPulse(targetX, targetZ, '#ff9b5a', 0.95);
-      if (Math.hypot(player.x - targetX, player.z - targetZ) <= 4.2) {
-        const damage = enemy.type === 'bruiser' ? 42 : enemy.type === 'hunter' ? 34 : 28;
-        applyDamageToPlayer(damage);
-      }
+      const targetX = type === 'smoke' ? enemy.x : player.x + (player.lastMoveX ?? 0) * 0.25;
+      const targetZ = type === 'smoke' ? enemy.z : player.z + (player.lastMoveZ ?? 0) * 0.25;
+      enemy.utilityThrowAction = {
+        type,
+        phase: 'windup',
+        timer: 0,
+        windup: 0.45,
+        flight: Math.max(0.48, Math.min(1.25, dist / 22)),
+        targetX,
+        targetZ,
+        startX: enemy.x,
+        startZ: enemy.z,
+        projectile: null,
+      };
+      enemy.mobilityAction = null;
+      enemy.shootCooldown = Math.max(enemy.shootCooldown ?? 0, 0.7);
+      enemy.heading = Math.atan2(dx, dz);
       return true;
+    };
+
+    const updateEnemyUtilityThrows = (dt) => {
+      const raid = state.raid;
+      const player = raid?.player;
+      if (!raid || !player) return;
+      for (const enemy of raid.enemies ?? []) {
+        const action = enemy.utilityThrowAction;
+        if (!action) continue;
+        if (enemy.dead || enemy.despawned) {
+          action.projectile?.dispose?.(false, true);
+          enemy.utilityThrowAction = null;
+          continue;
+        }
+        action.timer += dt;
+        enemy.shootCooldown = Math.max(enemy.shootCooldown ?? 0, 0.15);
+
+        if (action.phase === 'windup' && action.timer >= action.windup) {
+          action.phase = 'flight';
+          action.timer = 0;
+          const projectile = createEnemyUtilityProjectile(action.type, enemy);
+          projectile.position.set(enemy.x, enemy.type === 'bruiser' ? 1.55 : 1.38, enemy.z);
+          action.projectile = projectile;
+          action.startX = enemy.x;
+          action.startZ = enemy.z;
+        } else if (action.phase === 'flight' && action.projectile) {
+          const p = Math.min(1, action.timer / Math.max(0.001, action.flight));
+          const arc = Math.sin(p * Math.PI) * Math.min(5.2, 1.6 + Math.hypot(action.targetX - action.startX, action.targetZ - action.startZ) * 0.12);
+          action.projectile.position.set(
+            action.startX + (action.targetX - action.startX) * p,
+            0.18 + arc,
+            action.startZ + (action.targetZ - action.startZ) * p,
+          );
+          action.projectile.rotation.x += dt * 10;
+          action.projectile.rotation.z += dt * 7;
+          if (p >= 1) {
+            action.projectile.dispose(false, true);
+            resolveEnemyUtilityImpact(enemy, player, action.type, action.targetX, action.targetZ);
+            enemy.utilityThrowAction = null;
+          }
+        }
+      }
     };
 
     const updateEnemyUtilities = (dt) => {
@@ -254,7 +336,7 @@
         if (enemy.dead || enemy.despawned || enemy.isRangeTarget || enemy.isNamelessBoss) continue;
         enemy.utilityCooldown = Math.max(0, (enemy.utilityCooldown ?? 0) - dt);
         enemy.smokeScreenTimer = Math.max(0, (enemy.smokeScreenTimer ?? 0) - dt);
-        if ((enemy.utilityCooldown ?? 0) > 0 || (raid.enemyUtilityGlobalCooldown ?? 0) > 0) continue;
+        if (enemy.utilityThrowAction || (enemy.utilityCooldown ?? 0) > 0 || (raid.enemyUtilityGlobalCooldown ?? 0) > 0) continue;
 
         const dist = distance2D(enemy.x, enemy.z, player.x, player.z);
         const active = (enemy.alertTimer ?? 0) > 0 || enemy.combatState === 'combat' || enemy.combatState === 'search';
@@ -269,7 +351,7 @@
           enemy.utilityCooldown = 2.5 + Math.random() * 3.5;
           continue;
         }
-        if (throwEnemyUtility(enemy, player, type)) {
+        if (beginEnemyUtilityThrow(enemy, player, type)) {
           raid.enemyUtilityGlobalCooldown = 5 + Math.random() * 2;
         }
       }
@@ -346,6 +428,7 @@
 
     const shootBeforeReview = enemyShoot;
     enemyShoot = function strengthenedEnemyShot(enemy, options = {}) {
+      if (enemy?.utilityThrowAction) return false;
       const boss = Boolean(enemy?.isNamelessBoss);
       const minion = Boolean(enemy?.isNamelessMinion);
       const hitCap = boss ? 0.97 : minion ? 0.88 : 0.94;
@@ -690,6 +773,19 @@
           enemy.visual.leftLeg.rotation.x = stride;
           enemy.visual.rightLeg.rotation.x = -stride;
         }
+        const throwAction = enemy.utilityThrowAction;
+        if (throwAction && enemy.visual.rightArm) {
+          const p = throwAction.phase === 'windup'
+            ? Math.min(1, throwAction.timer / Math.max(0.001, throwAction.windup))
+            : 1;
+          const swing = Math.sin(p * Math.PI);
+          enemy.visual.rightArm.rotation.x = -1.15 - swing * 0.85;
+          enemy.visual.rightArm.rotation.z = -0.42 - swing * 0.18;
+          if (enemy.visual.gun) {
+            enemy.visual.gun.rotation.x = -0.55 * p;
+            enemy.visual.gun.position.y -= 0.08 * p;
+          }
+        }
       }
       return result;
     };
@@ -774,6 +870,7 @@
       }
       const result = updateRaidBeforeReview(dt);
       updateEnemyUtilities(dt);
+      updateEnemyUtilityThrows(dt);
       const boss = state.raid?.enemies?.find(enemy => enemy.isNamelessBoss && !enemy.dead);
       if (boss) {
         strengthenEnemy(boss);
