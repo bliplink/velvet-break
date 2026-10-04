@@ -609,17 +609,32 @@
         let hits = 0;
         for (const enemy of raid.enemies) {
           if (enemy.dead || distance2D(center.x, center.z, enemy.x, enemy.z) > GRENADE_RADIUS) continue;
-          const savedReduction = enemy.damageReduction;
-          enemy.damageReduction = 0;
-          try {
-            damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
-          } finally {
-            enemy.damageReduction = savedReduction;
-          }
+          const grenadeReduction = enemy.isNamelessBoss
+            ? 0.40
+            : enemy.isNamelessMinion
+              ? 0.30
+              : enemy.type === 'bruiser'
+                ? 0.25
+                : enemy.type === 'hunter'
+                  ? 0.15
+                  : 0.10;
+          const grenadeDamage = Math.round(GRENADE_DAMAGE * (1 - grenadeReduction));
+          damageEnemy(enemy, grenadeDamage, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
           hits += 1;
         }
+
+        // Throwing Kai's signature grenade grants a short breacher guard.
+        player.kaiUtilityGuardTimer = Math.max(player.kaiUtilityGuardTimer ?? 0, 6);
+        player.kaiUtilityDamageTakenMult = 0.65;
+
         createUtilityBurst(center, '#ff8a57', 2.2);
-        notify(L(`高级手雷爆炸，半径 ${GRENADE_RADIUS} 米，命中 ${hits} 名敌人，每名造成 ${GRENADE_DAMAGE} 伤害。`, `Advanced Grenade detonated: ${GRENADE_RADIUS}m radius, ${hits} targets hit for ${GRENADE_DAMAGE} damage each.`), hits ? 'success' : 'warning');
+        notify(
+          L(
+            `高级手雷爆炸：基础伤害 ${GRENADE_DAMAGE}，敌人按类型减免部分爆炸伤害；凯获得 6 秒 35% 伤害减免。`,
+            `Advanced Grenade detonated: ${GRENADE_DAMAGE} base damage with enemy-type blast resistance; Kai gains 35% damage reduction for 6s.`,
+          ),
+          hits ? 'success' : 'warning',
+        );
       } else if (player.operatorId === 'recon') {
         player.invisibilityTimer = RECON_CLOAK_TIME;
         player.bossCloakTimer = 5;
