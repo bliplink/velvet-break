@@ -633,11 +633,15 @@
           recoilMult: 0.68,
           reloadMult: 0.70,
           baseDamageMult: 1.18,
-          abilityDuration: 28,
-          speedBoostMult: 1.65,
-          damageBoostMult: 1.60,
-          killExtendSeconds: 1.5,
-          killHeal: 60,
+          abilityDuration: 32,
+          speedBoostMult: 1.80,
+          damageBoostMult: 1.85,
+          killExtendSeconds: 2.0,
+          killHeal: 90,
+          abilityDamageTakenMult: 0.62,
+          abilityReloadMult: 0.62,
+          abilitySpreadMult: 0.58,
+          abilityRecoilMult: 0.58,
           startArmorBonus: Math.max(defs.assault.startArmorBonus ?? 0, 170),
         });
         if (defs.recon) Object.assign(defs.recon, {
@@ -723,6 +727,11 @@
           stats.spread *= operator.abilitySpreadMult ?? 0.70;
           stats.reload *= operator.abilityReloadMult ?? 0.75;
         }
+        if (player.operatorId === 'assault' && (player.abilityActiveTimer ?? 0) > 0) {
+          stats.spread *= operator.abilitySpreadMult ?? 0.58;
+          stats.recoil = (stats.recoil ?? 1) * (operator.abilityRecoilMult ?? 0.58);
+          stats.reload *= operator.abilityReloadMult ?? 0.62;
+        }
         return stats;
       };
     }
@@ -734,6 +743,12 @@
         let incoming = amount;
         if (player?.operatorId === 'recon' && (player.abilityActiveTimer ?? 0) > 0) {
           incoming *= 0.65;
+        }
+        if (player?.operatorId === 'assault' && (player.abilityActiveTimer ?? 0) > 0) {
+          incoming *= getPlayerOperatorDef(player)?.abilityDamageTakenMult ?? 0.62;
+        }
+        if (player?.operatorId === 'assault' && (player.kaiUtilityGuardTimer ?? 0) > 0) {
+          incoming *= player.kaiUtilityDamageTakenMult ?? 0.65;
         }
         return damageBeforeClairePowerPass.call(this, incoming, ...args);
       };
