@@ -859,8 +859,10 @@
       for (const fx of echoSlashEffects.splice(0)) {
         fx.slash?.dispose?.();
         fx.impact?.dispose?.();
+        fx.phaseRing?.dispose?.();
         fx.mat?.dispose?.();
         fx.impactMat?.dispose?.();
+        fx.phaseRingMat?.dispose?.();
       }
       return clearBeforeEcho();
     };
