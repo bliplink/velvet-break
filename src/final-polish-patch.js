@@ -627,16 +627,16 @@
       getOperatorDefs = function getStrengthenedOperatorDefs() {
         const defs = getOperatorDefsBeforePowerPass.apply(this, arguments);
         if (defs.assault) Object.assign(defs.assault, {
-          moveMult: 1.04,
-          spreadMult: 0.82,
-          recoilMult: 0.84,
-          reloadMult: 0.86,
-          baseDamageMult: 1.08,
-          abilityDuration: 16,
-          speedBoostMult: 1.40,
-          damageBoostMult: 1.35,
-          killExtendSeconds: 1.0,
-          killHeal: 40,
+          moveMult: 1.08,
+          spreadMult: 0.68,
+          recoilMult: 0.68,
+          reloadMult: 0.70,
+          baseDamageMult: 1.18,
+          abilityDuration: 28,
+          speedBoostMult: 1.65,
+          damageBoostMult: 1.60,
+          killExtendSeconds: 1.5,
+          killHeal: 60,
           startArmorBonus: Math.max(defs.assault.startArmorBonus ?? 0, 170),
         });
         if (defs.recon) Object.assign(defs.recon, {
