@@ -141,6 +141,8 @@ const { chromium } = require('playwright');
         badLinerCount: badLiners.length,
         interactiveOpaqueCount: interactiveOpaque.length,
         badInteractiveOpaqueCount: badInteractiveOpaque.length,
+        interactiveShellsBuilt: Boolean(window.__sdrFinalOpaqueInteractiveShellsBuilt),
+        interactiveStructures: [...(window.__sdrFinalOpaqueInteractiveStructures ?? [])].sort(),
         allInteractiveStructuresCovered,
         interactiveStructureIds: [...interactiveStructureIds],
         rayBlockedCount,
@@ -166,6 +168,8 @@ const { chromium } = require('playwright');
       result.badLinerCount !== 0 ||
       result.interactiveOpaqueCount < 12 ||
       result.badInteractiveOpaqueCount !== 0 ||
+      !result.interactiveShellsBuilt ||
+      result.interactiveStructures.length !== 6 ||
       !result.allInteractiveStructuresCovered ||
       result.rayBlockedCount < 6 ||
       result.structuralCount < 20 ||
