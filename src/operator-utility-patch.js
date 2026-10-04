@@ -619,7 +619,13 @@
                   ? 0.15
                   : 0.10;
           const grenadeDamage = Math.round(GRENADE_DAMAGE * (1 - grenadeReduction));
-          damageEnemy(enemy, grenadeDamage, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
+          const savedReduction = enemy.damageReduction;
+          enemy.damageReduction = 0;
+          try {
+            damageEnemy(enemy, grenadeDamage, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
+          } finally {
+            enemy.damageReduction = savedReduction;
+          }
           hits += 1;
         }
 
