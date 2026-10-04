@@ -54,9 +54,9 @@
         nameZh: '载具战场',
         nameEn: 'Vehicle Battlefield',
         summaryZh: '大规模交火 + 可驾驶装甲载具。驾驶载具穿越战区、碾压敌人并完成撤离。',
-        summaryEn: 'Large-scale combat with drivable armored vehicles. Cross the battlefield, run down hostiles, and extract.'
+        summaryEn: 'Large-scale combat with drivable armored vehicles. Cross the battlefield, run down hostiles, and extract.',
         detailZh: '12 分钟限时，72 名敌人，部署 3 辆装甲越野车。E 上下车，WASD 驾驶；载具有独立耐久和碰撞伤害。',
-        detailEn: '12-minute limit, 72 hostiles, and 3 armored vehicles. Press E to enter/exit, WASD to drive; vehicles have durability and impact damage.'
+        detailEn: '12-minute limit, 72 hostiles, and 3 armored vehicles. Press E to enter/exit, WASD to drive; vehicles have durability and impact damage.',
         deployZh: '进入载具战场',
         deployEn: 'Enter Vehicle Battlefield',
         duration: 12 * 60,
