@@ -28,6 +28,7 @@ const checks = [
   ['lockdown-easter-egg', 'node', ['scripts/lockdown-easter-egg-smoke.cjs']],
   ['vehicle-battlefield', 'node', ['scripts/battlefield-smoke.cjs']],
   ['nameless-reset', 'node', ['scripts/nameless-reset-smoke.cjs']],
+  ['current-requirements', 'node', ['scripts/current-requirements-smoke.cjs']],
 ];
 
 const results = [];
