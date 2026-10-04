@@ -123,6 +123,10 @@ jobs:
       - name: Verify unified 10-second stun control
         run: node scripts/stun-control-smoke.cjs
 
+      - name: Verify final Kai Echo AI utility and battlefield features
+        run: node scripts/final-feature-regression.cjs
+
+
 
 
       - name: Verify rescue Benjamin balance xray and original model
