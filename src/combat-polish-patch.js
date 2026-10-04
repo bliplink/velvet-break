@@ -238,6 +238,19 @@
       };
     }
 
+    if (!document.documentElement.dataset.echoShopAuthorityBound) {
+      document.documentElement.dataset.echoShopAuthorityBound = 'true';
+      document.addEventListener('click', (event) => {
+        const button = event.target?.closest?.('[data-shop-id]');
+        const id = button?.dataset?.shopId;
+        if (id !== 'echo_unlock' && id !== 'echo_form2_unlock') return;
+        if (button.disabled) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        buyShopEntry(id);
+      }, true);
+    }
+
     const syncEchoBaseInfo = () => {
       // Echo controls are intentionally not repeated in the in-raid/loadout hint area.
     };
@@ -609,6 +622,37 @@
       pommel.rotation.x = Math.PI / 2;
       pommel.material = core;
 
+      const gloveMat = new BABYLON.StandardMaterial('echo-glove-mat', scene);
+      gloveMat.diffuseColor = BABYLON.Color3.FromHexString(phaseForm ? '#20263d' : '#202b33');
+      gloveMat.emissiveColor = BABYLON.Color3.FromHexString(phaseForm ? '#332d64' : '#172c39').scale(0.4);
+      gloveMat.specularColor = BABYLON.Color3.FromHexString('#6a7d88').scale(0.45);
+      const glove = BABYLON.MeshBuilder.CreateBox('echo-knife-glove', { width: 0.17, height: 0.12, depth: 0.2 }, scene);
+      glove.parent = root;
+      glove.position.set(0.015, -0.025, -0.42);
+      glove.rotation.x = -0.12;
+      glove.material = gloveMat;
+      const forearm = BABYLON.MeshBuilder.CreateCylinder('echo-knife-forearm', { height: 0.48, diameter: 0.13, tessellation: 12 }, scene);
+      forearm.parent = root;
+      forearm.position.set(0.04, -0.04, -0.72);
+      forearm.rotation.x = Math.PI / 2;
+      forearm.rotation.z = -0.05;
+      forearm.material = gloveMat;
+
+      if (phaseForm) {
+        for (const side of [-1, 1]) {
+          const outerEdge = BABYLON.MeshBuilder.CreateBox(`echo-phase-outer-edge-${side}`, { width: 0.012, height: 0.035, depth: 0.64 }, scene);
+          outerEdge.parent = root;
+          outerEdge.position.set(side * 0.082, 0.012, 0.25);
+          outerEdge.rotation.z = side * 0.11;
+          outerEdge.material = line;
+        }
+        const phaseGuardRing = BABYLON.MeshBuilder.CreateTorus('echo-phase-guard-ring', { diameter: 0.23, thickness: 0.018, tessellation: 20 }, scene);
+        phaseGuardRing.parent = root;
+        phaseGuardRing.position.set(0, 0.012, -0.155);
+        phaseGuardRing.rotation.x = Math.PI / 2;
+        phaseGuardRing.material = line;
+      }
+
       for (const mesh of root.getChildMeshes()) {
         mesh.isPickable = false;
         mesh.metadata = { ...(mesh.metadata ?? {}), echoKnife: true, techBlue: true };
@@ -791,14 +835,15 @@
           const wave = Math.sin(progress * Math.PI);
           if (action.visual) {
             const phase = action.form === 2;
+            const phaseSnap = phase ? Math.sin(progress * Math.PI * 2) * 0.09 : 0;
             action.visual.position.set(
-              0.32 - progress * (phase ? 0.34 : 0.24),
-              -0.28 + wave * (phase ? 0.29 : 0.21),
-              0.62 - wave * (phase ? 0.34 : 0.25),
+              0.32 - progress * (phase ? 0.40 : 0.24),
+              -0.28 + wave * (phase ? 0.34 : 0.21) + phaseSnap,
+              0.62 - wave * (phase ? 0.42 : 0.25),
             );
-            action.visual.rotation.x = -0.08 - wave * (phase ? 1.38 : 1.08);
-            action.visual.rotation.y = -0.18 + wave * (phase ? 0.62 : 0.38);
-            action.visual.rotation.z = -0.08 - wave * (phase ? 1.02 : 0.72);
+            action.visual.rotation.x = -0.08 - wave * (phase ? 1.62 : 1.08);
+            action.visual.rotation.y = -0.18 + wave * (phase ? 0.78 : 0.38) + (phase ? Math.sin(progress * Math.PI * 2) * 0.18 : 0);
+            action.visual.rotation.z = -0.08 - wave * (phase ? 1.28 : 0.72);
           }
           if (!action.applied && progress >= 0.3) {
             action.applied = true;
