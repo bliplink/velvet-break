@@ -2787,8 +2787,8 @@ function chooseRaidEnemySpawns(playerSpawn) {
   // enough hostiles to complete their kill targets without flooding the map.
   const modeId = typeof getSelectedLobbyModeId === 'function' ? getSelectedLobbyModeId() : 'raid';
   const requestedCount =
-    modeId === 'blacktide' ? 30 :
-    modeId === 'blitz' ? 24 :
+    modeId === 'blacktide' ? 16 :
+    modeId === 'blitz' ? 14 :
     30;
   const targetCount = Math.min(candidates.length, requestedCount);
   const selected = [];
