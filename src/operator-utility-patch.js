@@ -629,14 +629,14 @@
         }
 
         // Throwing Kai's signature grenade grants a short breacher guard.
-        player.kaiUtilityGuardTimer = Math.max(player.kaiUtilityGuardTimer ?? 0, 6);
-        player.kaiUtilityDamageTakenMult = 0.65;
+        player.kaiUtilityGuardTimer = Math.max(player.kaiUtilityGuardTimer ?? 0, 8);
+        player.kaiUtilityDamageTakenMult = 0.60;
 
         createUtilityBurst(center, '#ff8a57', 2.2);
         notify(
           L(
-            `高级手雷爆炸：基础伤害 ${GRENADE_DAMAGE}，敌人按类型减免部分爆炸伤害；凯获得 6 秒 35% 伤害减免。`,
-            `Advanced Grenade detonated: ${GRENADE_DAMAGE} base damage with enemy-type blast resistance; Kai gains 35% damage reduction for 6s.`,
+            `高级手雷爆炸：基础伤害 ${GRENADE_DAMAGE}，敌人按类型减免部分爆炸伤害；凯获得 8 秒 40% 伤害减免。`,
+            `Advanced Grenade detonated: ${GRENADE_DAMAGE} base damage with enemy-type blast resistance; Kai gains 40% damage reduction for 8s.`,
           ),
           hits ? 'success' : 'warning',
         );
