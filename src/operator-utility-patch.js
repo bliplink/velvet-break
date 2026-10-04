@@ -794,7 +794,6 @@
             player.supportSmokeTick += 1;
             player.health = Math.min(player.maxHealth, player.health + 50);
             player.stamina = Math.min(player.maxStamina ?? 100, (player.stamina ?? 0) + 20);
-            spawnPulse(new BABYLON.Vector3(player.x, 0.7, player.z), '#76e6a4', 0.07, 0.08);
           }
         }
         updateSupportSmokeVisual(player, dt);
