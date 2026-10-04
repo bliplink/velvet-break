@@ -284,6 +284,7 @@
           finalOpaqueBuildingShell: true,
           finalInteractiveOpaqueShell: true,
         };
+        createdWalls++;
       }
 
       // Duplicate the interactive roofs too; the legacy full-building mesh is disabled.
