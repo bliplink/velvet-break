@@ -158,6 +158,17 @@
       stuns: 0,
     };
     window.__sdrEnemyUtilityDebug = enemyUtilityDebug;
+    window.__sdrEnemyUtilityConfig = Object.freeze({
+      version: '2026-10-04-ai-utility-config-v1',
+      smokeRadius: 8,
+      smokeDuration: 5.5,
+      stunRadius: 3.8,
+      stunSlowDuration: 5,
+      stunMobilityLockDuration: 2.5,
+      impactSphereEnabled: false,
+      projectileVisible: true,
+      throwWindup: 0.45,
+    });
 
     const spawnEnemyUtilityPulse = (x, z, color, size = 1.1) => {
       if (typeof BABYLON === 'undefined' || !scene) return null;
