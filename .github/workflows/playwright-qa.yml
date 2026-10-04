@@ -143,6 +143,10 @@ jobs:
       - name: Verify Vehicle Battlefield
         run: node scripts/battlefield-smoke.cjs
 
+      - name: Verify Vehicle Battlefield combat
+        run: node scripts/battlefield-combat-smoke.cjs
+
+
       - name: Verify Nameless guards reset every raid
         run: node scripts/nameless-reset-smoke.cjs
 
