@@ -35,6 +35,12 @@
     const SUPPORT_SMOKE_RADIUS = 20;
     const SUPPORT_SMOKE_CONTACT_RANGE = 2.2;
     const GRENADE_DAMAGE = 600;
+    window.__sdrKaiUtilityConfig = Object.freeze({
+      grenadeDamage: GRENADE_DAMAGE,
+      grenadeRadius: GRENADE_RADIUS,
+      guardDuration: 8,
+      guardDamageTakenMult: 0.60,
+    });
     const GRENADE_RADIUS = 26;
     let utilityView = null;
 
