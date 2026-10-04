@@ -261,6 +261,7 @@
       if (BABYLON.Engine?.ALPHA_DISABLE !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
 
       const completedStructures = new Set();
+      let createdWalls = 0;
       for (const wall of interactiveWalls) {
         const structureId = String(wall?.structureId ?? '');
         completedStructures.add(structureId);
