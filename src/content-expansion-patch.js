@@ -292,6 +292,39 @@
       }
     };
 
+    const getPlayerMoveSpeedBeforeBattlefieldVehicle = typeof getPlayerMoveSpeed === 'function' ? getPlayerMoveSpeed : null;
+    if (getPlayerMoveSpeedBeforeBattlefieldVehicle) {
+      getPlayerMoveSpeed = function getPlayerMoveSpeedWithVehicle(player, sprinting = false) {
+        if (player?.mountedVehicleId && state.raid?.modeId === BATTLEFIELD_ID) return 0;
+        return getPlayerMoveSpeedBeforeBattlefieldVehicle.call(this, player, sprinting);
+      };
+    }
+
+    const damagePlayerBeforeBattlefieldVehicle = typeof applyDamageToPlayer === 'function' ? applyDamageToPlayer : null;
+    if (damagePlayerBeforeBattlefieldVehicle) {
+      applyDamageToPlayer = function damagePlayerThroughBattlefieldVehicle(amount, ...args) {
+        const raid = state.raid;
+        const player = raid?.player;
+        const vehicle = getMountedBattlefieldVehicle(raid);
+        if (!vehicle || vehicle.health <= 0 || !player) {
+          return damagePlayerBeforeBattlefieldVehicle.call(this, amount, ...args);
+        }
+        const raw = Math.max(0, Number(amount) || 0);
+        const absorbed = Math.min(vehicle.health, raw * 0.78);
+        vehicle.health = Math.max(0, vehicle.health - absorbed);
+        const remaining = Math.max(0, raw - absorbed);
+        if (vehicle.health <= 0) {
+          vehicle.occupied = false;
+          player.mountedVehicleId = null;
+          player.x = vehicle.x + Math.cos(vehicle.yaw) * 2.4;
+          player.z = vehicle.z - Math.sin(vehicle.yaw) * 2.4;
+          if (vehicle.visual?.bodyMat) vehicle.visual.bodyMat.diffuseColor = BABYLON.Color3.FromHexString('#262b29');
+          notify(L('载具已被摧毁，已强制下车。', 'Vehicle destroyed. You were forced out.'), 'danger');
+        }
+        return remaining > 0 ? damagePlayerBeforeBattlefieldVehicle.call(this, remaining, ...args) : 0;
+      };
+    }
+
     const originalPatchedStartRaid = window.__sdrPatchedStartRaid;
     if (typeof originalPatchedStartRaid === 'function') {
       window.__sdrPatchedStartRaid = function startProductionBattlefield() {
