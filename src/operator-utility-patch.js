@@ -740,8 +740,8 @@
     const enforceEnemyCap = (raid = state.raid) => {
       if (!raid?.enemies) return;
       const normalEnemies = raid.enemies.filter((enemy) => !enemy.isNamelessBoss && !enemy.isNamelessMinion && !enemy.isEventElite && !enemy.dead && !enemy.despawned);
-      if (normalEnemies.length <= 36) return;
-      const keep = new Set(normalEnemies.slice(0, 36));
+      if (normalEnemies.length <= 48) return;
+      const keep = new Set(normalEnemies.slice(0, 48));
       const removed = new Set(normalEnemies.filter((enemy) => !keep.has(enemy)));
       raid.enemies = raid.enemies.filter((enemy) => !removed.has(enemy));
       for (const enemy of removed) disposeVisual(enemy.visual);
