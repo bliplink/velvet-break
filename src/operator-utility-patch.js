@@ -609,7 +609,13 @@
         let hits = 0;
         for (const enemy of raid.enemies) {
           if (enemy.dead || distance2D(center.x, center.z, enemy.x, enemy.z) > GRENADE_RADIUS) continue;
-          damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade' });
+          const savedReduction = enemy.damageReduction;
+          enemy.damageReduction = 0;
+          try {
+            damageEnemy(enemy, GRENADE_DAMAGE, { ignoreSmoke: true, utilityKind: 'grenade', bypassArmor: true });
+          } finally {
+            enemy.damageReduction = savedReduction;
+          }
           hits += 1;
         }
         createUtilityBurst(center, '#ff8a57', 2.2);
