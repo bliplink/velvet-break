@@ -237,6 +237,81 @@
     };
     buildFinalOpaqueLockdownShells();
 
+    const buildFinalOpaqueInteractiveShells = () => {
+      if (window.__sdrFinalOpaqueInteractiveShellsBuilt || !window.BABYLON || !scene) return;
+      window.__sdrFinalOpaqueInteractiveShellsBuilt = true;
+      const interactiveIds = new Set(['center-depot','west-barracks','east-hangar','west-bunker','north-silo','south-yard-2']);
+      const mat = new BABYLON.StandardMaterial('final-interactive-solid-shell-mat', scene);
+      mat.diffuseColor = BABYLON.Color3.FromHexString('#3b474d');
+      mat.emissiveColor = BABYLON.Color3.FromHexString('#0f171b');
+      mat.specularColor = BABYLON.Color3.Black();
+      mat.alpha = 1;
+      mat.backFaceCulling = false;
+      mat.disableDepthWrite = false;
+      if ('forceDepthWrite' in mat) mat.forceDepthWrite = true;
+      mat.needDepthPrePass = false;
+      if (BABYLON.Material) mat.transparencyMode = BABYLON.Material.MATERIAL_OPAQUE;
+      if (BABYLON.Engine?.ALPHA_DISABLE !== undefined) mat.alphaMode = BABYLON.Engine.ALPHA_DISABLE;
+
+      for (const wall of obstacleDefs ?? []) {
+        const structureId = String(wall?.structureId ?? '');
+        if (!interactiveIds.has(structureId)) continue;
+        if (!String(wall.id ?? '').includes('-wall-')) continue;
+        const name = `final-interactive-solid-${wall.id}`;
+        if (scene.getMeshByName?.(name)) continue;
+        const mesh = BABYLON.MeshBuilder.CreateBox(name, {
+          width: wall.w,
+          height: wall.h,
+          depth: wall.d,
+        }, scene);
+        mesh.position.set(wall.x, wall.h / 2, wall.z);
+        mesh.material = mat;
+        mesh.visibility = 1;
+        mesh.isVisible = true;
+        mesh.isPickable = true;
+        mesh.renderingGroupId = 0;
+        mesh.alwaysSelectAsActiveMesh = false;
+        mesh.metadata = {
+          raycastTarget: 'obstacle',
+          structureId,
+          finalOpaqueBuildingShell: true,
+          finalInteractiveOpaqueShell: true,
+        };
+      }
+
+      // Duplicate the interactive roofs too; the legacy full-building mesh is disabled.
+      const structures = window.__sdrInteractiveBuildingStructures;
+      for (const mesh of structures?.meshes ?? []) {
+        const name = String(mesh?.name ?? '');
+        if (!name.includes('-interactive-roof')) continue;
+        const structureId = String(mesh?.metadata?.structureId ?? name.replace(/-interactive-roof$/, ''));
+        if (!interactiveIds.has(structureId)) continue;
+        const bounds = mesh.getBoundingInfo?.().boundingBox;
+        const size = bounds?.extendSizeWorld;
+        if (!size) continue;
+        const cloneName = `final-interactive-solid-${structureId}-roof`;
+        if (scene.getMeshByName?.(cloneName)) continue;
+        const roof = BABYLON.MeshBuilder.CreateBox(cloneName, {
+          width: size.x * 2,
+          height: Math.max(0.12, size.y * 2),
+          depth: size.z * 2,
+        }, scene);
+        roof.position.copyFrom(mesh.getAbsolutePosition());
+        roof.material = mat;
+        roof.visibility = 1;
+        roof.isVisible = true;
+        roof.isPickable = true;
+        roof.renderingGroupId = 0;
+        roof.metadata = {
+          raycastTarget: 'obstacle',
+          structureId,
+          finalOpaqueBuildingShell: true,
+          finalInteractiveOpaqueShell: true,
+        };
+      }
+    };
+    buildFinalOpaqueInteractiveShells();
+
     // Final building opacity guard. Glass panes are the only structural meshes allowed to stay transparent.
     const forceOpaqueBuildingMeshes = () => {
       const structures = window.__sdrInteractiveBuildingStructures;
