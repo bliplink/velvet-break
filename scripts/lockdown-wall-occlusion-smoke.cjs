@@ -1,4 +1,5 @@
 const { chromium } = require('playwright');
+const fs = require('node:fs');
 
 (async () => {
   const browser = await chromium.launch({
@@ -92,6 +93,8 @@ const { chromium } = require('playwright');
       };
     });
 
+    fs.mkdirSync('screenshots', { recursive: true });
+    await page.screenshot({ path: 'screenshots/lockdown-wall-occlusion.png', fullPage: false });
     console.log(JSON.stringify({ result, errors }, null, 2));
     if (
       result.missingWalls ||
