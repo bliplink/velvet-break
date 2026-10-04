@@ -419,10 +419,36 @@
       }
     });
 
+    const syncReconWallRevealDepth = () => {
+      const raid = state.raid;
+      if (!raid) return;
+      const allowThroughWalls = raid.player?.operatorId === 'recon' && (raid.player?.abilityActiveTimer ?? 0) > 0;
+      for (const enemy of raid.enemies ?? []) {
+        if (!enemy?.visual) continue;
+        const revealMaterial = enemy.visual.revealMaterial;
+        const classLabelMaterial = enemy.visual.classLabelMaterial;
+        for (const mesh of enemy.visual.revealMeshes ?? []) {
+          mesh.renderingGroupId = allowThroughWalls ? 3 : 0;
+          mesh.alwaysSelectAsActiveMesh = allowThroughWalls;
+        }
+        if (revealMaterial) {
+          revealMaterial.depthFunction = allowThroughWalls
+            ? (BABYLON.ALWAYS ?? 519)
+            : (BABYLON.LEQUAL ?? 515);
+        }
+        if (classLabelMaterial) {
+          classLabelMaterial.depthFunction = allowThroughWalls
+            ? (BABYLON.ALWAYS ?? 519)
+            : (BABYLON.LEQUAL ?? 515);
+        }
+      }
+    };
+
     const updateRaidBeforeClaireTimers = typeof updateRaid === 'function' ? updateRaid : null;
     if (updateRaidBeforeClaireTimers) {
       updateRaid = function updateRaidWithClaireTimers(dt, ...args) {
         const player = state.raid?.player;
+        syncReconWallRevealDepth();
         if (player?.operatorId === 'recon') {
           if (!Number.isFinite(player.claireScanCharges)) {
             player.claireScanCharges = 4;
