@@ -43,6 +43,18 @@
         root.position.z = enemy.z;
         root.rotation.y = enemy.heading ?? root.rotation.y;
       }
+      const player = raid.player;
+      if ((player.ultimateStartupTimer ?? 0) > 0) {
+        player.ultimateStartupTimer = Math.max(0, player.ultimateStartupTimer - dt);
+        const p = 1 - player.ultimateStartupTimer / 0.9;
+        const lift = Math.sin(Math.min(1, p) * Math.PI);
+        if (typeof viewModel !== 'undefined' && viewModel?.root) {
+          viewModel.root.position.y += lift * 0.16;
+          viewModel.root.position.z -= lift * 0.18;
+          viewModel.root.rotation.x -= lift * 0.28;
+          viewModel.root.rotation.z += Math.sin(p * Math.PI * 2) * 0.055;
+        }
+      }
       return result;
     };
 
@@ -83,6 +95,8 @@
       #finalCombatFeedback{position:fixed;inset:0;pointer-events:none;z-index:29;font-family:inherit;overflow:hidden}
       #finalUltimateFrame{position:absolute;inset:10px;border:2px solid transparent;border-radius:16px;opacity:0;transition:opacity .18s ease;box-shadow:inset 0 0 28px transparent,0 0 18px transparent}
       #finalUltimateFrame.is-active{opacity:.9;animation:final-ultimate-pulse .72s ease-in-out infinite alternate}
+      #finalActionFrame{position:absolute;inset:18px;border:1px solid transparent;border-radius:14px;opacity:0;transition:opacity .12s ease;box-shadow:inset 0 0 42px transparent}
+      #finalActionFrame.is-active{opacity:.62;animation:final-action-frame .52s ease-in-out infinite alternate}
       #finalUltimateBurst{position:absolute;left:50%;top:19%;min-width:300px;transform:translate(-50%,-50%) scale(.82);padding:12px 26px;border:1px solid transparent;border-radius:10px;background:linear-gradient(90deg,rgba(5,10,14,0),rgba(5,10,14,.84),rgba(5,10,14,0));text-align:center;opacity:0;filter:blur(4px)}
       #finalUltimateBurst strong{display:block;font-size:1.03rem;letter-spacing:.18em;text-transform:uppercase}
       #finalUltimateBurst span{display:block;margin-top:4px;font-size:.7rem;letter-spacing:.12em;opacity:.82}
@@ -98,6 +112,7 @@
       @keyframes final-ultimate-pulse{from{filter:brightness(.82)}to{filter:brightness(1.35)}}
       @keyframes final-ultimate-start{0%{opacity:0;transform:translate(-50%,-50%) scale(.62);filter:blur(8px)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08);filter:blur(0)}72%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}100%{opacity:0;transform:translate(-50%,-54%) scale(1.04);filter:blur(3px)}}
       @keyframes final-action-ray{from{transform:scaleX(.45);opacity:.22}to{transform:scaleX(1);opacity:.72}}
+      @keyframes final-action-frame{from{filter:brightness(.78)}to{filter:brightness(1.28)}}
     `;
     document.head.appendChild(combatFeedbackStyle);
 
@@ -105,6 +120,7 @@
     combatFeedback.id = 'finalCombatFeedback';
     combatFeedback.innerHTML = `
       <div id="finalUltimateFrame"></div>
+      <div id="finalActionFrame"></div>
       <div id="finalUltimateBurst"><strong id="finalUltimateName"></strong><span id="finalUltimateSub"></span></div>
       <div id="finalActionFeedback">
         <div id="finalActionLabel"></div>
@@ -115,6 +131,7 @@
     document.body.appendChild(combatFeedback);
 
     const ultimateFrame = combatFeedback.querySelector('#finalUltimateFrame');
+    const actionFrame = combatFeedback.querySelector('#finalActionFrame');
     const ultimateBurst = combatFeedback.querySelector('#finalUltimateBurst');
     const ultimateName = combatFeedback.querySelector('#finalUltimateName');
     const ultimateSub = combatFeedback.querySelector('#finalUltimateSub');
@@ -123,6 +140,26 @@
     const actionDetail = combatFeedback.querySelector('#finalActionDetail');
     const actionProgress = combatFeedback.querySelector('#finalActionProgress i');
     let previousUltimateActive = false;
+    const KAI_ULT_ARMOR_BONUS = 300;
+
+    const activateKaiUltimateArmor = (player) => {
+      if (!player || player.operatorId !== 'assault' || player.kaiUltArmorActive) return;
+      player.kaiUltArmorBaseMax = Math.max(0, Number(player.maxArmor ?? 0));
+      player.kaiUltArmorBonus = KAI_ULT_ARMOR_BONUS;
+      player.maxArmor = player.kaiUltArmorBaseMax + KAI_ULT_ARMOR_BONUS;
+      player.armor = Math.min(player.maxArmor, Number(player.armor ?? 0) + KAI_ULT_ARMOR_BONUS);
+      player.kaiUltArmorActive = true;
+      notify(L(`凯大招护甲增幅：+${KAI_ULT_ARMOR_BONUS} 临时护甲。`, `Kai ultimate armor surge: +${KAI_ULT_ARMOR_BONUS} temporary armor.`), 'success');
+    };
+
+    const clearKaiUltimateArmor = (player) => {
+      if (!player?.kaiUltArmorActive) return;
+      const restoredMax = Math.max(0, Number(player.kaiUltArmorBaseMax ?? (player.maxArmor - (player.kaiUltArmorBonus ?? 0))));
+      player.maxArmor = restoredMax;
+      player.armor = Math.min(Number(player.armor ?? 0), restoredMax);
+      player.kaiUltArmorBonus = 0;
+      player.kaiUltArmorActive = false;
+    };
 
     const setUltimateFeedbackColor = (color) => {
       const safe = color || '#8fd6ff';
@@ -138,6 +175,8 @@
       const operator = getPlayerOperatorDef(player);
       const color = operator?.abilityColor ?? '#8fd6ff';
       setUltimateFeedbackColor(color);
+      player.ultimateStartupTimer = Math.max(Number(player.ultimateStartupTimer ?? 0), 0.9);
+      if (player.operatorId === 'assault') activateKaiUltimateArmor(player);
       ultimateName.textContent = L(operator?.skillNameZh ?? '大招启动', operator?.skillNameEn ?? 'ULTIMATE ACTIVE');
       ultimateSub.textContent = L('战术系统已启动', 'TACTICAL SYSTEM ONLINE');
       ultimateBurst.classList.remove('is-starting');
@@ -221,16 +260,21 @@
       ultimateFrame.classList.toggle('is-active', activeUltimate);
       if (!inRaid) {
         actionFeedback.classList.remove('is-active');
+        actionFrame.classList.remove('is-active');
         return;
       }
 
       const action = getFinalActionFeedback(player, raid);
       if (!action) {
         actionFeedback.classList.remove('is-active');
+        actionFrame.classList.remove('is-active');
         actionProgress.style.width = '0%';
         return;
       }
       actionFeedback.classList.add('is-active');
+      actionFrame.classList.add('is-active');
+      actionFrame.style.borderColor = `${action.color ?? '#8fd6ff'}55`;
+      actionFrame.style.boxShadow = `inset 0 0 48px ${action.color ?? '#8fd6ff'}33`;
       actionFeedback.style.color = action.color ?? '#8fd6ff';
       actionFeedback.style.borderColor = `${action.color ?? '#8fd6ff'}66`;
       actionFeedback.style.boxShadow = `0 10px 30px rgba(0,0,0,.34),0 0 18px ${action.color ?? '#8fd6ff'}33`;
@@ -752,6 +796,7 @@
         if (player) {
           player.kaiUtilityGuardTimer = Math.max(0, Number(player.kaiUtilityGuardTimer ?? 0) - dt);
           if ((player.kaiUtilityGuardTimer ?? 0) <= 0) player.kaiUtilityDamageTakenMult = 1;
+          if (player.kaiUltArmorActive && (player.abilityActiveTimer ?? 0) <= 0) clearKaiUltimateArmor(player);
         }
         if (!window.__sdrFinalOpaqueInteractiveShellsBuilt) buildFinalOpaqueInteractiveShells();
         // Run last so no earlier patch can reopen enemy x-ray rendering in the same frame.
@@ -813,6 +858,7 @@
           killExtendSeconds: 2.0,
           killHeal: 90,
           abilityDamageTakenMult: 0.62,
+          ultimateArmorBonus: KAI_ULT_ARMOR_BONUS,
           abilityReloadMult: 0.62,
           abilitySpreadMult: 0.58,
           abilityRecoilMult: 0.58,
@@ -869,6 +915,31 @@
           }
         }
         return speed;
+      };
+    }
+
+    const damageEnemyBeforeFinalUtilityResistance = typeof damageEnemy === 'function' ? damageEnemy : null;
+    if (damageEnemyBeforeFinalUtilityResistance) {
+      damageEnemy = function damageEnemyWithFinalUtilityResistance(enemy, amount, options = {}) {
+        if (!enemy || !options?.utilityKind) {
+          return damageEnemyBeforeFinalUtilityResistance.call(this, enemy, amount, options);
+        }
+        const savedReduction = enemy.damageReduction;
+        const minimumReduction = enemy.isNamelessBoss
+          ? 0.50
+          : enemy.isNamelessMinion
+            ? 0.35
+            : enemy.type === 'bruiser'
+              ? 0.30
+              : enemy.type === 'hunter'
+                ? 0.25
+                : 0.20;
+        enemy.damageReduction = Math.max(Number(savedReduction ?? 0), minimumReduction);
+        try {
+          return damageEnemyBeforeFinalUtilityResistance.call(this, enemy, amount, options);
+        } finally {
+          enemy.damageReduction = savedReduction;
+        }
       };
     }
 
